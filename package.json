@@ -11,7 +11,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/adapter-d1": "^7.9.1",
+    "@prisma/adapter-d1": "^6.2.1",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",

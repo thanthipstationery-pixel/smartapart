@@ -9,7 +9,7 @@ export function getPrisma(): PrismaClient {
     const ctx = getCloudflareContext();
     if (ctx && ctx.env && (ctx.env as any).DB) {
       const adapter = new PrismaD1((ctx.env as any).DB);
-      return new PrismaClient({ adapter });
+      return new PrismaClient({ adapter: adapter as any });
     }
   } catch (e) {
     // Fallback when outside of request context or during local build
