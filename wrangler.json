@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "smartapart",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".vercel/output/static",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "smartapart-db",
+      "database_id": "b45375ef-d42c-4175-8e75-dcc764c8e647"
+    }
+  ]
+}

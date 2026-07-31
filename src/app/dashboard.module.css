@@ -1,0 +1,1460 @@
+/* Dashboard Layout */
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+  padding: 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  transition: transform 0.3s ease;
+  /* Subtle top accent line */
+  border-top: 3px solid var(--primary-color);
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 2rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.logoImage {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.logoText h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.logoText p {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.875rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.navItem:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.navItemActive {
+  background: linear-gradient(135deg, var(--primary-color), color-mix(in srgb, var(--primary-color) 80%, #818cf8));
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.userInfo {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.userName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.userRole {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--status-unpaid);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(var(--status-unpaid-rgb, 244, 63, 94), 0.05);
+  border-color: rgba(var(--status-unpaid-rgb, 244, 63, 94), 0.2);
+}
+
+/* Header Area */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.headerTitle h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.headerTitle p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Stats Cards Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top gradient line on each card */
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.statCard:hover::before {
+  opacity: 1;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-size: clamp(1.6rem, 2.5vw, 2.25rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.statChange {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Section Cards */
+.sectionCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Building Selection Map */
+.buildingTabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  overflow-x: auto;
+}
+
+.buildingTab {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.buildingTabActive {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Responsive Building Selectors */
+.mobileBuildingSelector {
+  display: none;
+}
+.desktopBuildingSelector {
+  display: block;
+}
+
+/* Floor Grid */
+.floorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.floorRow {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.floorHeader {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.roomsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+/* Room Box */
+.roomBox {
+  min-height: 125px;
+  height: 100%;
+  max-width: 155px;
+  width: 100%;
+  background-color: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden; /* ← ล็อกไม่ให้ข้อความยาวดัน box */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.roomBox:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12);
+}
+
+.roomBoxHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.roomNumber {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.roomType {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-secondary);
+}
+
+.roomStatusBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  align-self: flex-end;
+  text-align: right;
+  width: 100%;
+}
+
+/* Status colors map boxes */
+.roomVacant {
+  border-color: var(--status-vacant);
+  background-color: var(--status-vacant-bg);
+}
+.roomVacant .roomNumber { color: var(--status-vacant); }
+
+.roomOccupied {
+  border-color: var(--status-occupied);
+  background-color: var(--status-occupied-bg);
+}
+.roomOccupied .roomNumber { color: var(--status-occupied); }
+
+.roomUnpaid {
+  border-color: var(--status-unpaid);
+  background-color: var(--status-unpaid-bg);
+}
+.roomUnpaid .roomNumber { color: var(--status-unpaid); }
+
+.roomMaintenance {
+  border-color: var(--status-maintenance);
+  background-color: var(--status-maintenance-bg);
+}
+.roomMaintenance .roomNumber { color: var(--status-maintenance); }
+
+/* Room Legend */
+.legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legendDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+/* Form Styles */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.formInput,
+.formSelect {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-color);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+}
+
+.formInput:focus,
+.formSelect:focus {
+  border-color: var(--primary-color);
+}
+
+/* Modal Overlay & Card */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem 0.75rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.modalCard {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  margin: auto 0;
+}
+
+.modalCard form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.modalHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.modalBody {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalFooter {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  background-color: var(--card-bg);
+}
+
+/* Buttons */
+.btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  user-select: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, var(--primary-color), color-mix(in srgb, var(--primary-color) 75%, #818cf8));
+  color: #ffffff;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+.btnPrimary:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+  box-shadow: 0 6px 20px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+.btnSecondary {
+  background-color: #475569;
+  border-color: #334155;
+  color: #ffffff;
+}
+.btnSecondary:hover {
+  background-color: #334155;
+  border-color: #1e293b;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(71, 85, 105, 0.35);
+}
+
+.btnDanger {
+  background-color: var(--status-unpaid);
+  color: #ffffff;
+}
+.btnDanger:hover {
+  background-color: var(--danger-hover);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.btnSuccess {
+  background-color: var(--status-vacant);
+  color: #ffffff;
+}
+.btnSuccess:hover {
+  background-color: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btnWarning {
+  background-color: var(--status-booked);
+  color: #ffffff;
+}
+.btnWarning:hover {
+  background-color: var(--warning-hover);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+/* Utilities Entry View */
+.meterDesktopTable {
+  width: 100%;
+}
+
+.meterMobileList {
+  display: none;
+}
+
+.meterTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.meterTable th,
+.meterTable td {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.meterTable th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
+}
+
+.meterInput {
+  width: 100px;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.meterInputError {
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+/* Invoices View */
+.invoiceBadge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badgePaid {
+  background-color: var(--status-vacant-bg);
+  color: var(--status-vacant);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* FIX: was incorrectly using --status-maintenance-bg (gray) */
+.badgeUnpaid {
+  background-color: var(--status-unpaid-bg);
+  color: var(--status-unpaid);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.badgePartial {
+  background-color: var(--status-booked-bg);
+  color: var(--status-booked);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badgeOverdue {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Invoice Bill Print Layout (A4 styled paper) */
+.paperBill {
+  background-color: white;
+  color: black;
+  padding: 2.5rem;
+  border: 1px solid #ccc;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  font-family: 'Courier New', Courier, monospace; /* Classic invoice font */
+}
+
+.paperHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px dashed #000;
+  padding-bottom: 1rem;
+}
+
+.paperHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.paperGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.paperTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.paperTable th,
+.paperTable td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px dashed #000;
+  font-size: 0.9rem;
+}
+
+.paperTable th {
+  font-weight: bold;
+}
+
+.paperTotal {
+  text-align: right;
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  border-bottom: 2px dashed #000;
+  padding-bottom: 0.5rem;
+}
+
+/* Header Actions */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.themeToggleBtn,
+.mobileLogoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeToggleBtn:hover {
+  background-color: var(--bg-color);
+}
+
+.mobileLogoutBtn {
+  display: none; /* Hidden on desktop */
+  color: var(--status-unpaid);
+  border-color: rgba(var(--status-unpaid-rgb, 244, 63, 94), 0.2);
+}
+
+.mobileLogoutBtn:hover {
+  background-color: rgba(var(--status-unpaid-rgb, 244, 63, 94), 0.05);
+}
+
+/* Mobile responsive bottom navigation */
+.mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+  justify-content: space-around;
+  padding: 0.4rem 0.2rem;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.mobileNavItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: none;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  gap: 0.15rem;
+  padding: 0.3rem 0.15rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.mobileNavItem:hover {
+  color: var(--text-primary);
+}
+
+.mobileNavItemActive {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* Active pill indicator dot */
+.mobileNavItemActive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--primary-color);
+  box-shadow: 0 1px 8px var(--primary-glow);
+}
+
+.tenantDesktopTable {
+  display: block;
+}
+
+.tenantMobileList {
+  display: none;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%); /* Hide sidebar on tablet/mobile */
+  }
+  
+  .mainContent {
+    margin-left: 0;
+    padding: 1rem;
+    padding-bottom: 5.5rem; /* Room for bottom navigation */
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for dashboard stats on mobile */
+    gap: 0.75rem;
+  }
+  
+  .statCard {
+    padding: 1rem;
+  }
+  
+  .statValue {
+    font-size: 1.35rem;
+  }
+  
+  .statLabel {
+    font-size: 0.75rem;
+  }
+  
+  .mobileNav {
+    display: flex;
+  }
+  
+  .mobileLogoutBtn {
+    display: flex; /* Show on mobile/tablet */
+  }
+  
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Building Selectors Switch */
+  .mobileBuildingSelector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .desktopBuildingSelector {
+    display: none;
+  }
+
+  /* Legend wrapping on mobile to prevent overflow */
+  .legend {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-size: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .legendItem {
+    flex: 0 0 calc(50% - 0.5rem);
+    min-width: 110px;
+  }
+  
+  /* Modal responsive optimizations */
+  .modalOverlay {
+    padding: 0.5rem 0.25rem;
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modalCard {
+    max-height: calc(100vh - 1rem);
+    margin: 0 auto;
+  }
+  
+  .modalHeader {
+    padding: 1rem;
+  }
+  
+  .modalBody {
+    padding: 1rem;
+  }
+  
+  .modalFooter {
+    padding: 1rem;
+  }
+
+  /* Paper Bill A4 Layout Scaler for mobile screen */
+  .paperBill {
+    padding: 1rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .paperHeader {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .paperHeader h2 {
+    font-size: 1.15rem;
+  }
+
+  .paperGrid {
+    grid-template-columns: 1fr; /* Stack meta info on mobile */
+    gap: 0.5rem;
+  }
+
+  .paperTable th,
+  .paperTable td {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.7rem;
+  }
+
+  .paperTotal {
+    font-size: 0.95rem;
+    margin-top: 0.75rem;
+  }
+  
+  /* Make room plan compact on mobile — force 2-col layout with full width boxes */
+  .sectionCard {
+    padding: 0.875rem 0.625rem;
+  }
+
+  .floorRow {
+    padding: 0.875rem 0.5rem;
+  }
+
+  .floorHeader {
+    padding-left: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .roomsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+  
+  .roomBox {
+    max-width: none;       /* ลบ cap ออก ให้กล่องขยายเต็ม column */
+    width: 100%;
+    height: 110px;         /* ← ความสูงตายตัวบนมือถือ ทุก card เท่ากัน */
+    min-height: unset;
+    padding: 0.55rem 0.5rem;
+    aspect-ratio: unset;
+    overflow: hidden;      /* ← ตัดทุกอย่างที่เกินกรอบ */
+  }
+
+  .roomNumber {
+    font-size: 0.9rem;
+  }
+
+  .roomType {
+    font-size: 0.65rem;
+    padding: 0 0.2rem;
+  }
+
+  .roomStatusBadge {
+    font-size: 0.65rem;
+  }
+
+  .meterDesktopTable {
+    display: none;
+  }
+
+  .meterMobileList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .meterCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .meterCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .meterCardTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .meterCardSubtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .meterGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .meterCol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .meterLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .meterPrev {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .meterCol input {
+    width: 100% !important;
+  }
+
+  /* Tenant Management Mobile Cards */
+  .tenantDesktopTable {
+    display: none;
+  }
+
+  .tenantMobileList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  .tenantCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tenantCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 0.6rem;
+  }
+
+  .tenantCardRoomBadge {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .tenantCardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+  }
+
+  .tenantCardRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tenantCardLabel {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.82rem;
+  }
+
+  .tenantCardValue {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .tenantCardActions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .tenantCardCallBtn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--primary-color);
+    color: #ffffff !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+  }
+}
+
+/* ============================================================
+   📱 Rooms List & Rates — Mobile Card Layout
+   ============================================================ */
+
+.roomRateCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.roomRateCard:hover {
+  box-shadow: var(--shadow-card);
+}
+
+.roomRateCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.roomRateCardRoomNumber {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.roomRateCardBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.roomRateCardPrice {
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.roomRateCardPriceLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.roomRateCardPriceValue {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.roomRateCardUtilities {
+  padding: 0.625rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.roomRateCardUtilityRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.roomRateCardUtilityLabel {
+  color: var(--text-secondary);
+}
+
+.roomRateCardUtilityValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.roomRateCardAction {
+  padding: 0.625rem 0.75rem;
+}
+
+/* Desktop table — show by default */
+.roomsDesktopTable {
+  display: block;
+}
+
+/* Mobile card list — hidden by default */
+.roomsMobileList {
+  display: none;
+}
+
+/* Switch at 768px breakpoint */
+@media (max-width: 768px) {
+  .roomsDesktopTable {
+    display: none;
+  }
+
+  .roomsMobileList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Ghost / Icon-only button */
+.btnGhost {
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 32px;
+  min-height: 32px;
+}
+.btnGhost:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Small filter pill button */
+.btnFilterPill {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 9999px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Buildings summary card */
+.buildingSummaryCard {
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  background: var(--card-bg);
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-sm);
+}
+.buildingSummaryCard:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+.buildingSummaryCardTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.occupancyBar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-color);
+  overflow: hidden;
+  margin-top: 0.85rem;
+}
+.occupancyBarFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--status-occupied), var(--primary-color));
+  transition: width 0.6s ease;
+}
+
+/* ============================================================
+   📱 มือถือแนวนอน (Landscape) — แสดงมากกว่า 2 column
+   ============================================================ */
+
+/* มือถือทั่วไป landscape (iPhone SE, 12, 14 ฯลฯ) */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .roomsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .roomBox {
+    height: 118px; /* เพิ่มความสูงให้แสดง ชื่อ + เบอร์ + badge ครบ */
+  }
+
+  /* ลด padding section ให้ใช้พื้นที่ได้มากขึ้น */
+  .sectionCard {
+    padding: 0.625rem 0.5rem;
+  }
+
+  .floorRow {
+    padding: 0.625rem 0.375rem;
+  }
+}
+
+/* แท็บเล็ตขนาดเล็ก landscape (iPad mini, iPad Air ฯลฯ) */
+@media (min-width: 600px) and (max-width: 1024px) and (orientation: landscape) and (min-height: 500px) {
+  .roomsGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+  }
+
+  .roomBox {
+    height: 105px;
+  }
+}
+
+/* ============================================================
+   ⚡ Meter Reading Filter Card & Responsive Grid System
+   ============================================================ */
+
+.meterFilterCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meterFilterGrid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.8fr) minmax(130px, 1fr) minmax(150px, 1.2fr) minmax(160px, 1.2fr) minmax(160px, 1.2fr);
+  gap: 0.85rem;
+  align-items: flex-end;
+}
+
+.meterFilterSearchField {
+  min-width: 0;
+}
+
+.meterFilterActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+@media (max-width: 1100px) {
+  .meterFilterGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .meterFilterCard {
+    padding: 0.85rem 0.75rem;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+  }
+
+  .meterFilterGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .meterFilterSearchField {
+    grid-column: span 2;
+  }
+
+  .meterFilterActionsRow {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+    padding-top: 0.65rem;
+  }
+
+  .meterFilterActionsRow > button {
+    width: 100%;
+  }
+}

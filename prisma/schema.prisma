@@ -1,0 +1,199 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // Hashed password
+  name      String
+  createdAt DateTime @default(now())
+}
+
+model Property {
+  id           String     @id @default(uuid())
+  name         String
+  phone        String?
+  email        String?
+  address      String?
+  lineId       String?
+  geminiApiKey String?
+  buildings    Building[]
+  createdAt    DateTime   @default(now())
+}
+
+model Building {
+  id               String   @id @default(uuid())
+  name             String
+  waterRate        Float    // Baht per Unit
+  electricityRate  Float    // Baht per Unit
+  minimumWaterCost Float    @default(0) // ค่าน้ำขั้นต่ำ
+  lateFee          Float    @default(0) // ค่าปรับล่าช้า
+  defaultDueDay    Int      @default(5) // วันที่ครบกำหนดชำระเงินประจำเดือน (เช่น 5, 7, 10)
+  phone            String?  // เบอร์ติดต่อประจำตึก
+  email            String?  // อีเมลประจำตึก
+  address          String?  // ที่อยู่ประจำตึก (พิมพ์บนใบเสร็จ/บิล)
+  lineId           String?  // Line ID ประจำตึก
+  promptPayId      String?  // เบอร์โทรหรือเลขบัตรสำหรับ PromptPay
+  promptPayName    String?  // ชื่อบัญชี PromptPay
+  promptPayQrUrl   String?  // รูปภาพ PromptPay QR Code
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  floors           Floor[]
+}
+
+model Floor {
+  id         String   @id @default(uuid())
+  number     Int      // 1, 2, 3, etc.
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  rooms      Room[]
+}
+
+model Room {
+  id               String         @id @default(uuid())
+  number           String         // Room number (e.g., "101", "A01")
+  type             String         // "FAN" or "AC"
+  basePrice        Float          // Rent per month
+  waterBillingType String         @default("METER") // "METER", "FLAT", "CUSTOM"
+  flatWaterCost    Float          @default(0)       // เหมาจ่ายค่าน้ำต่อเดือน
+  elecBillingType  String         @default("METER") // "METER", "FLAT", "CUSTOM"
+  flatElecCost     Float          @default(0)       // เหมาจ่ายค่าไฟต่อเดือน
+  floorId          String
+  floor            Floor          @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  status           String         // "VACANT", "OCCUPIED", "MAINTENANCE", "BOOKED"
+  tenants          Tenant[]
+  readings         MeterReading[]
+  invoices         Invoice[]
+  bookings         Booking[]
+  replacements     MeterReplacement[]
+}
+
+model Booking {
+  id                  String   @id @default(uuid())
+  roomId              String
+  room                Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  customerName        String
+  customerPhone       String
+  customerIdCard      String?
+  customerEmail       String?
+  customerLineId      String?
+  bookingDate         DateTime @default(now())
+  expectedCheckInDate DateTime
+  depositAmount       Float    @default(0)
+  paymentMethod       String?  // "CASH", "TRANSFER"
+  slipImage           String?
+  note                String?
+  status              String   @default("ACTIVE") // "ACTIVE", "CHECKED_IN", "CANCELLED_REFUNDED", "CANCELLED_FORFEITED"
+  createdAt           DateTime @default(now())
+}
+
+model Tenant {
+  id                   String     @id @default(uuid())
+  name                 String
+  phone                String
+  idCard               String?
+  address              String?    // ที่อยู่ตามบัตรประชาชน
+  email                String?
+  lineId               String?
+  workplace            String?    // สถานที่ทำงาน/ศึกษา
+  
+  // Emergency Contact
+  emergencyName        String?    // ชื่อผู้ติดต่อฉุกเฉิน
+  emergencyRel         String?    // ความสัมพันธ์ (เช่น พ่อ, แม่, น้า, อา)
+  emergencyPhone       String?    // เบอร์โทรฉุกเฉิน
+  
+  // Financial & Keycard Ledger
+  securityDeposit      Float      @default(0) // เงินประกันสัญญาเช่า
+  keycardCount         Int        @default(0) // จำนวนคีย์การ์ดที่รับไป
+  keycardDeposit       Float      @default(0) // เงินมัดจำคีย์การ์ดรวม
+  keycardCode          String?    // รหัส/เลขบัตรคีย์การ์ด
+  note                 String?    // หมายเหตุ/ข้อตกลงพิเศษ
+  
+  // Rental Contract Period
+  startDate            DateTime   @default(now())
+  endDate              DateTime?
+  
+  // Check-out Status & Keycard Refund Ledger
+  status               String     @default("ACTIVE") // "ACTIVE", "CHECKED_OUT"
+  checkedOutAt         DateTime?
+  noticeDate           DateTime?  // วันที่ผู้เช่าแจ้งย้ายออกล่วงหน้า
+  expectedCheckOutDate DateTime?  // วันที่กำหนดจะย้ายออกจริง
+  keycardReturnedCount Int        @default(0)
+  keycardRefundedAt    DateTime?
+  keycardRefundAmount  Float      @default(0)
+
+  // Relations
+  roomId               String
+  room                 Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  invoices             Invoice[]
+}
+
+model MeterReading {
+  id               String   @id @default(uuid())
+  roomId           String
+  room             Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  readingDate      DateTime @default(now())
+  waterValue       Float    // Current water meter value
+  electricityValue Float    // Current electricity meter value
+  recordedBy       String?
+}
+
+model Invoice {
+  id               String        @id @default(uuid())
+  roomId           String
+  room             Room          @relation(fields: [roomId], references: [id])
+  tenantId         String
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  billingPeriod    String        // Format: "YYYY-MM" (e.g., "2026-07")
+  previousWater    Float
+  currentWater     Float
+  previousElec     Float
+  currentElec      Float
+  waterCost        Float
+  electricityCost  Float
+  rentCost         Float
+  otherCost        Float         @default(0)
+  bookNo           String?       // เล่มที่ (e.g., "A3")
+  invoiceNoStr     String?       // เลขที่ (e.g., "1")
+  otherFeeDetails  String?       // JSON Array of [{ name: string, amount: number }]
+  otherNote        String?       // หมายเหตุรวมท้ายบิล A5
+  totalAmount      Float
+  status           String        // "UNPAID", "PAID", "OVERDUE"
+  createdAt        DateTime      @default(now())
+  dueDate          DateTime
+  waterRate        Float?        // Baht per Unit snapshot
+  electricityRate Float?        // Baht per Unit snapshot
+  payments         Payment[]
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  invoiceId     String
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amountPaid    Float
+  paymentDate   DateTime      @default(now())
+  paymentMethod String        // "CASH", "TRANSFER"
+  slipImage     String?       // URL or local path
+  status        String        // "PENDING", "APPROVED", "REJECTED"
+}
+
+model MeterReplacement {
+  id              String   @id @default(uuid())
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  meterType       String   // "WATER", "ELEC", "BOTH"
+  oldWaterFinal   Float?
+  newWaterStart   Float?
+  oldElecFinal    Float?
+  newElecStart    Float?
+  replacementDate DateTime @default(now())
+  note            String?
+  billingPeriod   String?  // Format: "YYYY-MM"
+  createdAt       DateTime @default(now())
+}
