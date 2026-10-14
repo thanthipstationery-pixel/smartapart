@@ -38,14 +38,35 @@ export async function GET(request: Request) {
       },
     });
 
-    // Fetch all readings ordered by date desc to process in-memory
-    const allReadings = await prisma.meterReading.findMany({
+    const currentMonth = new Date().toISOString().slice(0, 7); // Format: "YYYY-MM"
+
+    // Fetch meter readings scoped up to end of requested period
+    const periodReadings = await prisma.meterReading.findMany({
+      where: {
+        readingDate: {
+          lte: endOfPeriod,
+        },
+      },
       orderBy: { readingDate: 'desc' },
+      select: {
+        roomId: true,
+        readingDate: true,
+        waterValue: true,
+        electricityValue: true,
+      },
     });
 
-    // Fetch invoices to calculate revenue stats and meter fallbacks
-    const allInvoices = await prisma.invoice.findMany({
+    // Fetch only invoices relevant to requested period, current month revenue, or unpaid tracking
+    const relevantInvoices = await prisma.invoice.findMany({
+      where: {
+        OR: [
+          { billingPeriod: period },
+          { billingPeriod: currentMonth, status: 'PAID' },
+          { status: 'UNPAID' },
+        ],
+      },
       select: {
+        id: true,
         status: true,
         totalAmount: true,
         billingPeriod: true,
@@ -55,25 +76,60 @@ export async function GET(request: Request) {
         currentWater: true,
         previousElec: true,
         currentElec: true,
-      }
+      },
     });
-
-    const currentMonth = new Date().toISOString().slice(0, 7); // Format: "YYYY-MM"
     
     // Revenue calculations
-    const currentMonthRevenue = allInvoices
+    const currentMonthRevenue = relevantInvoices
       .filter((inv) => inv.status === 'PAID' && inv.billingPeriod === currentMonth)
       .reduce((sum, inv) => sum + inv.totalAmount, 0);
 
-    const totalUnpaidAmount = allInvoices
+    const totalUnpaidAmount = relevantInvoices
       .filter((inv) => inv.status === 'UNPAID')
       .reduce((sum, inv) => sum + inv.totalAmount, 0);
 
     // Get unique rooms with unpaid invoices
     const unpaidRoomIds = new Set(
-      allInvoices.filter((inv) => inv.status === 'UNPAID').map((inv) => inv.roomId)
+      relevantInvoices.filter((inv) => inv.status === 'UNPAID').map((inv) => inv.roomId)
     );
     const unpaidRoomsCount = unpaidRoomIds.size;
+
+    // Pre-index readings by room for fast O(1) lookup
+    const roomReadingsMap = new Map<string, {
+      current?: { waterValue: number; electricityValue: number };
+      prev?: { waterValue: number; electricityValue: number };
+    }>();
+
+    for (const r of periodReadings) {
+      let entry = roomReadingsMap.get(r.roomId);
+      if (!entry) {
+        entry = {};
+        roomReadingsMap.set(r.roomId, entry);
+      }
+
+      // If both current and prev already found for this room, skip older readings
+      if (entry.current && entry.prev) {
+        continue;
+      }
+
+      const d = new Date(r.readingDate);
+      if (!entry.current && d >= startOfPeriod && d <= endOfPeriod) {
+        entry.current = { waterValue: r.waterValue, electricityValue: r.electricityValue };
+      } else if (!entry.prev && d < startOfPeriod) {
+        entry.prev = { waterValue: r.waterValue, electricityValue: r.electricityValue };
+      }
+    }
+
+    // Pre-index relevant invoices by roomId for fast O(1) lookup
+    const roomInvoicesMap = new Map<string, typeof relevantInvoices>();
+    for (const inv of relevantInvoices) {
+      const list = roomInvoicesMap.get(inv.roomId);
+      if (list) {
+        list.push(inv);
+      } else {
+        roomInvoicesMap.set(inv.roomId, [inv]);
+      }
+    }
 
     let totalRooms = 0;
     let occupiedRooms = 0;
@@ -129,20 +185,17 @@ export async function GET(request: Request) {
           const activeBooking = room.bookings[0] || null;
           const hasUnpaidInvoice = room.invoices.length > 0;
 
-          // Filter readings in-memory
-          const roomReadings = allReadings.filter(r => r.roomId === room.id);
-          const currentReading = roomReadings.find(r => {
-            const d = new Date(r.readingDate);
-            return d >= startOfPeriod && d <= endOfPeriod;
-          });
-          const prevReading = roomReadings.find(r => {
-            const d = new Date(r.readingDate);
-            return d < startOfPeriod;
-          });
+          // Pre-indexed meter readings for this room
+          const readings = roomReadingsMap.get(room.id);
+          const currentReading = readings?.current || null;
+          const prevReading = readings?.prev || null;
 
           // Check if an invoice exists for this room in this period (or tenant's check-in invoice)
-          const periodInvoice = allInvoices.find(
-            inv => inv.roomId === room.id && (inv.billingPeriod === period || (activeTenant && inv.tenantId === activeTenant.id))
+          const roomInvoices = roomInvoicesMap.get(room.id) || [];
+          const periodInvoice = roomInvoices.find(
+            inv => inv.billingPeriod === period
+          ) || roomInvoices.find(
+            inv => Boolean(activeTenant && inv.tenantId === activeTenant.id)
           );
 
           let prevWater = prevReading ? prevReading.waterValue : 0.0;
