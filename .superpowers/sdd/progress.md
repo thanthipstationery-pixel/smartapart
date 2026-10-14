@@ -1,23 +1,9 @@
-# SDD Progress Ledger
+# Subagent-Driven Development Progress Ledger
+Plan: docs/superpowers/plans/2026-10-14-security-and-architecture-hardening.md
 
-## Previous Feature: Room Booking System (Completed)
-- Task 1: Prisma Schema & DB Push - complete
-- Task 2: Backend API Endpoints - complete
-- Task 3: Dual-Mode Booking Modal & UI Integration - complete
-- Task 4: Verification & Server Ready - complete
+- Task 1: complete (commits f67dfbd..957e7b7, review clean)
+- Task 2: complete (commits 957e7b7..46ccaa6, review clean)
+- Task 3: complete (commits 46ccaa6..d3ad96f, review clean)
+- Task 4: complete (commits d3ad96f..70caa5d, review clean)
+- Task 5: complete (commits 70caa5d..2d8d9c3, review clean)
 
-## Current Feature: Tenant & Check-out Management System
-- [x] Task 1: Extend Database Schema for Tenant Profile & Keycard Ledger - complete (Prisma db push & client generated)
-- [x] Task 2: Implement Backend API Routes for Tenant Management & Check-out - complete (PUT /api/tenants/[id], POST /checkout, POST /refund-keycard created)
-- [x] Task 3: Upgrade Check-in Modal with Expanded Tenant & Keycard Fields - complete (Personal, emergency contact, keycard deposit & initial meters integrated)
-- [x] Task 4: Build Check-out Modal & Receipt Summary System - complete
-
-## Current Feature: AI Thai ID Card OCR Scanner
-- [x] Task 1: Backend API Handler (POST /api/scan-id-card) - complete
-- [x] Task 2: Frontend Camera Scanner & Auto-Fill Integration - complete
-
-## Current Feature: Official A5 Rent Invoice System
-- [x] Task 1: Extend Database Schema for A5 Invoice Fields - complete (bookNo, invoiceNoStr, otherFeeDetails, otherNote added)
-- [x] Task 2: Backend API Routes Update (POST/GET /api/invoices and /api/invoices/[id]) - complete
-- [x] Task 3: Upgrade Invoice Generation Modal with Itemized Extra Fees UI - complete (dynamic extra fees line items, auto-sum, auto-note generation, tenure month index)
-- [x] Task 4: Official A5 Print-Ready Invoice Modal & Batch Print Component - complete (exact match of uploaded landlord A5 form layout, black banner title, top-right property box, Thai date/month, meter range table, and bottom note)
