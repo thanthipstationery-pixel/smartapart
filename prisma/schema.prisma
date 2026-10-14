@@ -136,6 +136,8 @@ model Tenant {
   roomId               String
   room                 Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
   invoices             Invoice[]
+
+  @@index([roomId, status])
 }
 
 model MeterReading {
@@ -146,6 +148,8 @@ model MeterReading {
   waterValue       Float    // Current water meter value
   electricityValue Float    // Current electricity meter value
   recordedBy       String?
+
+  @@index([roomId, readingDate])
 }
 
 model Invoice {
@@ -174,6 +178,11 @@ model Invoice {
   waterRate        Float?        // Baht per Unit snapshot
   electricityRate Float?        // Baht per Unit snapshot
   payments         Payment[]
+
+  @@unique([roomId, billingPeriod])
+  @@index([billingPeriod])
+  @@index([status])
+  @@index([roomId])
 }
 
 model Payment {
