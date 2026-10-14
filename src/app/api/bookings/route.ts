@@ -48,8 +48,11 @@ export async function POST(request: Request) {
 
     const room = await prisma.room.findUnique({ where: { id: roomId } });
     if (!room) return NextResponse.json({ error: 'ไม่พบห้องพักที่ระบุ' }, { status: 404 });
-    if (room.status === 'OCCUPIED') {
-      return NextResponse.json({ error: 'ห้องพักนี้มีผู้เช่าอยู่แล้ว ไม่สามารถจองได้' }, { status: 400 });
+    if (room.status !== 'VACANT') {
+      return NextResponse.json(
+        { error: `ไม่สามารถจองห้องพักได้ เนื่องจากห้องมีสถานะเป็น ${room.status}` },
+        { status: 400 }
+      );
     }
 
     const booking = await prisma.$transaction(async (tx) => {

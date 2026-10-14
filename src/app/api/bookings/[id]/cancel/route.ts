@@ -12,24 +12,35 @@ export async function POST(
 
     const booking = await prisma.booking.findUnique({
       where: { id },
+      include: { room: true },
     });
 
     if (!booking) {
       return NextResponse.json({ error: 'ไม่พบข้อมูลการจอง' }, { status: 404 });
     }
 
+    if (booking.status !== 'ACTIVE') {
+      return NextResponse.json(
+        { error: 'รายการจองนี้ไม่สามารถยกเลิกได้เนื่องจากมีสถานะเป็น ' + booking.status },
+        { status: 400 }
+      );
+    }
+
     const newStatus = action === 'REFUND' ? 'CANCELLED_REFUNDED' : 'CANCELLED_FORFEITED';
 
-    await prisma.$transaction([
-      prisma.booking.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.update({
         where: { id },
         data: { status: newStatus },
-      }),
-      prisma.room.update({
-        where: { id: booking.roomId },
-        data: { status: 'VACANT' },
-      }),
-    ]);
+      });
+
+      if (booking.room && booking.room.status === 'BOOKED') {
+        await tx.room.update({
+          where: { id: booking.roomId },
+          data: { status: 'VACANT' },
+        });
+      }
+    });
 
     return NextResponse.json({ success: true, message: 'ยกเลิกการจองเรียบร้อยแล้ว' });
   } catch (error) {

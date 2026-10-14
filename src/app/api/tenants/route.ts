@@ -82,8 +82,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'ไม่พบห้องพักที่ระบุ' }, { status: 404 });
     }
 
-    if (room.status === 'OCCUPIED') {
-      return NextResponse.json({ error: 'ห้องพักนี้มีผู้เช่าอยู่แล้ว' }, { status: 400 });
+    if (room.status !== 'VACANT') {
+      return NextResponse.json(
+        { error: 'ห้องพักนี้ไม่ว่างสำหรับทำสัญญาใหม่ (สถานะ: ' + room.status + ')' },
+        { status: 400 }
+      );
     }
 
     // Create tenant and set room to occupied

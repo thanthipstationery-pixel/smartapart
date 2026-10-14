@@ -46,6 +46,13 @@ export async function POST(
       return NextResponse.json({ error: 'ไม่พบข้อมูลผู้เช่า' }, { status: 404 });
     }
 
+    if (tenant.status === 'CHECKED_OUT') {
+      return NextResponse.json(
+        { error: 'ผู้เช่ารายนี้ดำเนินการย้ายออกเสร็จสิ้นไปแล้ว' },
+        { status: 400 }
+      );
+    }
+
     // MODE 1: Record Notice Only (ยังไม่คืนห้อง)
     if (actionType === 'RECORD_NOTICE_ONLY') {
       const noticeDateTime = noticeDate ? new Date(noticeDate) : new Date();
@@ -88,22 +95,6 @@ export async function POST(
     // MODE 2: Final Check-Out & Refund Settlement
     const checkOutDateTime = checkOutDate ? new Date(checkOutDate) : new Date();
 
-    // Record final meter reading if provided
-    if (finalWaterValue !== undefined || finalElecValue !== undefined) {
-      const waterVal = finalWaterValue !== '' ? parseFloat(finalWaterValue) : 0.0;
-      const elecVal = finalElecValue !== '' ? parseFloat(finalElecValue) : 0.0;
-
-      await prisma.meterReading.create({
-        data: {
-          roomId: tenant.roomId,
-          waterValue: isNaN(waterVal) ? 0.0 : waterVal,
-          electricityValue: isNaN(elecVal) ? 0.0 : elecVal,
-          readingDate: checkOutDateTime,
-          recordedBy: 'ระบบ (มิเตอร์วันย้ายออก)',
-        },
-      });
-    }
-
     // Check 1-month notice policy (30 days)
     const { validateCheckOutNotice } = await import('@/lib/billingRules');
     const effectiveNoticeDate = noticeDate ? new Date(noticeDate) : (tenant.noticeDate ? new Date(tenant.noticeDate) : checkOutDateTime);
@@ -128,9 +119,25 @@ export async function POST(
       ? `${tenant.note || ''}\n[คืนห้องย้ายออกวันที่ ${checkOutDateTime.toLocaleDateString('th-TH')}]: ${note} (${noticeCheck.warningMessage})`
       : tenant.note;
 
-    // Transaction to update Tenant & Room status
-    const result = await prisma.$transaction([
-      prisma.tenant.update({
+    // Atomic transaction: record meter reading (if provided), update Tenant to CHECKED_OUT, update Room to VACANT
+    const updatedTenant = await prisma.$transaction(async (tx) => {
+      // Record final meter reading if provided
+      if (finalWaterValue !== undefined || finalElecValue !== undefined) {
+        const waterVal = finalWaterValue !== '' ? parseFloat(finalWaterValue) : 0.0;
+        const elecVal = finalElecValue !== '' ? parseFloat(finalElecValue) : 0.0;
+
+        await tx.meterReading.create({
+          data: {
+            roomId: tenant.roomId,
+            waterValue: isNaN(waterVal) ? 0.0 : waterVal,
+            electricityValue: isNaN(elecVal) ? 0.0 : elecVal,
+            readingDate: checkOutDateTime,
+            recordedBy: 'ระบบ (มิเตอร์วันย้ายออก)',
+          },
+        });
+      }
+
+      const tenantResult = await tx.tenant.update({
         where: { id },
         data: {
           status: 'CHECKED_OUT',
@@ -142,16 +149,19 @@ export async function POST(
           keycardRefundedAt: checkOutDateTime,
           note: updatedNote,
         },
-      }),
-      prisma.room.update({
+      });
+
+      await tx.room.update({
         where: { id: tenant.roomId },
         data: { status: 'VACANT' },
-      }),
-    ]);
+      });
+
+      return tenantResult;
+    });
 
     return NextResponse.json({
       success: true,
-      tenant: result[0],
+      tenant: updatedTenant,
       noticeCheck,
       summary: {
         rawSecurityDeposit: tenant.securityDeposit,
