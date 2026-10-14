@@ -14,9 +14,15 @@ export async function GET() {
           lineId: '@smartapart',
         }
       });
-      return NextResponse.json(newProp);
+      const { geminiApiKey: _omitted, ...safeNewProp } = newProp;
+      return NextResponse.json({ ...safeNewProp, hasGeminiApiKey: false });
     }
-    return NextResponse.json(property);
+
+    const { geminiApiKey: _omittedKey, ...safeProperty } = property;
+    return NextResponse.json({
+      ...safeProperty,
+      hasGeminiApiKey: Boolean(property.geminiApiKey),
+    });
   } catch (error) {
     console.error('Error fetching property settings:', error);
     return NextResponse.json(
@@ -41,15 +47,30 @@ export async function PUT(request: Request) {
       const created = await prisma.property.create({
         data: { name, phone, email, address, lineId, geminiApiKey }
       });
-      return NextResponse.json(created);
+      const { geminiApiKey: _omitted, ...safeCreated } = created;
+      return NextResponse.json({
+        ...safeCreated,
+        hasGeminiApiKey: Boolean(created.geminiApiKey),
+      });
+    }
+
+    const updateData: any = { name, phone, email, address, lineId };
+    if (geminiApiKey !== undefined && geminiApiKey !== '') {
+      updateData.geminiApiKey = geminiApiKey;
+    } else if (geminiApiKey === null) {
+      updateData.geminiApiKey = null;
     }
 
     const updated = await prisma.property.update({
       where: { id: property.id },
-      data: { name, phone, email, address, lineId, geminiApiKey }
+      data: updateData
     });
 
-    return NextResponse.json(updated);
+    const { geminiApiKey: _omittedKey, ...safeUpdated } = updated;
+    return NextResponse.json({
+      ...safeUpdated,
+      hasGeminiApiKey: Boolean(updated.geminiApiKey),
+    });
   } catch (error) {
     console.error('Error updating property settings:', error);
     return NextResponse.json(

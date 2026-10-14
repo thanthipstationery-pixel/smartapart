@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+const MAX_BASE64_BYTES = 5 * 1024 * 1024 * 1.37; // ~5MB file in base64
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as any;
@@ -8,6 +10,13 @@ export async function POST(request: Request) {
 
     if (!image) {
       return NextResponse.json({ error: 'ไม่พบข้อมูลรูปถ่ายบัตรประชาชน' }, { status: 400 });
+    }
+
+    if (typeof image !== 'string' || image.length > MAX_BASE64_BYTES) {
+      return NextResponse.json(
+        { error: 'ขนาดรูปภาพเกินกำหนด (ต้องไม่เกิน 5MB)' },
+        { status: 400 }
+      );
     }
 
     // Extract base64 data and mime type
@@ -33,7 +42,7 @@ export async function POST(request: Request) {
 
     // Call Google Gemini Vision API
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
