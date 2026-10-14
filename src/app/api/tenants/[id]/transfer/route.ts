@@ -165,6 +165,13 @@ export async function POST(
            }
         }
 
+        const rentCost = (invoiceData.proratedNewRent || 0) + (invoiceData.nextMonthFullRent || 0);
+        const waterCost = invoiceData.waterCost || 0;
+        const elecCost = invoiceData.elecCost || 0;
+
+        // Server-authoritative financial calculation:
+        const calculatedTotal = Math.max(0, rentCost + waterCost + elecCost + otherCost);
+
         await tx.invoice.create({
           data: {
             roomId: targetRoomId,
@@ -174,11 +181,11 @@ export async function POST(
             currentWater: oldWaterFinal,
             previousElec: oldElecStart,
             currentElec: oldElecFinal,
-            waterCost: invoiceData.waterCost || 0,
-            electricityCost: invoiceData.elecCost || 0,
-            rentCost: (invoiceData.proratedNewRent || 0) + (invoiceData.nextMonthFullRent || 0),
+            waterCost: waterCost,
+            electricityCost: elecCost,
+            rentCost: rentCost,
             otherCost: otherCost,
-            totalAmount: invoiceData.netTotal || 0, // Using netTotal from frontend
+            totalAmount: calculatedTotal,
             otherFeeDetails: JSON.stringify(otherFeeDetails),
             otherNote: `บิลแจ้งย้ายห้อง (จากห้อง ${oldRoomNumber})`,
             status: 'UNPAID',

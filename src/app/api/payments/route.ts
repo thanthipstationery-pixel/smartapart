@@ -14,6 +14,20 @@ export async function POST(request: Request) {
     }
 
     const amount = parseFloat(amountPaid);
+    if (isNaN(amount) || amount <= 0 || !Number.isFinite(amount)) {
+      return NextResponse.json(
+        { error: 'ยอดเงินชำระไม่ถูกต้อง (ต้องเป็นตัวเลขมากกว่า 0)' },
+        { status: 400 }
+      );
+    }
+
+    const targetInvoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+    });
+    if (!targetInvoice) {
+      return NextResponse.json({ error: 'ไม่พบใบแจ้งหนี้ที่ระบุ' }, { status: 404 });
+    }
+
     const paymentStatus = status || 'APPROVED';
 
     const payment = await prisma.$transaction(async (tx) => {
