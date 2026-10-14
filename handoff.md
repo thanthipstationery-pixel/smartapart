@@ -1,9 +1,9 @@
 # SmartApart — Handoff Document
-Last updated: 2026-10-14 — Security & Architecture Hardened + All APIs verified ✅
+Last updated: 2026-10-14 — Security Hardened + Backup & Restore System Active ✅
 
 ## Production URL
 https://smartapart.ai-pro.workers.dev
-Current Version ID: 3fc4324c-b384-4667-9fc1-2edce2dabf4b
+Current Version ID: cfa51f77-5894-4422-9d63-40c7b019698c
 
 ## Status: ALL APIs WORKING (verified 2026-10-14)
 
@@ -11,6 +11,8 @@ Current Version ID: 3fc4324c-b384-4667-9fc1-2edce2dabf4b
 |---|---|
 | POST /api/auth/login | ✅ 200 |
 | GET /api/auth/me | ✅ 200 |
+| GET /api/admin/backup/export | ✅ 200 |
+| POST /api/admin/backup/restore | ✅ 200 |
 | GET /api/property | ✅ 200 |
 | PUT /api/property | ✅ 200 |
 | GET /api/buildings | ✅ 200 |
