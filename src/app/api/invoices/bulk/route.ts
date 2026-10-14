@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // Body: { billingPeriod, dueDate, rooms: [{ roomId, otherFeeItems?, customOtherNote? }] }
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as any;
     const { billingPeriod, dueDate, rooms } = body;
 
     if (!billingPeriod || !dueDate || !Array.isArray(rooms) || rooms.length === 0) {
@@ -109,6 +109,25 @@ export async function POST(request: Request) {
 
         const building = room.floor.building;
 
+        let buildingWaterRate = building.waterRate;
+        let buildingElecRate = building.electricityRate;
+
+        if (building.useDynamicUtilityRate) {
+          const monthlyUtility = await prisma.buildingMonthlyUtility.findUnique({
+            where: {
+              buildingId_period: {
+                buildingId: building.id,
+                period: billingPeriod,
+              },
+            },
+          });
+          if (!monthlyUtility) {
+            return NextResponse.json({ error: 'MISSING_UTILITY_RECORD', message: `กรุณาบันทึกบิลค่าน้ำ/ค่าไฟรวมของอาคารประจำเดือน ${billingPeriod} ก่อนออกบิล` }, { status: 400 });
+          }
+          buildingWaterRate = monthlyUtility.waterRate;
+          buildingElecRate = monthlyUtility.elecRate;
+        }
+
         // Water cost
         let waterCost = 0;
         if (room.waterBillingType === 'FLAT') {
@@ -116,7 +135,7 @@ export async function POST(request: Request) {
         } else if (room.waterBillingType === 'CUSTOM') {
           waterCost = 0;
         } else {
-          waterCost = Math.max(waterUnits * building.waterRate, building.minimumWaterCost);
+          waterCost = Math.max(waterUnits * buildingWaterRate, building.minimumWaterCost);
         }
 
         // Electricity cost
@@ -126,7 +145,7 @@ export async function POST(request: Request) {
         } else if (room.elecBillingType === 'CUSTOM') {
           electricityCost = 0;
         } else {
-          electricityCost = elecUnits * building.electricityRate;
+          electricityCost = elecUnits * buildingElecRate;
         }
 
         const rentCost = room.basePrice;
@@ -187,8 +206,8 @@ export async function POST(request: Request) {
             totalAmount,
             status: 'UNPAID',
             dueDate: new Date(dueDate),
-            waterRate: building.waterRate,
-            electricityRate: building.electricityRate,
+            waterRate: buildingWaterRate,
+            electricityRate: buildingElecRate,
           },
         });
 

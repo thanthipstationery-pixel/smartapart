@@ -140,7 +140,7 @@ export default function OverviewTab({
         <div className={styles.statCard}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel}>ห้องทั้งหมด</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🏠</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🏠</span>
           </div>
           <span className={styles.statValue}>{activeStats.totalRooms}</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>ห้องพัก</span>
@@ -166,7 +166,7 @@ export default function OverviewTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel} style={{ color: 'var(--status-vacant)' }}>ห้องว่าง</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'var(--status-vacant-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid rgba(16,185,129,0.2)' }}>✅</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--status-vacant-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid var(--status-vacant-bg)' }}>✅</span>
           </div>
           <span className={styles.statValue} style={{ color: 'var(--status-vacant)' }}>{activeStats.vacantRooms}</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--status-vacant)', marginTop: '0.35rem', opacity: 0.8 }}>
@@ -194,7 +194,7 @@ export default function OverviewTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel} style={{ color: 'var(--status-occupied)' }}>ผู้เช่าพัก</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'var(--status-occupied-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid rgba(59,130,246,0.2)' }}>👤</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--status-occupied-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid var(--status-occupied-bg)' }}>👤</span>
           </div>
           <span className={styles.statValue} style={{ color: 'var(--status-occupied)' }}>{activeStats.occupiedRooms}</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--status-occupied)', marginTop: '0.35rem', opacity: 0.8 }}>
@@ -222,7 +222,7 @@ export default function OverviewTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel} style={{ color: 'var(--status-unpaid)' }}>ค้างชำระ</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'var(--status-unpaid-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid rgba(244,63,94,0.2)' }}>⚠️</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--status-unpaid-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '1px solid var(--status-unpaid-bg)' }}>⚠️</span>
           </div>
           <span className={styles.statValue} style={{ color: 'var(--status-unpaid)' }}>{activeStats.unpaidRoomsCount || 0}</span>
           <span style={{ fontSize: '0.75rem', color: 'var(--status-unpaid)', marginTop: '0.35rem', opacity: 0.8 }}>
@@ -244,7 +244,7 @@ export default function OverviewTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel} style={{ color: 'var(--status-vacant)' }}>รายรับเดือนนี้</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>💰</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--status-vacant-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>💰</span>
           </div>
           <span className={styles.statValue} style={{ color: 'var(--status-vacant)', fontSize: 'clamp(1.25rem, 2vw, 1.75rem)' }}>
             {(activeStats.currentMonthRevenue || 0).toLocaleString()}
@@ -272,7 +272,7 @@ export default function OverviewTab({
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
             <span className={styles.statLabel} style={{ color: 'var(--status-unpaid)' }}>ยอดค้างชำระ</span>
-            <span style={{ width: 36, height: 36, borderRadius: '0.625rem', background: 'rgba(244,63,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🔔</span>
+            <span style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--status-unpaid-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🔔</span>
           </div>
           <span className={styles.statValue} style={{ color: 'var(--status-unpaid)', fontSize: 'clamp(1.25rem, 2vw, 1.75rem)' }}>
             {(activeStats.totalUnpaidAmount || 0).toLocaleString()}
@@ -343,19 +343,19 @@ export default function OverviewTab({
           ) : (
             <div style={{ display: 'flex', gap: '0.85rem', fontSize: '0.85rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#3b82f6' }}></span>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'var(--status-info)' }}></span>
                 <span style={{ color: 'var(--text-secondary)' }}>ค่าเช่า</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#ef4444' }}></span>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'var(--status-danger)' }}></span>
                 <span style={{ color: 'var(--text-secondary)' }}>ค่าไฟ</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#0d9488' }}></span>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'var(--status-success-text)' }}></span>
                 <span style={{ color: 'var(--text-secondary)' }}>ค่าน้ำ</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#8b5cf6' }}></span>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', backgroundColor: 'var(--accent-purple)' }}></span>
                 <span style={{ color: 'var(--text-secondary)' }}>อื่นๆ</span>
               </div>
             </div>
@@ -470,7 +470,7 @@ export default function OverviewTab({
                         y={rentY}
                         width={barWidth}
                         height={Math.max(rentH, 0)}
-                        fill="#3b82f6"
+                        fill="var(--status-info)"
                         style={{
                           opacity: opacityVal,
                           transition: 'all 0.2s',
@@ -482,7 +482,7 @@ export default function OverviewTab({
                         y={elecY}
                         width={barWidth}
                         height={Math.max(elecH, 0)}
-                        fill="#ef4444"
+                        fill="var(--status-danger)"
                         style={{
                           opacity: opacityVal,
                           transition: 'all 0.2s',
@@ -494,7 +494,7 @@ export default function OverviewTab({
                         y={waterY}
                         width={barWidth}
                         height={Math.max(waterH, 0)}
-                        fill="#0d9488"
+                        fill="var(--status-success-text)"
                         style={{
                           opacity: opacityVal,
                           transition: 'all 0.2s',
@@ -507,7 +507,7 @@ export default function OverviewTab({
                           y={otherY}
                           width={barWidth}
                           height={otherH}
-                          fill="#8b5cf6"
+                          fill="var(--accent-purple)"
                           style={{
                             opacity: opacityVal,
                             transition: 'all 0.2s',
@@ -523,7 +523,7 @@ export default function OverviewTab({
                           width={barWidth}
                           height="4"
                           rx="2"
-                          fill={otherH > 0 ? '#8b5cf6' : waterH > 0 ? '#0d9488' : elecH > 0 ? '#ef4444' : '#3b82f6'}
+                          fill={otherH > 0 ? 'var(--accent-purple)' : waterH > 0 ? 'var(--status-success-text)' : elecH > 0 ? 'var(--status-danger)' : 'var(--status-info)'}
                           style={{
                             opacity: opacityVal,
                             transition: 'all 0.2s',
@@ -566,36 +566,36 @@ export default function OverviewTab({
                   transition: 'left 0.1s ease-out, top 0.1s ease-out',
                 }}
               >
-                <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.35rem', color: '#38bdf8', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.25rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.35rem', color: 'var(--status-info)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.25rem' }}>
                   🗓️ {chartData[hoveredChartIndex].label}
                 </div>
                 {chartViewMode === 'status' ? (
                   <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#34d399' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--status-success)' }}>
                       <span>ชำระแล้ว:</span>
                       <strong>{chartData[hoveredChartIndex].paid.toLocaleString()} บ.</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#f87171' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--status-danger)' }}>
                       <span>ค้างชำระ:</span>
                       <strong>{chartData[hoveredChartIndex].unpaid.toLocaleString()} บ.</strong>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#60a5fa' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--status-info)' }}>
                       <span>ค่าเช่าห้อง:</span>
                       <strong>{chartData[hoveredChartIndex].rent.toLocaleString()} บ.</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#f87171' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--status-danger)' }}>
                       <span>ค่าไฟฟ้า:</span>
                       <strong>{chartData[hoveredChartIndex].electricity.toLocaleString()} บ.</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#2dd4bf' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--status-success)' }}>
                       <span>ค่าน้ำประปา:</span>
                       <strong>{chartData[hoveredChartIndex].water.toLocaleString()} บ.</strong>
                     </div>
                     {chartData[hoveredChartIndex].other > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: '#a78bfa' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', color: 'var(--accent-purple)' }}>
                         <span>อื่นๆ:</span>
                         <strong>{chartData[hoveredChartIndex].other.toLocaleString()} บ.</strong>
                       </div>
@@ -622,7 +622,7 @@ export default function OverviewTab({
           <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={() => setActiveTab('meter')}>
             <Icons.Meter /> จดมิเตอร์น้ำ-ไฟรายเดือน
           </button>
-          <button className={`${styles.btn}`} style={{ backgroundColor: 'var(--accent-purple)', color: 'white', boxShadow: '0 4px 12px rgba(124, 58, 237, 0.35)' }} onClick={() => setActiveTab('invoices')}>
+          <button className={`${styles.btn}`} style={{ backgroundColor: 'var(--accent-purple)', color: 'white', boxShadow: 'var(--shadow-glow-purple, 0 4px 15px rgba(124, 58, 237, 0.4))' }} onClick={() => setActiveTab('invoices')}>
             <Icons.Invoice /> จัดการบิลและออกบิล
           </button>
         </div>

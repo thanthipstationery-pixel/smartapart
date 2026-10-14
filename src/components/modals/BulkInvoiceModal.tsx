@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatThaiBillingPeriod, formatThaiDateNumeric } from '@/lib/thaiDate';
 
 interface BulkInvoiceModalProps {
@@ -26,6 +26,7 @@ interface BulkInvoiceModalProps {
   bulkGenerating: boolean;
   handleBulkGenerate: () => void;
   styles: any;
+  activeBuildingId?: string;
 }
 
 export default function BulkInvoiceModal({
@@ -51,7 +52,41 @@ export default function BulkInvoiceModal({
   bulkGenerating,
   handleBulkGenerate,
   styles,
+  activeBuildingId: propsActiveBuildingId,
 }: BulkInvoiceModalProps) {
+  const derivedActiveBuildingId = propsActiveBuildingId || (bulkBuildingFilter === 'ALL' ? buildings[0]?.id : bulkBuildingFilter);
+  const activeBuilding = buildings.find((b: any) => b.id === derivedActiveBuildingId);
+  const isDynamic = activeBuilding?.useDynamicUtilityRate === true;
+
+  const [monthlyUtility, setMonthlyUtility] = useState<any>(null);
+  const [utilityLoading, setUtilityLoading] = useState(false);
+
+  useEffect(() => {
+    if (!derivedActiveBuildingId || !bulkBillPeriod || !isDynamic) {
+      setMonthlyUtility(null);
+      return;
+    }
+    const fetchUtility = async () => {
+      setUtilityLoading(true);
+      try {
+        const res = await fetch(`/api/buildings/monthly-utility?buildingId=${derivedActiveBuildingId}&period=${bulkBillPeriod}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMonthlyUtility(data || null);
+        } else {
+          setMonthlyUtility(null);
+        }
+      } catch (err) {
+        setMonthlyUtility(null);
+      } finally {
+        setUtilityLoading(false);
+      }
+    };
+    fetchUtility();
+  }, [derivedActiveBuildingId, bulkBillPeriod, isDynamic]);
+
+  const isMissingUtility = isDynamic && !monthlyUtility && !utilityLoading;
+
   if (!showBulkBillModal) return null;
 
   return (
@@ -88,6 +123,11 @@ export default function BulkInvoiceModal({
                 type="month"
                 className={styles.formInput}
                 value={bulkBillPeriod}
+                max={(() => {
+                  const d = new Date();
+                  d.setMonth(d.getMonth() + 1);
+                  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                })()}
                 onChange={(e) => {
                   setBulkBillPeriod(e.target.value);
                   fetchBulkRooms(e.target.value);
@@ -107,6 +147,27 @@ export default function BulkInvoiceModal({
               />
             </div>
           </div>
+
+          {/* Soft Warning for past billing periods */}
+          {bulkBillPeriod < `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}` && (
+            <div style={{
+              backgroundColor: 'var(--status-danger-bg)',
+              border: '1px solid #fca5a5',
+              padding: '0.75rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: '1rem',
+              color: '#dc2626',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              <div>
+                <strong>คำเตือน:</strong> คุณกำลังเลือกสร้างใบแจ้งหนี้ย้อนหลังสำหรับรอบบิลในอดีต กรุณาตรวจสอบให้แน่ใจเพื่อป้องกันการสร้างบิลผิดเดือน
+              </div>
+            </div>
+          )}
 
           {/* Dual Filter Bars: Apartment & Invoice Status */}
           <div
@@ -233,7 +294,7 @@ export default function BulkInvoiceModal({
                     }}
                   >
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>จดมิเตอร์แล้ว</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: withMeter === totalRooms ? '#10b981' : '#f59e0b' }}>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: withMeter === totalRooms ? 'var(--status-success)' : 'var(--status-warning)' }}>
                       {withMeter} / {totalRooms} ห้อง
                     </div>
                   </div>
@@ -247,21 +308,40 @@ export default function BulkInvoiceModal({
                     }}
                   >
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>ออกบิลแล้วในรอบนี้</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#3b82f6' }}>{alreadyHasInvoice} ห้อง</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--status-info)' }}>{alreadyHasInvoice} ห้อง</div>
                   </div>
                   <div
                     style={{
-                      background: eligibleToGen > 0 ? '#10b98115' : 'var(--card-bg)',
-                      border: `1px solid ${eligibleToGen > 0 ? '#10b98144' : 'var(--border-color)'}`,
+                      background: eligibleToGen > 0 ? 'var(--status-success)15' : 'var(--card-bg)',
+                      border: `1px solid ${eligibleToGen > 0 ? 'var(--status-success)44' : 'var(--border-color)'}`,
                       padding: '0.75rem',
                       borderRadius: 'var(--radius-sm)',
                       textAlign: 'center',
                     }}
                   >
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>พร้อมออกบิลในครั้งนี้</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#10b981' }}>{eligibleToGen} ห้อง</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--status-success)' }}>{eligibleToGen} ห้อง</div>
                   </div>
                 </div>
+
+                {/* Dynamic Utility Rate Alerts */}
+                {isDynamic && (
+                  <>
+                    {utilityLoading ? (
+                      <div style={{ padding: '0.75rem', marginBottom: '1rem', backgroundColor: '#f3f4f6', borderRadius: 'var(--radius-md)', fontSize: '0.9rem' }}>
+                        ⏳ กำลังตรวจสอบข้อมูลบิลหลวง...
+                      </div>
+                    ) : isMissingUtility ? (
+                      <div style={{ padding: '1rem', marginBottom: '1rem', backgroundColor: 'var(--status-danger-bg)', border: '1px solid #fca5a5', borderRadius: 'var(--radius-md)', color: '#dc2626' }}>
+                        <strong>⚠️ คุณยังไม่ได้บันทึกบิลหลวงประจำเดือนนี้ ระบบจะไม่สามารถคำนวณเรท สคบ. ได้ กรุณาไปบันทึกที่เมนูบิลส่วนกลางก่อน</strong>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '1rem', marginBottom: '1rem', backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: 'var(--radius-md)', color: '#166534' }}>
+                        <strong>✅ ตรวจสอบพบข้อมูลบิลหลวงประจำเดือน {formatThaiBillingPeriod(bulkBillPeriod)} แล้ว ระบบจะใช้เรท สคบ. ในการคำนวณบิล</strong>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* Generation Result Banner */}
                 {bulkResult && (
@@ -270,15 +350,15 @@ export default function BulkInvoiceModal({
                       padding: '1rem',
                       borderRadius: 'var(--radius-md)',
                       marginBottom: '1rem',
-                      backgroundColor: bulkResult.failCount === 0 ? '#10b98115' : '#f59e0b15',
-                      border: `1px solid ${bulkResult.failCount === 0 ? '#10b98144' : '#f59e0b44'}`,
+                      backgroundColor: bulkResult.failCount === 0 ? 'var(--status-success)15' : 'var(--status-warning)15',
+                      border: `1px solid ${bulkResult.failCount === 0 ? 'var(--status-success)44' : 'var(--status-warning)44'}`,
                     }}
                   >
                     <div
                       style={{
                         fontWeight: 'bold',
                         fontSize: '1rem',
-                        color: bulkResult.failCount === 0 ? '#10b981' : '#d97706',
+                        color: bulkResult.failCount === 0 ? 'var(--status-success)' : '#d97706',
                         marginBottom: '0.25rem',
                       }}
                     >
@@ -286,7 +366,7 @@ export default function BulkInvoiceModal({
                       {bulkResult.failCount > 0 ? `| ข้าม/ล้มเหลว ${bulkResult.failCount} ห้อง` : ''}
                     </div>
                     {bulkResult.failCount > 0 && (
-                      <ul style={{ margin: '0.5rem 0 0 1rem', padding: 0, fontSize: '0.82rem', color: '#ef4444' }}>
+                      <ul style={{ margin: '0.5rem 0 0 1rem', padding: 0, fontSize: '0.82rem', color: 'var(--status-danger)' }}>
                         {bulkResult.results
                           .filter((r: any) => !r.success)
                           .map((r: any) => (
@@ -334,7 +414,7 @@ export default function BulkInvoiceModal({
                           ? '1px solid rgba(245, 158, 11, 0.3)'
                           : '1px solid rgba(59, 130, 246, 0.2)';
 
-                        const borderLeftColor = isReady ? '#10b981' : isWaitingMeter ? '#f59e0b' : '#3b82f6';
+                        const borderLeftColor = isReady ? 'var(--status-success)' : isWaitingMeter ? 'var(--status-warning)' : 'var(--status-info)';
 
                         return (
                           <React.Fragment key={room.roomId}>
@@ -348,7 +428,7 @@ export default function BulkInvoiceModal({
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: '0.5rem',
-                                  color: isBilled ? '#3b82f6' : isReady ? '#10b981' : '#d97706',
+                                  color: isBilled ? 'var(--status-info)' : isReady ? 'var(--status-success)' : '#d97706',
                                 }}
                               >
                                 <span>🏢 {room.buildingName}</span>
@@ -390,11 +470,11 @@ export default function BulkInvoiceModal({
                                     <span
                                       style={{
                                         fontSize: '0.75rem',
-                                        color: '#10b981',
-                                        background: '#10b98115',
+                                        color: 'var(--status-success)',
+                                        background: 'var(--status-success)15',
                                         padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        border: '1px solid #10b98133',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--status-success)33',
                                       }}
                                     >
                                       💧 {room.meterWater} | ⚡ {room.meterElec}
@@ -403,11 +483,11 @@ export default function BulkInvoiceModal({
                                     <span
                                       style={{
                                         fontSize: '0.75rem',
-                                        color: '#ef4444',
-                                        background: '#ef444415',
+                                        color: 'var(--status-danger)',
+                                        background: 'var(--status-danger)15',
                                         padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        border: '1px solid #ef444433',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--status-danger)33',
                                       }}
                                     >
                                       ⚠️ ยังไม่ได้บันทึกมิเตอร์
@@ -418,12 +498,12 @@ export default function BulkInvoiceModal({
                                     <span
                                       style={{
                                         fontSize: '0.75rem',
-                                        color: '#3b82f6',
+                                        color: 'var(--status-info)',
                                         fontWeight: 600,
-                                        background: '#3b82f615',
+                                        background: 'var(--status-info)15',
                                         padding: '0.2rem 0.55rem',
-                                        borderRadius: '20px',
-                                        border: '1px solid #3b82f644',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--status-info)44',
                                       }}
                                     >
                                       🟢 ออกบิลแล้ว ({room.existingInvoiceTotal?.toLocaleString()} ฿)
@@ -432,12 +512,12 @@ export default function BulkInvoiceModal({
                                     <span
                                       style={{
                                         fontSize: '0.75rem',
-                                        color: '#10b981',
+                                        color: 'var(--status-success)',
                                         fontWeight: 600,
-                                        background: '#10b98115',
+                                        background: 'var(--status-success)15',
                                         padding: '0.2rem 0.55rem',
-                                        borderRadius: '20px',
-                                        border: '1px solid #10b98144',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--status-success)44',
                                       }}
                                     >
                                       ⏳ พร้อมออกบิล (ค่าเช่า {room.basePrice.toLocaleString()} ฿)
@@ -446,12 +526,12 @@ export default function BulkInvoiceModal({
                                     <span
                                       style={{
                                         fontSize: '0.75rem',
-                                        color: '#f59e0b',
+                                        color: 'var(--status-warning)',
                                         fontWeight: 600,
-                                        background: '#f59e0b15',
+                                        background: 'var(--status-warning)15',
                                         padding: '0.2rem 0.55rem',
-                                        borderRadius: '20px',
-                                        border: '1px solid #f59e0b44',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--status-warning)44',
                                       }}
                                     >
                                       ⏸️ ข้าม (รอมิเตอร์)
@@ -501,7 +581,7 @@ export default function BulkInvoiceModal({
                                           style={{
                                             border: 'none',
                                             background: 'none',
-                                            color: '#ef4444',
+                                            color: 'var(--status-danger)',
                                             cursor: 'pointer',
                                             fontSize: '0.9rem',
                                             padding: '0 0.25rem',
@@ -537,18 +617,18 @@ export default function BulkInvoiceModal({
             return (
               <button
                 type="button"
-                disabled={bulkGenerating || eligibleCount === 0}
+                disabled={bulkGenerating || eligibleCount === 0 || isMissingUtility}
                 onClick={handleBulkGenerate}
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 style={{
                   padding: '0.6rem 1.5rem',
                   fontSize: '0.95rem',
                   fontWeight: 800,
-                  backgroundColor: '#10b981',
-                  color: '#ffffff',
+                  backgroundColor: 'var(--status-success)',
+                  color: 'var(--text-primary)',
                   boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
-                  opacity: bulkGenerating || eligibleCount === 0 ? 0.5 : 1,
-                  cursor: bulkGenerating || eligibleCount === 0 ? 'not-allowed' : 'pointer',
+                  opacity: bulkGenerating || eligibleCount === 0 || isMissingUtility ? 0.5 : 1,
+                  cursor: bulkGenerating || eligibleCount === 0 || isMissingUtility ? 'not-allowed' : 'pointer',
                 }}
               >
                 {bulkGenerating ? '⏳ กำลังสร้างใบแจ้งหนี้...' : `🚀 ยืนยันออกบิลทุกห้องพร้อมกัน (${eligibleCount} ห้อง)`}

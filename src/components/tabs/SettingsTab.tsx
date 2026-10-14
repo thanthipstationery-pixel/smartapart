@@ -80,6 +80,20 @@ export default function SettingsTab({
   handleRoomClick,
   styles,
 }: SettingsTabProps) {
+  const [visualStyle, setVisualStyle] = React.useState('claymorphism');
+
+  React.useEffect(() => {
+    const current = document.documentElement.getAttribute('data-style') || 'claymorphism';
+    setVisualStyle(current);
+  }, []);
+
+  const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newStyle = e.target.value;
+    setVisualStyle(newStyle);
+    document.documentElement.setAttribute('data-style', newStyle);
+    localStorage.setItem('visualStyle', newStyle);
+  };
+
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Section 0: Global Property & AI API Key Settings */}
@@ -105,7 +119,7 @@ export default function SettingsTab({
                 alert('บันทึกตั้งค่ากิจการและ Gemini API Key สำเร็จ');
                 refreshPropertyData();
               } else {
-                const d = await res.json();
+                const d = await res.json() as any;
                 alert(d.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
               }
             } catch (err) {
@@ -166,6 +180,39 @@ export default function SettingsTab({
                 placeholder="กรอกบ้านเลขที่/ถนน/ตำบล/อำเภอ/จังหวัด"
               />
             </div>
+            </div>
+
+          {/* Global Theme Switcher Setting Box */}
+          <div
+            style={{
+              padding: '1.25rem',
+              backgroundColor: 'var(--bg-color)',
+              border: 'var(--glass-border, 1px solid var(--border-color))',
+              borderRadius: 'var(--radius-lg)',
+              marginBottom: '1.25rem',
+              boxShadow: 'var(--shadow-inset)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  🎨 สไตล์แอปพลิเคชัน (App Visual Style)
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  เลือกรูปแบบดีไซน์การแสดงผลของแอปพลิเคชันที่ต้องการ
+                </p>
+              </div>
+              <select
+                value={visualStyle}
+                onChange={handleStyleChange}
+                className={styles.formSelect}
+                style={{ width: 'auto', minWidth: '200px', cursor: 'pointer', backgroundColor: 'var(--card-bg)' }}
+              >
+                <option value="claymorphism">☁️ Claymorphism (นุ่มฟู 3 มิติ)</option>
+                <option value="flat">🔲 Flat / Minimalist (แบนเรียบ)</option>
+                <option value="glass">🧊 Glassmorphism (กระจกโปร่งแสง)</option>
+              </select>
+            </div>
           </div>
 
           {/* Premium AI Gemini API Key Setting Box */}
@@ -174,9 +221,9 @@ export default function SettingsTab({
               padding: '1.25rem',
               backgroundColor: 'var(--bg-color)',
               border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: 'var(--radius-lg)',
               marginBottom: '1.25rem',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
+              boxShadow: 'var(--shadow-inset)',
             }}
           >
             <div
@@ -194,13 +241,13 @@ export default function SettingsTab({
                   style={{
                     width: '32px',
                     height: '32px',
-                    borderRadius: '8px',
-                    background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'linear-gradient(135deg, var(--status-info), #6366f1)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#fff',
-                    boxShadow: '0 2px 6px rgba(59, 130, 246, 0.3)',
+                    boxShadow: 'var(--shadow-sm)',
                   }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -257,6 +304,7 @@ export default function SettingsTab({
                   backgroundColor: 'var(--card-bg)',
                   border: '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-md)',
+                  boxShadow: 'var(--shadow-inset)',
                   overflow: 'hidden',
                 }}
               >
@@ -384,7 +432,8 @@ export default function SettingsTab({
               key={b.id}
               style={{
                 border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-card)',
                 padding: '1.5rem',
                 background: 'var(--card-bg)',
                 maxWidth: '800px',
@@ -410,6 +459,7 @@ export default function SettingsTab({
                   const promptPayId = (form.elements.namedItem('bPromptPayId') as HTMLInputElement).value;
                   const promptPayName = (form.elements.namedItem('bPromptPayName') as HTMLInputElement).value;
                   const promptPayQrUrl = (form.elements.namedItem('bPromptPayQrUrl') as HTMLInputElement).value;
+                  const useDynamicUtilityRate = (form.elements.namedItem('bUseDynamicUtilityRate') as HTMLInputElement).checked;
 
                   try {
                     const res = await fetch('/api/buildings', {
@@ -429,13 +479,14 @@ export default function SettingsTab({
                         promptPayId,
                         promptPayName,
                         promptPayQrUrl,
+                        useDynamicUtilityRate,
                       }),
                     });
                     if (res.ok) {
                       alert(`อัปเดตตั้งค่า ${name} สำเร็จ`);
                       refreshDashboardData();
                     } else {
-                      const d = await res.json();
+                      const d = await res.json() as any;
                       alert(d.error || 'เกิดข้อผิดพลาด');
                     }
                   } catch (err) {
@@ -546,7 +597,7 @@ export default function SettingsTab({
                         alignItems: 'center',
                         gap: '0.4rem',
                         fontSize: '0.85rem',
-                        backgroundColor: '#0284c7',
+                        backgroundColor: 'var(--status-info-text)',
                         color: '#fff',
                         fontWeight: 600,
                         whiteSpace: 'nowrap',
@@ -576,6 +627,21 @@ export default function SettingsTab({
                 </div>
 
                 <h4 style={{ margin: '1.25rem 0 0.75rem 0', paddingBottom: '0.25rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600 }}>ตั้งค่าอัตราสาธารณูปโภค</h4>
+
+                <div className={styles.formGroup} style={{ marginBottom: '1.25rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-inset)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>
+                    <input
+                      type="checkbox"
+                      name="bUseDynamicUtilityRate"
+                      defaultChecked={b.useDynamicUtilityRate}
+                      style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                    />
+                    เปิดใช้งานระบบคำนวณค่าน้ำ-ไฟตามกฎหมาย สคบ. (Dynamic Rate)
+                  </label>
+                  <p style={{ margin: '0.5rem 0 0 2rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    หากเปิดใช้งาน ระบบจะคำนวณบิลค่าน้ำ-ไฟแบบขั้นบันไดหรือตามเงื่อนไขที่กฎหมายกำหนด
+                  </p>
+                </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
                   <div className={styles.formGroup}>
@@ -663,8 +729,9 @@ export default function SettingsTab({
             gap: '1rem',
             background: 'var(--bg-color)',
             border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-md)',
-            padding: '1.25rem',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-inset)',
+            padding: '1.5rem',
             marginBottom: '1.5rem',
           }}
         >
@@ -859,7 +926,22 @@ export default function SettingsTab({
                           </td>
                           <td style={{ fontWeight: 600 }}>{room.basePrice.toLocaleString()} บาท</td>
                           <td>
-                            {room.waterBillingType === 'FLAT' ? 'เหมาจ่าย' : room.waterBillingType === 'CUSTOM' ? 'กำหนดเอง' : 'ตามระบบ'}
+                            <span
+                              style={{
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                display: 'inline-block',
+                                ...(room.waterBillingType === 'FLAT'
+                                  ? { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                                  : room.waterBillingType === 'CUSTOM'
+                                  ? { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning-text)' }
+                                  : { backgroundColor: 'var(--status-info-bg)', color: 'var(--status-info-text)' }),
+                              }}
+                            >
+                              {room.waterBillingType === 'FLAT' ? 'เหมาจ่าย' : room.waterBillingType === 'CUSTOM' ? 'กำหนดเอง' : 'ตามระบบ'}
+                            </span>
                           </td>
                           <td style={{ fontWeight: 600 }}>
                             {room.waterBillingType === 'METER'
@@ -867,7 +949,22 @@ export default function SettingsTab({
                               : `${room.flatWaterCost || 0} บาท`}
                           </td>
                           <td>
-                            {room.elecBillingType === 'FLAT' ? 'เหมาจ่าย' : room.elecBillingType === 'CUSTOM' ? 'กำหนดเอง' : 'ตามระบบ'}
+                            <span
+                              style={{
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                display: 'inline-block',
+                                ...(room.elecBillingType === 'FLAT'
+                                  ? { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                                  : room.elecBillingType === 'CUSTOM'
+                                  ? { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning-text)' }
+                                  : { backgroundColor: 'var(--status-info-bg)', color: 'var(--status-info-text)' }),
+                              }}
+                            >
+                              {room.elecBillingType === 'FLAT' ? 'เหมาจ่าย' : room.elecBillingType === 'CUSTOM' ? 'กำหนดเอง' : 'ตามระบบ'}
+                            </span>
                           </td>
                           <td style={{ fontWeight: 600 }}>
                             {room.elecBillingType === 'METER'
@@ -978,11 +1075,47 @@ export default function SettingsTab({
                         {/* Utilities */}
                         <div className={styles.roomRateCardUtilities}>
                           <div className={styles.roomRateCardUtilityRow}>
-                            <span className={styles.roomRateCardUtilityLabel}>💧 ค่าน้ำ ({waterLabel})</span>
+                            <span className={styles.roomRateCardUtilityLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                              💧 ค่าน้ำ
+                              <span
+                                style={{
+                                  padding: '0.2rem 0.5rem',
+                                  borderRadius: '9999px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  marginLeft: '0.4rem',
+                                  ...(room.waterBillingType === 'FLAT'
+                                    ? { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                                    : room.waterBillingType === 'CUSTOM'
+                                    ? { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning-text)' }
+                                    : { backgroundColor: 'var(--status-info-bg)', color: 'var(--status-info-text)' }),
+                                }}
+                              >
+                                {waterLabel}
+                              </span>
+                            </span>
                             <span className={styles.roomRateCardUtilityValue}>{waterValue}</span>
                           </div>
                           <div className={styles.roomRateCardUtilityRow}>
-                            <span className={styles.roomRateCardUtilityLabel}>⚡ ค่าไฟ ({elecLabel})</span>
+                            <span className={styles.roomRateCardUtilityLabel} style={{ display: 'flex', alignItems: 'center' }}>
+                              ⚡ ค่าไฟ
+                              <span
+                                style={{
+                                  padding: '0.2rem 0.5rem',
+                                  borderRadius: '9999px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  marginLeft: '0.4rem',
+                                  ...(room.elecBillingType === 'FLAT'
+                                    ? { backgroundColor: 'var(--status-success-bg)', color: 'var(--status-success-text)' }
+                                    : room.elecBillingType === 'CUSTOM'
+                                    ? { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning-text)' }
+                                    : { backgroundColor: 'var(--status-info-bg)', color: 'var(--status-info-text)' }),
+                                }}
+                              >
+                                {elecLabel}
+                              </span>
+                            </span>
                             <span className={styles.roomRateCardUtilityValue}>{elecValue}</span>
                           </div>
                         </div>

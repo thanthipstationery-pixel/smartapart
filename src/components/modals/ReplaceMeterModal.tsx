@@ -54,7 +54,7 @@ export default function ReplaceMeterModal({
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (!res.ok) {
         throw new Error(data.error || 'เกิดข้อผิดพลาดในการเปลี่ยนมิเตอร์');
       }
@@ -153,11 +153,11 @@ export default function ReplaceMeterModal({
                 style={{
                   padding: '0.85rem 1rem',
                   border: '1px solid #7dd3fc',
-                  backgroundColor: '#f0f9ff',
+                  backgroundColor: 'var(--status-info-bg)',
                   borderRadius: 'var(--radius-md)',
                 }}
               >
-                <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: '0.6rem', fontSize: '0.9rem' }}>
+                <div style={{ fontWeight: 600, color: 'var(--status-info-text)', marginBottom: '0.6rem', fontSize: '0.9rem' }}>
                   💧 มิเตอร์น้ำประปา (Water Meter)
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
@@ -177,7 +177,7 @@ export default function ReplaceMeterModal({
                       className={styles.formInput}
                       style={{ padding: '0.4rem', fontSize: '0.88rem' }}
                     />
-                    <span style={{ fontSize: '0.75rem', color: '#0369a1' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--status-info-text)' }}>
                       (ใช้ไปจากมิเตอร์เดิม: {oldWaterUnits} หน่วย)
                     </span>
                   </div>

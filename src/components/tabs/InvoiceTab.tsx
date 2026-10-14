@@ -59,7 +59,7 @@ export default function InvoiceTab({
       </div>
 
       {/* Rich Multi-Criteria Filter Toolbar */}
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center', backgroundColor: 'var(--card-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center', backgroundColor: 'var(--card-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: "2px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
         {/* Status buttons */}
         <div style={{ display: 'flex', gap: '0.35rem' }}>
           <button
@@ -79,7 +79,7 @@ export default function InvoiceTab({
           <button
             onClick={() => setInvoiceStatusFilter('PARTIAL')}
             className={`${styles.btn} ${invoiceStatusFilter === 'PARTIAL' ? styles.btnPrimary : styles.btnSecondary}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem', backgroundColor: invoiceStatusFilter === 'PARTIAL' ? '#f59e0b' : undefined, color: invoiceStatusFilter === 'PARTIAL' ? '#ffffff' : undefined, borderColor: invoiceStatusFilter === 'PARTIAL' ? '#d97706' : undefined }}
+            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem', backgroundColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning)' : undefined, color: invoiceStatusFilter === 'PARTIAL' ? '#ffffff' : undefined, borderColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning-text)' : undefined }}
           >
             ชำระบางส่วน
           </button>
@@ -93,27 +93,34 @@ export default function InvoiceTab({
         </div>
 
         {/* Billing Period filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>รอบบิล:</span>
           <select
             className={styles.formSelect}
-            style={{ width: 'auto', padding: '0.45rem 0.75rem', fontSize: '0.85rem', minHeight: '38px' }}
+            style={{ width: 'auto', padding: '0.45rem 2rem 0.45rem 0.75rem', fontSize: '0.85rem', minHeight: '38px', maxWidth: '200px' }}
             value={invoiceFilterPeriod}
             onChange={(e) => setInvoiceFilterPeriod(e.target.value)}
           >
             <option value="ALL">📅 ทุกรอบบิล</option>
-            {Array.from(new Set(invoices.map((i) => i.billingPeriod))).sort().reverse().map((p) => (
-              <option key={p} value={p}>{formatThaiBillingPeriod(p)}</option>
+            {Array.from(new Set([
+              ...(invoiceFilterPeriod !== 'ALL' ? [invoiceFilterPeriod] : []),
+              ...invoices.map((i) => i.billingPeriod)
+            ])).sort().reverse().map((p) => (
+              <option key={p} value={p}>
+                {p === invoiceFilterPeriod && invoiceFilterPeriod !== 'ALL' && invoices.length === 0 
+                  ? `รอบบิลปัจจุบัน (${formatThaiBillingPeriod(p)})` 
+                  : formatThaiBillingPeriod(p)}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Building filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>อาคาร:</span>
           <select
             className={styles.formSelect}
-            style={{ width: 'auto', padding: '0.45rem 0.75rem', fontSize: '0.85rem', minHeight: '38px' }}
+            style={{ width: 'auto', padding: '0.45rem 2rem 0.45rem 0.75rem', fontSize: '0.85rem', minHeight: '38px', maxWidth: '180px' }}
             value={invoiceFilterBuildingId}
             onChange={(e) => setInvoiceFilterBuildingId(e.target.value)}
           >
@@ -125,7 +132,7 @@ export default function InvoiceTab({
         </div>
 
         {/* Search query */}
-        <div style={{ flex: '1 1 200px', minWidth: '180px' }}>
+        <div style={{ flex: '0 1 350px', minWidth: '200px', maxWidth: '100%' }}>
           <input
             type="text"
             placeholder="🔎 ค้นหาบิล (เลขห้อง, ชื่อผู้เช่า, เบอร์, เล่ม/เลขที่)..."
@@ -152,9 +159,9 @@ export default function InvoiceTab({
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
-              backgroundColor: '#10b981',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
+              backgroundColor: 'var(--status-success)',
+              color: 'var(--text-primary)',
+              boxShadow: "var(--shadow-glow-success)",
               whiteSpace: 'nowrap',
             }}
           >
@@ -170,7 +177,7 @@ export default function InvoiceTab({
               }
               setShowBatchPrintModal(true);
             }}
-            className={`${styles.btn} ${styles.btnSecondary}`}
+            className={`${styles.btn}`}
             style={{
               padding: '0.45rem 1rem',
               fontSize: '0.85rem',
@@ -179,6 +186,9 @@ export default function InvoiceTab({
               alignItems: 'center',
               gap: '0.4rem',
               whiteSpace: 'nowrap',
+              backgroundColor: 'var(--card-bg)',
+              color: 'var(--primary-color)',
+              border: '2px solid var(--primary-color)',
             }}
           >
             🖨️ พิมพ์ชุดเอกสาร A5 ({filteredInvoices.length} รายการ)
@@ -194,7 +204,7 @@ export default function InvoiceTab({
             <thead>
               <tr>
                 <th>เลขที่ห้อง</th>
-                <th>อาคาร / ตึก</th>
+                <th>อาคาร</th>
                 <th>ผู้เช่า</th>
                 <th>รอบบิล</th>
                 <th>ค่าน้ำ-ไฟ</th>
@@ -215,7 +225,7 @@ export default function InvoiceTab({
                 filteredInvoices.map((inv) => (
                   <tr key={inv.id}>
                     <td style={{ fontWeight: 'bold' }}>{inv.room.number}</td>
-                    <td>{inv.room.floor.building.name}</td>
+                    <td>{getShortBuildingName(inv.room.floor.building.name)}</td>
                     <td>{inv.tenant.name}</td>
                     <td>{formatThaiBillingPeriod(inv.billingPeriod)}</td>
                     <td>{(inv.waterCost + inv.electricityCost).toLocaleString()} บาท</td>
@@ -228,7 +238,7 @@ export default function InvoiceTab({
                           .reduce((sum: number, p: any) => sum + p.amountPaid, 0);
                         const remaining = Math.max(0, inv.totalAmount - approvedPaid);
                         return (
-                          <div style={{ fontSize: '0.78rem', color: '#f59e0b', fontWeight: 600 }}>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--status-warning)', fontWeight: 600 }}>
                             (จ่ายแล้ว {approvedPaid.toLocaleString()} / ค้าง {remaining.toLocaleString()} บ.)
                           </div>
                         );
@@ -287,7 +297,7 @@ export default function InvoiceTab({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {filteredInvoices.map((inv) => {
-                const statusColor = inv.status === 'PAID' ? '#10b981' : inv.status === 'PARTIAL' ? '#f59e0b' : inv.status === 'UNPAID' ? '#ef4444' : '#dc2626';
+                const statusColor = inv.status === 'PAID' ? 'var(--status-success)' : inv.status === 'PARTIAL' ? 'var(--status-warning)' : inv.status === 'UNPAID' ? 'var(--status-danger)' : '#dc2626';
                 const statusText = inv.status === 'PAID' ? 'ชำระแล้ว' : inv.status === 'PARTIAL' ? 'ชำระบางส่วน' : inv.status === 'UNPAID' ? 'ค้างชำระ' : 'เกินกำหนด';
                 const statusIcon = inv.status === 'PAID' ? '✅' : inv.status === 'PARTIAL' ? '⏳' : '🔴';
                 return (
@@ -296,7 +306,7 @@ export default function InvoiceTab({
                     style={{
                       background: 'var(--card-bg)',
                       borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-color)',
+                      border: "2px solid var(--border-color)", boxShadow: "var(--shadow-card)",
                       padding: '0.85rem 1rem',
                       borderLeft: `4px solid ${statusColor}`,
                     }}
@@ -311,7 +321,7 @@ export default function InvoiceTab({
                         fontSize: '0.7rem',
                         fontWeight: 700,
                         padding: '0.2rem 0.5rem',
-                        borderRadius: '20px',
+                        borderRadius: "var(--radius-md)",
                         backgroundColor: `${statusColor}22`,
                         color: statusColor,
                         border: `1px solid ${statusColor}44`,
@@ -350,7 +360,7 @@ export default function InvoiceTab({
                         .reduce((sum: number, p: any) => sum + p.amountPaid, 0);
                       const remaining = Math.max(0, inv.totalAmount - approvedPaid);
                       return (
-                        <div style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 600, marginBottom: '0.5rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--status-warning)', fontWeight: 600, marginBottom: '0.5rem', textAlign: 'center' }}>
                           💳 จ่ายแล้ว {approvedPaid.toLocaleString()} / ค้างอีก {remaining.toLocaleString()} บาท
                         </div>
                       );

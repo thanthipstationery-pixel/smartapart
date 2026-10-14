@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(invoices);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching invoices:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูลใบแจ้งหนี้' },
@@ -45,7 +45,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { roomId, billingPeriod, dueDate, otherCost, customWaterCost, customElecCost } = await request.json();
+    const body = (await request.json()) as any;
+    const { roomId, billingPeriod, dueDate, otherCost, customWaterCost, customElecCost } = body || {};
 
     if (!roomId || !billingPeriod || !dueDate) {
       return NextResponse.json(
@@ -184,7 +185,7 @@ export async function POST(request: Request) {
     let formattedNote = '';
     let parsedFeeDetails = null;
 
-    const bodyData = await request.json().catch(() => ({}));
+    const bodyData = body || {};
     if (bodyData.otherFeeItems && Array.isArray(bodyData.otherFeeItems) && bodyData.otherFeeItems.length > 0) {
       parsedFeeDetails = JSON.stringify(bodyData.otherFeeItems);
       const calculatedOtherSum = bodyData.otherFeeItems.reduce((acc: number, item: any) => acc + (parseFloat(item.amount) || 0), 0);
@@ -247,7 +248,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(invoice);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating invoice:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการออกใบแจ้งหนี้' },

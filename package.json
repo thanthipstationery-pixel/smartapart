@@ -4,18 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "build": "next build && node scripts/remove_wasm.js",
+    "build": "next build && node scripts/patch-wasm.js && node scripts/remove_wasm.js",
     "postinstall": "prisma generate",
     "deploy": "wrangler deploy",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/adapter-d1": "^6.2.1",
-    "@prisma/client": "^6.2.1",
+    "@libsql/client": "^0.17.4",
+    "@prisma/adapter-d1": "^5.22.0",
+    "@prisma/adapter-libsql": "^5.22.0",
+    "@prisma/client": "^5.22.0",
+    "@prisma/config": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
-    "next": "16.2.10",
+    "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -26,8 +29,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
-    "prisma": "^6.2.1",
+    "eslint-config-next": "^16.2.10",
+    "prisma": "^5.22.0",
     "typescript": "^5",
     "wrangler": "^4.116.0"
   }

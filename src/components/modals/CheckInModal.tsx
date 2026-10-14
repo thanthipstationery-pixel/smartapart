@@ -122,7 +122,7 @@ export default function CheckInModal({
               style={{
                 marginBottom: '1.25rem',
                 padding: '0.85rem 1rem',
-                backgroundColor: '#eff6ff',
+                backgroundColor: 'var(--status-info-bg)',
                 border: '1px solid #bfdbfe',
                 borderRadius: 'var(--radius-md)',
                 display: 'flex',
@@ -135,10 +135,10 @@ export default function CheckInModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <span style={{ fontSize: '1.5rem' }}>📷</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.92rem', color: '#1e40af' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--status-info)' }}>
                     สแกนบัตรประชาชนด้วย AI อัตโนมัติ (Auto-fill)
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: '#3b82f6' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--status-info)' }}>
                     ถ่ายรูปหรืออัปโหลดภาพบัตรฯ ระบบจะกรอกชื่อ เลขบัตร 13 หลัก และที่ให้อัตโนมัติ
                   </div>
                 </div>
@@ -456,7 +456,7 @@ export default function CheckInModal({
                         gap: '0.5rem',
                       }}
                     >
-                      <span style={{ fontWeight: 'bold', color: '#0369a1', fontSize: '0.92rem' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--status-info-text)', fontSize: '0.92rem' }}>
                         💡 สรุปการคิดเงินแรกเข้า: {calc.ruleName}
                       </span>
                       <span
@@ -464,8 +464,8 @@ export default function CheckInModal({
                           fontSize: '0.8rem',
                           padding: '0.2rem 0.6rem',
                           backgroundColor: '#0284c7',
-                          color: '#ffffff',
-                          borderRadius: '12px',
+                          color: 'var(--text-primary)',
+                          borderRadius: 'var(--radius-lg)',
                           fontWeight: 600,
                         }}
                       >
@@ -479,9 +479,9 @@ export default function CheckInModal({
                         color: '#334155',
                         marginBottom: '0.5rem',
                         lineHeight: 1.5,
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--card-bg)',
                         padding: '0.5rem 0.75rem',
-                        borderRadius: '6px',
+                        borderRadius: 'var(--radius-md)',
                         border: '1px solid #e2e8f0',
                       }}
                     >

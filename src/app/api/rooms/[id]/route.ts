@@ -8,40 +8,36 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const room = await prisma.room.findUnique({
-      where: { id },
-      include: {
-        floor: {
-          include: {
-            building: true,
+    const [room, readings, invoices] = await Promise.all([
+      prisma.room.findUnique({
+        where: { id },
+        include: {
+          floor: {
+            include: { building: true },
           },
+          tenants: { orderBy: { startDate: 'desc' } },
+          bookings: { orderBy: { createdAt: 'desc' } },
         },
-        tenants: {
-          orderBy: { startDate: 'desc' },
-        },
-        readings: {
-          orderBy: { readingDate: 'desc' },
-          take: 12,
-        },
-        invoices: {
-          orderBy: { billingPeriod: 'desc' },
-          take: 12,
-          include: {
-            payments: true
-          }
-        },
-        bookings: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
+      }),
+      prisma.meterReading.findMany({
+        where: { roomId: id },
+        orderBy: { readingDate: 'desc' },
+        take: 12,
+      }),
+      prisma.invoice.findMany({
+        where: { roomId: id },
+        orderBy: { billingPeriod: 'desc' },
+        take: 12,
+        include: { payments: true },
+      }),
+    ]);
 
     if (!room) {
       return NextResponse.json({ error: 'ไม่พบห้องพักที่ระบุ' }, { status: 404 });
     }
 
-    return NextResponse.json(room);
-  } catch (error) {
+    return NextResponse.json({ ...room, readings, invoices });
+  } catch (error: any) {
     console.error('Error fetching room details:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูลห้องพัก' },
@@ -56,7 +52,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { status, basePrice, type, number, waterBillingType, flatWaterCost, elecBillingType, flatElecCost } = await request.json();
+    const body = (await request.json()) as any;
+    const { status, basePrice, type, number, waterBillingType, flatWaterCost, elecBillingType, flatElecCost } = body || {};
 
     const currentRoom = await prisma.room.findUnique({
       where: { id },
@@ -90,7 +87,7 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedRoom);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating room:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลห้องพัก' },

@@ -24,10 +24,14 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: [
-        { status: 'asc' },
-        { room: { number: 'asc' } },
-      ],
+      orderBy: { status: 'asc' },
+    });
+
+    // D1/SQLite does not support orderBy on relation fields — sort in-memory
+    tenants.sort((a, b) => {
+      const statusCmp = (a.status || '').localeCompare(b.status || '');
+      if (statusCmp !== 0) return statusCmp;
+      return (a.room?.number || '').localeCompare(b.room?.number || '', undefined, { numeric: true });
     });
 
     return NextResponse.json(tenants);
@@ -39,6 +43,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const body = (await request.json()) as any;
     const {
       name,
       phone,
@@ -59,7 +64,7 @@ export async function POST(request: Request) {
       roomId,
       startingWaterMeter,
       startingElecMeter
-    } = await request.json();
+    } = body || {};
 
     if (!name || !phone || !startDate || !roomId) {
       return NextResponse.json(
@@ -204,7 +209,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(tenant);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error adding tenant:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการลงทะเบียนผู้เช่า' },

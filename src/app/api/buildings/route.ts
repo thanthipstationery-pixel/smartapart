@@ -242,6 +242,7 @@ export async function GET(request: Request) {
         promptPayId: building.promptPayId,
         promptPayName: building.promptPayName,
         promptPayQrUrl: building.promptPayQrUrl,
+        useDynamicUtilityRate: building.useDynamicUtilityRate,
         stats: {
           total: bTotal,
           occupied: bOccupied,
@@ -268,7 +269,7 @@ export async function GET(request: Request) {
         occupancyRate: totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching buildings stats:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูลอาคาร' },
@@ -280,7 +281,8 @@ export async function GET(request: Request) {
 // PUT endpoint to update building utility rates & PromptPay settings
 export async function PUT(request: Request) {
   try {
-    const { id, name, waterRate, electricityRate, minimumWaterCost, lateFee, defaultDueDay, phone, email, address, lineId, promptPayId, promptPayName, promptPayQrUrl } = await request.json();
+    const body = (await request.json()) as any;
+    const { id, name, waterRate, electricityRate, minimumWaterCost, lateFee, defaultDueDay, phone, email, address, lineId, promptPayId, promptPayName, promptPayQrUrl, useDynamicUtilityRate } = body || {};
 
     if (!id) {
       return NextResponse.json({ error: 'ข้อมูลไม่ครบถ้วน (ไม่พบ ID อาคาร)' }, { status: 400 });
@@ -302,11 +304,12 @@ export async function PUT(request: Request) {
         promptPayId: promptPayId !== undefined ? promptPayId : undefined,
         promptPayName: promptPayName !== undefined ? promptPayName : undefined,
         promptPayQrUrl: promptPayQrUrl !== undefined ? promptPayQrUrl : undefined,
+        useDynamicUtilityRate: useDynamicUtilityRate !== undefined ? Boolean(useDynamicUtilityRate) : undefined,
       },
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating building rates:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลอาคาร' },

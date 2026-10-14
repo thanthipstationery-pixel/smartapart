@@ -69,7 +69,7 @@ export default function BatchPrintModal({
                 alignItems: 'flex-start',
                 padding: '1rem',
                 backgroundColor: 'var(--bg-color)',
-                border: '1.5px solid #2563eb',
+                border: '1.5px solid var(--status-info)',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -80,11 +80,11 @@ export default function BatchPrintModal({
                 handleBatchPrintA5List(filteredInvoices, 'INVOICE_ONLY', includeQrCode);
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: '#2563eb', marginBottom: '0.25rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--status-info)', marginBottom: '0.25rem' }}>
                 📄 1. พิมพ์ใบแจ้งหนี้ทั้งหมด ({filteredInvoices.length} ห้อง)
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                พิมพ์ใบแจ้งหนี้เรียงตามเลขห้อง (1 A5/ห้อง) สำหรับนำทั้งปึกไปเสียบสอดตามห้องได้ทันที
+                พิมพ์ใบแจ้งหนี้เรียงตามเลขห้อง
               </div>
             </button>
 
@@ -97,7 +97,7 @@ export default function BatchPrintModal({
                 alignItems: 'flex-start',
                 padding: '1rem',
                 backgroundColor: 'var(--bg-color)',
-                border: '1.5px solid #10b981',
+                border: '1.5px solid var(--status-success)',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -113,7 +113,7 @@ export default function BatchPrintModal({
                 handleBatchPrintA5List(filteredInvoices, 'RECEIPT_ONLY', includeQrCode);
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: '#10b981', marginBottom: '0.25rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--status-success)', marginBottom: '0.25rem' }}>
                 🧾 2. พิมพ์ใบเสร็จรับเงินทั้งหมด (เฉพาะห้องที่จ่ายแล้ว)
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -130,7 +130,7 @@ export default function BatchPrintModal({
                 alignItems: 'flex-start',
                 padding: '1rem',
                 backgroundColor: 'var(--bg-color)',
-                border: '1.5px solid #7c3aed',
+                border: '1.5px solid var(--accent-purple)',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -141,11 +141,11 @@ export default function BatchPrintModal({
                 handleBatchPrintA5List(filteredInvoices, 'ALL_GROUPED', includeQrCode);
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: '#7c3aed', marginBottom: '0.25rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.98rem', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>
                 📑 3. พิมพ์ทั้งหมด (เรียงใบแจ้งหนี้ทุกห้องขึ้นก่อน ➔ ใบเสร็จรับเงิน)
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                พิมพ์ใบแจ้งหนี้ทุกห้องให้เสร็จสิ้นก่อน แล้วตามด้วยใบเสร็จรับเงินของห้องที่ชำระแล้วอยู่ที่ครึ่งหลัง
+                พิมพ์ใบแจ้งหนี้ทุกห้อง แล้วตามด้วยใบเสร็จรับเงินของห้องที่ชำระแล้ว
               </div>
             </button>
           </div>

@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
+    const body = (await request.json()) as any;
 
     const {
       actionType = 'FINAL_CHECKOUT', // 'RECORD_NOTICE_ONLY' | 'FINAL_CHECKOUT' | 'CANCEL_NOTICE'
@@ -16,9 +16,7 @@ export async function POST(
       expectedCheckOutDate,
       finalWaterValue,
       finalElecValue,
-      cleaningFee = 0,
-      repairFee = 0,
-      otherDeductions = 0,
+      otherFeeDetails = [],
       keycardsReturned = 0,
       overrideForfeitDeposit = false,
       refundProratedRent = false,
@@ -161,9 +159,7 @@ export async function POST(
         keycardDeposit: tenant.keycardDeposit,
         keycardsReturned: returnedCountNum,
         keycardRefundAmount,
-        cleaningFee: parseFloat(cleaningFee || 0),
-        repairFee: parseFloat(repairFee || 0),
-        otherDeductions: parseFloat(otherDeductions || 0),
+        otherFeeDetails,
         refundProratedRent: Boolean(refundProratedRent),
         proratedRefundAmount: parseFloat(proratedRefundAmount || 0),
       },

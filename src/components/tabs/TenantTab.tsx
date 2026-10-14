@@ -72,14 +72,14 @@ export default function TenantTab({
           </div>
 
           {/* Building Filter */}
-          <div style={{ minWidth: '180px' }}>
+          <div style={{ minWidth: '140px' }}>
             <select
               value={tenantBuildingFilter}
               onChange={(e) => setTenantBuildingFilter(e.target.value)}
               className={styles.formInput}
               style={{ width: '100%', padding: '0.45rem 0.75rem', fontSize: '0.85rem' }}
             >
-              <option value="ALL">ทุกอาคาร / ตึก</option>
+              <option value="ALL">ทุกอาคาร</option>
               {buildings.map((b) => (
                 <option key={b.id} value={b.id}>
                   {getShortBuildingName(b.name)}
@@ -164,90 +164,105 @@ export default function TenantTab({
             <>
               {/* Desktop View Table */}
               <div className={styles.tenantDesktopTable}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className={styles.meterTable}>
+                <div style={{ 
+                  overflowX: 'auto', 
+                  borderRadius: 'var(--radius-lg)', 
+                  border: 'none',
+                  backgroundColor: 'transparent'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                      <tr>
-                        <th>ห้องพัก</th>
-                        <th>อาคาร / ตึก</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>เบอร์โทรศัพท์</th>
-                        <th>เลขบัตรประชาชน</th>
+                      <tr style={{ backgroundColor: 'var(--bg-color)', borderBottom: '2px solid var(--border-color)' }}>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ห้องพัก</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>อาคาร / ตึก</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ชื่อ-นามสกุล</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เบอร์โทรศัพท์</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เลขบัตรประชาชน</th>
                         {tenantStatusTab === 'ACTIVE' ? (
                           <>
-                            <th>วันที่เข้าพัก</th>
-                            <th>เงินมัดจำประกัน</th>
-                            <th>สถานะ</th>
-                            <th>จัดการ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่เข้าพัก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินมัดจำประกัน</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>สถานะ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>จัดการ</th>
                           </>
                         ) : (
                           <>
-                            <th>วันที่เข้าพัก</th>
-                            <th>วันที่ย้ายออก</th>
-                            <th>เงินมัดจำประกัน</th>
-                            <th>หมายเหตุ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่เข้าพัก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่ย้ายออก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินมัดจำประกัน</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>หมายเหตุ</th>
                           </>
                         )}
                       </tr>
                     </thead>
                     <tbody>
                       {filtered.map((t) => (
-                        <tr key={t.id}>
-                          <td style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                        <tr 
+                          key={t.id} 
+                          style={{ 
+                            borderBottom: '1px solid var(--border-color)', 
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-color)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold', color: 'var(--primary-color)', whiteSpace: 'nowrap', fontSize: '0.95rem' }}>
                             🏠 {t.room?.number || '-'}
                           </td>
-                          <td style={{ fontWeight: 600 }}>{getShortBuildingName(t.room?.floor?.building?.name) || '-'}</td>
-                          <td style={{ fontWeight: 600 }}>{t.name}</td>
-                          <td>
+                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                            {getShortBuildingName(t.room?.floor?.building?.name) || '-'}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', minWidth: '140px' }}>
+                            {t.name}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap' }}>
                             {t.phone ? (
-                              <a href={`tel:${t.phone}`} style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500 }}>
+                              <a href={`tel:${t.phone}`} style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500, fontSize: '0.95rem' }}>
                                 📞 {formatPhone(t.phone)}
                               </a>
                             ) : (
                               '-'
                             )}
                           </td>
-                          <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>
+                          <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                             {formatIdCard(t.idCard)}
                           </td>
                           {tenantStatusTab === 'ACTIVE' ? (
                             <>
-                              <td style={{ fontSize: '0.85rem' }}>
+                              <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                                 {t.startDate ? formatThaiDateNumeric(t.startDate) : '-'}
                               </td>
-                              <td style={{ fontWeight: 600 }}>
-                                {(t.securityDeposit || 0).toLocaleString()} บาท
+                              <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                                {(t.securityDeposit || 0).toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>บาท</span>
                               </td>
-                              <td>
-                                <span className={`${styles.invoiceBadge} ${styles.badgePaid}`}>
+                              <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap' }}>
+                                <span className={`${styles.invoiceBadge} ${styles.badgePaid}`} style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}>
                                   พักอาศัยอยู่
                                 </span>
                               </td>
-                              <td>
-                                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                  <button
-                                    type="button"
-                                    className={`${styles.btn} ${styles.btnSecondary}`}
-                                    style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem' }}
-                                    onClick={() => handleOpenEditTenantModal(t)}
-                                  >
-                                    ✏️ แก้ไข
-                                  </button>
-                                </div>
+                              <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                                <button
+                                  type="button"
+                                  className={`${styles.btn} ${styles.btnSecondary}`}
+                                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+                                  onClick={() => handleOpenEditTenantModal(t)}
+                                >
+                                  ✏️ แก้ไข
+                                </button>
                               </td>
                             </>
                           ) : (
                             <>
-                              <td style={{ fontSize: '0.85rem' }}>
+                              <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                                 {t.startDate ? formatThaiDateNumeric(t.startDate) : '-'}
                               </td>
-                              <td style={{ fontSize: '0.85rem', color: '#ef4444' }}>
+                              <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--status-danger)', whiteSpace: 'nowrap', fontWeight: 500 }}>
                                 {t.updatedAt ? formatThaiDateNumeric(t.updatedAt) : '-'}
                               </td>
-                              <td style={{ fontWeight: 600 }}>
-                                {(t.securityDeposit || 0).toLocaleString()} บาท
+                              <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                                {(t.securityDeposit || 0).toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>บาท</span>
                               </td>
-                              <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                              <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {t.note || 'ย้ายออกเรียบร้อย'}
                               </td>
                             </>
@@ -313,7 +328,7 @@ export default function TenantTab({
                       {tenantStatusTab === 'MOVED_OUT' && (
                         <div className={styles.tenantCardRow}>
                           <span className={styles.tenantCardLabel}>วันที่ย้ายออก:</span>
-                          <span className={styles.tenantCardValue} style={{ color: '#ef4444' }}>
+                          <span className={styles.tenantCardValue} style={{ color: 'var(--status-danger)' }}>
                             {t.updatedAt ? formatThaiDateNumeric(t.updatedAt) : '-'}
                           </span>
                         </div>

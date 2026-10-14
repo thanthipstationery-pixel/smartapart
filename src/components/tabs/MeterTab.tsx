@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { getShortBuildingName, formatThaiBillingPeriod } from '@/lib/thaiDate';
+import { getShortBuildingName } from '@/lib/thaiDate';
 
 interface MeterTabProps {
   selectedBuildingId: string;
@@ -63,7 +63,7 @@ export default function MeterTab({
         <div className={styles.meterFilterGrid}>
           {/* 1. Building Select */}
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>เลือกอาคาร / ตึก</label>
+            <label className={styles.formLabel}>เลือกอาคาร</label>
             <select
               value={selectedBuildingId}
               onChange={(e) => setSelectedBuildingId(e.target.value)}
@@ -78,12 +78,15 @@ export default function MeterTab({
 
           {/* 2. Billing Period */}
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>
-              รอบบิลเดือนที่จด <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>({formatThaiBillingPeriod(meterPeriod)})</span>
-            </label>
+            <label className={styles.formLabel}>รอบบิลเดือนที่จด</label>
             <input
               type="month"
               value={meterPeriod}
+              max={(() => {
+                const d = new Date();
+                d.setMonth(d.getMonth() + 1);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              })()}
               onChange={(e) => setMeterPeriod(e.target.value)}
               className={styles.formInput}
               style={{ width: '100%' }}
@@ -112,11 +115,11 @@ export default function MeterTab({
               className={styles.formInput}
               style={{ width: '100%' }}
             >
-              <option value="OCCUPIED">มีคนเช่า (Occupied)</option>
+              <option value="OCCUPIED">มีคนเช่า</option>
               <option value="UNRECORDED">เฉพาะห้องที่ยังไม่ได้จด</option>
-              <option value="ALL">ทั้งหมด (All)</option>
-              <option value="BOOKED">จองแล้ว (Booked)</option>
-              <option value="VACANT">ห้องว่าง (Vacant)</option>
+              <option value="ALL">ทั้งหมด</option>
+              <option value="BOOKED">จองแล้ว</option>
+              <option value="VACANT">ห้องว่าง</option>
             </select>
           </div>
 
@@ -130,8 +133,8 @@ export default function MeterTab({
               style={{ width: '100%' }}
             >
               <option value="BOTH">จดน้ำและไฟพร้อมกัน</option>
-              <option value="WATER">จดเฉพาะค่าน้ำ (Water Only)</option>
-              <option value="ELEC">จดเฉพาะค่าไฟ (Elec Only)</option>
+              <option value="WATER">จดเฉพาะค่าน้ำ</option>
+              <option value="ELEC">จดเฉพาะค่าไฟ</option>
             </select>
           </div>
         </div>
@@ -246,7 +249,7 @@ export default function MeterTab({
                           const isInvoicePaid = roomInvoice && (roomInvoice.status === 'PAID' || roomInvoice.status === 'PARTIAL');
                           const isVacantRoom = room.status !== 'OCCUPIED' && !room.activeTenant;
                           const isLocked = isInvoicePaid || isVacantRoom;
-                          const hasRecord = room.currentWater !== null && room.currentWater !== undefined;
+                          const hasRecord = room.isMeterRecorded === true;
 
                           return (
                             <tr key={room.id} style={isVacantRoom ? { opacity: 0.7 } : undefined}>
@@ -318,7 +321,7 @@ export default function MeterTab({
                                     style={{ padding: '0.375rem 0.75rem', fontSize: '0.8rem', minWidth: '75px' }}
                                     onClick={() => handleSingleMeterSubmit(room.id, room.prevWater, room.prevElec)}
                                   >
-                                    {hasRecord ? '✏️ แก้ไข' : (isSaved ? '✔ บันทึกแล้ว' : 'บันทึก')}
+                                    {hasRecord ? '✏️ แก้ไข' : (isSaved ? '✔ บันทึกแล้ว' : '➕ บันทึก')}
                                   </button>
                                 )}
                               </td>
@@ -340,7 +343,7 @@ export default function MeterTab({
                     const isInvoicePaid = roomInvoice && (roomInvoice.status === 'PAID' || roomInvoice.status === 'PARTIAL');
                     const isVacantRoom = room.status !== 'OCCUPIED' && !room.activeTenant;
                     const isLocked = isInvoicePaid || isVacantRoom;
-                    const hasRecord = room.currentWater !== null && room.currentWater !== undefined;
+                    const hasRecord = room.isMeterRecorded === true;
 
                     return (
                       <div key={room.id} className={styles.meterCard} style={isVacantRoom ? { opacity: 0.7 } : undefined}>
@@ -413,7 +416,7 @@ export default function MeterTab({
                             style={{ width: '100%', padding: '0.5rem', fontSize: '0.9rem', marginTop: '0.5rem' }}
                             onClick={() => handleSingleMeterSubmit(room.id, room.prevWater, room.prevElec)}
                           >
-                            {hasRecord ? '✏️ แก้ไข' : (isSaved ? '✔ บันทึกแล้ว' : 'บันทึกข้อมูล')}
+                            {hasRecord ? '✏️ แก้ไข' : (isSaved ? '✔ บันทึกแล้ว' : '➕ บันทึกข้อมูล')}
                           </button>
                         )}
                       </div>

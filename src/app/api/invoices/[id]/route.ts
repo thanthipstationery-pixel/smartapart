@@ -32,7 +32,7 @@ export async function GET(
     }
 
     return NextResponse.json(invoice);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching invoice:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูลใบแจ้งหนี้' },
@@ -47,7 +47,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
+    const body = (await request.json()) as any;
 
     const existing = await prisma.invoice.findUnique({
       where: { id },
@@ -116,7 +116,7 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedInvoice);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating invoice:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการแก้ไขใบแจ้งหนี้' },

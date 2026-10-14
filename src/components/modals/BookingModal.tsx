@@ -89,7 +89,7 @@ export default function BookingModal({
             className={styles.btn}
             style={{
               flex: 1,
-              backgroundColor: bookingMode === 'EXPRESS' ? '#ffc107' : 'var(--bg-color)',
+              backgroundColor: bookingMode === 'EXPRESS' ? 'var(--status-warning)' : 'var(--bg-color)',
               color: bookingMode === 'EXPRESS' ? '#000' : 'var(--text-secondary)',
               fontWeight: 'bold',
               border: '1px solid var(--border-color)',
@@ -121,7 +121,7 @@ export default function BookingModal({
               style={{
                 marginBottom: '1.25rem',
                 padding: '0.75rem 1rem',
-                backgroundColor: '#fffbe6',
+                backgroundColor: 'var(--status-warning-bg)',
                 border: '1px solid #ffe58f',
                 borderRadius: 'var(--radius-md)',
                 display: 'flex',
@@ -147,8 +147,8 @@ export default function BookingModal({
                   alignItems: 'center',
                   gap: '0.4rem',
                   fontSize: '0.85rem',
-                  backgroundColor: '#ffc107',
-                  color: '#000',
+                  backgroundColor: 'var(--status-warning)',
+                  color: 'var(--text-primary)',
                   fontWeight: 600,
                 }}
               >
@@ -289,7 +289,7 @@ export default function BookingModal({
             <button
               type="submit"
               className={`${styles.btn} ${styles.btnPrimary}`}
-              style={{ backgroundColor: '#ffc107', color: '#000', fontWeight: 'bold' }}
+              style={{ backgroundColor: 'var(--status-warning)', color: 'var(--text-primary)', fontWeight: 'bold' }}
             >
               📅 ยืนยันบันทึกการจอง
             </button>

@@ -3,10 +3,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
-  engineType      = "client"
 }
 
 model Admin {
@@ -30,9 +30,10 @@ model Property {
 }
 
 model Building {
-  id               String   @id @default(uuid())
-  name             String
-  waterRate        Float    // Baht per Unit
+  id                    String   @id @default(uuid())
+  name                  String
+  useDynamicUtilityRate Boolean  @default(false)
+  waterRate             Float    // Baht per Unit
   electricityRate  Float    // Baht per Unit
   minimumWaterCost Float    @default(0) // ค่าน้ำขั้นต่ำ
   lateFee          Float    @default(0) // ค่าปรับล่าช้า
@@ -47,6 +48,7 @@ model Building {
   propertyId       String
   property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   floors           Floor[]
+  monthlyUtilities BuildingMonthlyUtility[]
 }
 
 model Floor {
@@ -198,4 +200,21 @@ model MeterReplacement {
   note            String?
   billingPeriod   String?  // Format: "YYYY-MM"
   createdAt       DateTime @default(now())
+}
+
+model BuildingMonthlyUtility {
+  id              String   @id @default(uuid())
+  buildingId      String
+  building        Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  period          String   // "YYYY-MM"
+  waterBillTotal  Float
+  waterUnitsTotal Float
+  waterRate       Float
+  elecBillTotal   Float
+  elecUnitsTotal  Float
+  elecRate        Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([buildingId, period])
 }

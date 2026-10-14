@@ -7,7 +7,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const { action } = await request.json(); // "REFUND" or "FORFEIT"
+    const body = (await request.json()) as any;
+    const { action } = body || {}; // "REFUND" or "FORFEIT"
 
     const booking = await prisma.booking.findUnique({
       where: { id },

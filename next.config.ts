@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Allow mobile devices on the local network to access the dev server
+  images: {
+    unoptimized: true,
+  },
   allowedDevOrigins: [
     '192.168.1.129',
     '192.168.1.129:3000',
@@ -11,6 +13,8 @@ const nextConfig: NextConfig = {
     '192.168.1.*',
     'localhost:3000'
   ],
+  serverExternalPackages: ['@prisma/client', '@prisma/adapter-d1'],
+
 };
 
 export default nextConfig;

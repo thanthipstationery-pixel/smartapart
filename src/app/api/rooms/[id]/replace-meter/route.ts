@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { id: roomId } = await params;
-    const body = await request.json();
+    const body = (await request.json()) as any;
     const {
       meterType, // "WATER" | "ELEC" | "BOTH"
       oldWaterFinal,

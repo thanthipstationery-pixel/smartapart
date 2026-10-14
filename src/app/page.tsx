@@ -12,6 +12,8 @@ import MeterTab from '@/components/tabs/MeterTab';
 import InvoiceTab from '@/components/tabs/InvoiceTab';
 import TenantTab from '@/components/tabs/TenantTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
+import ReportTab from '@/components/tabs/ReportTab';
+import GovBillTab from '@/components/tabs/GovBillTab';
 import RoomModal from '@/components/modals/RoomModal';
 import CheckInModal from '@/components/modals/CheckInModal';
 import CheckOutModal from '@/components/modals/CheckOutModal';
@@ -59,6 +61,12 @@ const Icons = {
   ),
   Moon: () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+  ),
+  Report: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
+  ),
+  GovBill: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>
   )
 };
 
@@ -66,12 +74,13 @@ export default function Dashboard() {
   const router = useRouter();
   
   // Dashboard states
-  const [activeTab, setActiveTab] = useState<'overview' | 'map' | 'meter' | 'invoices' | 'tenants' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'map' | 'meter' | 'invoices' | 'tenants' | 'settings' | 'reports' | 'govbill'>('overview');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [adminUser, setAdminUser] = useState<{ username: string; name: string } | null>(null);
 
   // Initialize theme selection
   useEffect(() => {
+    // Light/Dark Mode
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     if (savedTheme) {
       setTheme(savedTheme);
@@ -81,6 +90,14 @@ export default function Dashboard() {
       const initialTheme = systemDark ? 'dark' : 'light';
       setTheme(initialTheme);
       document.documentElement.setAttribute('data-theme', initialTheme);
+    }
+
+    // Visual Style (Claymorphism, Flat, Glass)
+    const savedStyle = localStorage.getItem('visualStyle');
+    if (savedStyle) {
+      document.documentElement.setAttribute('data-style', savedStyle);
+    } else {
+      document.documentElement.setAttribute('data-style', 'claymorphism'); // Default
     }
   }, []);
 
@@ -146,9 +163,7 @@ export default function Dashboard() {
   const [checkOutDate, setCheckOutDate] = useState(new Date().toISOString().split('T')[0]);
   const [checkOutFinalWater, setCheckOutFinalWater] = useState('');
   const [checkOutFinalElec, setCheckOutFinalElec] = useState('');
-  const [checkOutCleaningFee, setCheckOutCleaningFee] = useState('500');
-  const [checkOutRepairFee, setCheckOutRepairFee] = useState('0');
-  const [checkOutOtherDeductions, setCheckOutOtherDeductions] = useState('0');
+  const [checkOutOtherFees, setCheckOutOtherFees] = useState<{name: string, amount: string}[]>([{ name: 'ค่าทำความสะอาด', amount: '500' }]);
   const [checkOutKeycardsReturned, setCheckOutKeycardsReturned] = useState('0');
   const [checkOutNote, setCheckOutNote] = useState('');
   const [checkOutNoticeDate, setCheckOutNoticeDate] = useState('');
@@ -197,7 +212,7 @@ export default function Dashboard() {
   const [showInvoiceQr, setShowInvoiceQr] = useState(false);
   
   // Rich Invoices Filters state
-  const [invoiceFilterPeriod, setInvoiceFilterPeriod] = useState<string>(() => getPayInAdvanceBillingPeriod(new Date()));
+  const [invoiceFilterPeriod, setInvoiceFilterPeriod] = useState<string>(() => new Date().toISOString().slice(0, 7));
   const [invoiceFilterBuildingId, setInvoiceFilterBuildingId] = useState<string>('ALL');
 
   // Edit Invoice Modal state
@@ -403,7 +418,7 @@ table { border-collapse: collapse; }
       const qrBlock = (!isReceipt && includeQr) ? `
         <!-- PromptPay QR Code Box -->
         <div style="margin-top: 8px; padding: 6px 12px; border: 1px dashed #aaaaaa; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; background-color: #fafafa;">
-          <div style="font-size: 11px; color: #333333;">
+          <div style="font-size: 11px; color: var(--text-primary);">
             <div style="font-weight: bold; font-size: 12px; color: #000000;">📲 สแกนชำระเงินด้วย PromptPay</div>
             <div>ยอดชำระ: <strong>${(inv.totalAmount || 0).toLocaleString()} บาท</strong></div>
             <div>ชื่อบัญชี: <strong>${accName}</strong></div>
@@ -630,7 +645,11 @@ table { border-collapse: collapse; }
       alert('กรุณาระบุวันที่ครบกำหนดชำระ');
       return;
     }
-    if (!confirm(`ยืนยันออกบิล ${eligible.length} ห้อง สำหรับรอบ ${bulkBillPeriod} ?`)) return;
+    const currentPeriod = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const confirmMsg = bulkBillPeriod < currentPeriod
+      ? `⚠️ คำเตือน: คุณกำลังจะออกบิลย้อนหลัง (รอบบิล ${bulkBillPeriod})\n\nยืนยันออกบิลจำนวน ${eligible.length} ห้อง ใช่หรือไม่?`
+      : `ยืนยันออกบิล ${eligible.length} ห้อง สำหรับรอบ ${bulkBillPeriod} ?`;
+    if (!confirm(confirmMsg)) return;
 
     setBulkGenerating(true);
     try {
@@ -669,7 +688,7 @@ table { border-collapse: collapse; }
           router.push('/login');
           return;
         }
-        const meData = await meRes.json();
+        const meData = (await meRes.json()) as any;
         setAdminUser(meData.user);
 
         // Fetch buildings, global stats & settings
@@ -690,7 +709,7 @@ table { border-collapse: collapse; }
   async function refreshDashboardData() {
     const res = await fetch(`/api/buildings?period=${meterPeriod}`);
     if (res.ok) {
-      const data = await res.json();
+      const data = (await res.json()) as any;
       setBuildings(data.buildings);
       setStats(data.stats);
       if (data.buildings.length > 0) {
@@ -707,7 +726,7 @@ table { border-collapse: collapse; }
   async function refreshInvoices() {
     const res = await fetch('/api/invoices');
     if (res.ok) {
-      const data = await res.json();
+      const data = (await res.json()) as any;
       setInvoices(data);
     }
   }
@@ -717,7 +736,7 @@ table { border-collapse: collapse; }
     try {
       const res = await fetch('/api/tenants');
       if (res.ok) {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         setTenantsList(data);
       }
     } catch (e) {
@@ -774,7 +793,7 @@ table { border-collapse: collapse; }
         await refreshDashboardData();
         alert('อัปเดตข้อมูลส่วนตัวผู้เช่าเรียบร้อยแล้ว');
       } else {
-        const err = await res.json();
+        const err = (await res.json()) as any;
         alert(`เกิดข้อผิดพลาด: ${err.error || 'ไม่สามารถบันทึกได้'}`);
       }
     } catch (e) {
@@ -788,7 +807,7 @@ table { border-collapse: collapse; }
     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเข้าพักนี้?\n\nข้อมูลผู้เช่า บิลแรกเข้า และมิเตอร์จะถูกลบออกจากระบบ และห้องจะกลับเป็นสถานะ "ว่าง" 100%')) return;
     try {
       const res = await fetch(`/api/tenants/${tenantId}`, { method: 'DELETE' });
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         alert(data.message || 'ยกเลิกการเข้าพักสำเร็จ');
         setShowRoomModal(false);
@@ -818,7 +837,7 @@ table { border-collapse: collapse; }
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    const result = await res.json();
+    const result = (await res.json()) as any;
     if (res.ok) {
       alert('ทำรายการย้ายห้องพักสำเร็จเรียบร้อยแล้ว!');
       setShowTransferModal(false);
@@ -834,7 +853,7 @@ table { border-collapse: collapse; }
   async function refreshPropertyData() {
     const res = await fetch('/api/property');
     if (res.ok) {
-      const data = await res.json();
+      const data = (await res.json()) as any;
       setProperty(data);
       setPropName(data.name || '');
       setPropPhone(data.phone || '');
@@ -937,7 +956,7 @@ table { border-collapse: collapse; }
   const handleRoomClick = async (roomId: string) => {
     const res = await fetch(`/api/rooms/${roomId}`);
     if (res.ok) {
-      const roomData = await res.json();
+      const roomData = (await res.json()) as any;
       setSelectedRoom(roomData);
       setModalWaterType(roomData.waterBillingType || 'METER');
       setModalElecType(roomData.elecBillingType || 'METER');
@@ -976,7 +995,7 @@ table { border-collapse: collapse; }
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         setShowCheckInModal(false);
         // Clear inputs
@@ -1049,7 +1068,7 @@ table { border-collapse: collapse; }
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         alert('บันทึกการจองห้องพักสำเร็จ');
         setShowBookingModal(false);
@@ -1089,7 +1108,7 @@ table { border-collapse: collapse; }
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         alert('ทำสัญญาเช่าจากรายการจองสำเร็จ');
         handleRoomClick(selectedRoom.id);
@@ -1114,7 +1133,7 @@ table { border-collapse: collapse; }
         body: JSON.stringify({ action }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         alert('ยกเลิกการจองเรียบร้อยแล้ว');
         handleRoomClick(selectedRoom.id);
@@ -1155,9 +1174,7 @@ table { border-collapse: collapse; }
     const latestElec = selectedRoom?.currentElec ?? selectedRoom?.prevElec ?? 0;
     setCheckOutFinalWater(latestWater ? String(latestWater) : '');
     setCheckOutFinalElec(latestElec ? String(latestElec) : '');
-    setCheckOutCleaningFee('500');
-    setCheckOutRepairFee('0');
-    setCheckOutOtherDeductions('0');
+    setCheckOutOtherFees([{ name: 'ค่าทำความสะอาด', amount: '500' }]);
     setCheckOutKeycardsReturned(String(tenant.keycardCount || 0));
     setCheckOutNote('');
     setShowRoomModal(false);
@@ -1182,7 +1199,7 @@ table { border-collapse: collapse; }
           }),
         });
 
-        const data = await res.json();
+        const data = (await res.json()) as any;
         if (res.ok) {
           setShowCheckOutModal(false);
           alert(`📌 บันทึกการแจ้งย้ายออกล่วงหน้าของห้อง ${selectedRoom.number} เรียบร้อยแล้ว!\n(ห้องพักยังคงเปิดใช้งาน และจะขึ้นป้ายเตือนสำหรับเปิดรับจองล่วงหน้า)`);
@@ -1216,9 +1233,7 @@ table { border-collapse: collapse; }
           overrideForfeitDeposit: checkOutOverrideForfeit,
           finalWaterValue: checkOutFinalWater,
           finalElecValue: checkOutFinalElec,
-          cleaningFee: checkOutCleaningFee,
-          repairFee: checkOutRepairFee,
-          otherDeductions: checkOutOtherDeductions,
+          otherFeeDetails: checkOutOtherFees.filter(f => f.name.trim() !== '' && parseFloat(f.amount) > 0).map(f => ({ name: f.name, amount: parseFloat(f.amount) })),
           keycardsReturned: checkOutKeycardsReturned,
           refundProratedRent: checkOutRefundProratedRent,
           proratedRefundAmount,
@@ -1226,7 +1241,7 @@ table { border-collapse: collapse; }
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         setShowCheckOutModal(false);
 
@@ -1247,12 +1262,14 @@ table { border-collapse: collapse; }
         const kcDeposit = activeCheckOutTenant.keycardDeposit || 0;
         const kcReturned = parseInt(checkOutKeycardsReturned || '0');
         const kcRefund = kcCount > 0 ? (kcReturned / kcCount) * kcDeposit : 0;
-        const cleanFee = parseFloat(checkOutCleaningFee || '0');
-        const repFee = parseFloat(checkOutRepairFee || '0');
-        const othDed = parseFloat(checkOutOtherDeductions || '0');
+        
+        const otherFeesTotal = checkOutOtherFees.reduce((sum, fee) => {
+          const amt = parseFloat(fee.amount);
+          return sum + (isNaN(amt) ? 0 : amt);
+        }, 0);
 
         const totalRefundable = secDeposit + kcRefund + proratedRefundAmount;
-        const totalDeductions = waterCost + elecCost + cleanFee + repFee + othDed;
+        const totalDeductions = waterCost + elecCost + otherFeesTotal;
         const netRefund = totalRefundable - totalDeductions;
 
         setCheckOutReceiptData({
@@ -1274,9 +1291,7 @@ table { border-collapse: collapse; }
           finalElecNum,
           elecUnits,
           elecCost,
-          cleanFee,
-          repFee,
-          othDed,
+          otherFeeDetails: checkOutOtherFees.filter(f => f.name.trim() !== '' && parseFloat(f.amount) > 0).map(f => ({ name: f.name, amount: parseFloat(f.amount) })),
           totalRefundable,
           totalDeductions,
           netRefund,
@@ -1312,7 +1327,7 @@ table { border-collapse: collapse; }
           body: JSON.stringify({ image: base64Image }),
         });
 
-        const data = await res.json();
+        const data = (await res.json()) as any;
         setIsScanningIdCard(false);
 
         if (res.ok && data.success && data.data) {
@@ -1477,7 +1492,7 @@ table { border-collapse: collapse; }
         refreshDashboardData();
         refreshInvoices();
       } else {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         alert(data.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
       }
     } catch (err) {
@@ -1625,7 +1640,7 @@ table { border-collapse: collapse; }
         }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as any;
       if (res.ok) {
         alert('ออกใบแจ้งหนี้เรียบร้อยแล้ว');
         setShowInvoiceModal(false);
@@ -1670,7 +1685,7 @@ table { border-collapse: collapse; }
   const handleInvoiceClick = async (invoiceId: string) => {
     const res = await fetch(`/api/invoices/${invoiceId}`);
     if (res.ok) {
-      const invoiceData = await res.json();
+      const invoiceData = (await res.json()) as any;
       setSelectedInvoice(invoiceData);
       setShowInvoiceDetailModal(true);
     }
@@ -1767,14 +1782,14 @@ table { border-collapse: collapse; }
       });
 
       if (res.ok) {
-        const updated = await res.json();
+        const updated = (await res.json()) as any;
         alert('แก้ไขใบแจ้งหนี้เรียบร้อยแล้ว');
         setShowEditInvoiceModal(false);
         setSelectedInvoice(updated);
         refreshInvoices();
         refreshDashboardData();
       } else {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         alert(data.error || 'เกิดข้อผิดพลาดในการแก้ไขใบแจ้งหนี้');
       }
     } catch (err) {
@@ -1809,7 +1824,7 @@ table { border-collapse: collapse; }
           handleRoomClick(selectedRoom.id);
         }
       } else {
-        const data = await res.json();
+        const data = (await res.json()) as any;
         alert(data.error || 'บันทึกการชำระเงินผิดพลาด');
       }
     } catch (err) {
@@ -1918,6 +1933,20 @@ table { border-collapse: collapse; }
             <span>ข้อมูลผู้เช่า</span>
           </button>
           <button
+            onClick={() => setActiveTab('reports')}
+            className={`${styles.navItem} ${activeTab === 'reports' ? styles.navItemActive : ''}`}
+          >
+            <Icons.Report />
+            <span>รายงาน (Reports)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('govbill')}
+            className={`${styles.navItem} ${activeTab === 'govbill' ? styles.navItemActive : ''}`}
+          >
+            <Icons.GovBill />
+            <span>บิลส่วนกลาง</span>
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`${styles.navItem} ${activeTab === 'settings' ? styles.navItemActive : ''}`}
           >
@@ -1979,6 +2008,12 @@ table { border-collapse: collapse; }
               <>
                 <h1>ตั้งค่าระบบและกิจการ</h1>
                 <p>กำหนดข้อมูลติดต่ออาคาร ค่าน้ำ-ไฟ และอัตราค่าเช่ารายห้อง</p>
+              </>
+            )}
+            {activeTab === 'reports' && (
+              <>
+                <h1>รายงาน (Reports)</h1>
+                <p>รายงานสรุปค่าเช่าประจำเดือนสำหรับพิมพ์ลงกระดาษ A4</p>
               </>
             )}
           </div>
@@ -2143,6 +2178,23 @@ table { border-collapse: collapse; }
             styles={styles}
           />
         )}
+
+        {/* --- 7. REPORTS TAB --- */}
+        {activeTab === 'reports' && (
+          <ReportTab
+            buildings={buildings}
+            invoices={invoices}
+            styles={styles}
+          />
+        )}
+
+        {/* --- 8. GOV BILL TAB --- */}
+        {activeTab === 'govbill' && (
+          <GovBillTab
+            buildings={buildings}
+            styles={styles}
+          />
+        )}
       </main>
 
       {/* --- MOBILE BOTTOM NAVIGATION (PWA) --- */}
@@ -2184,6 +2236,20 @@ table { border-collapse: collapse; }
         >
           <Icons.User />
           <span>ผู้เช่า</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('reports')}
+          className={`${styles.mobileNavItem} ${activeTab === 'reports' ? styles.mobileNavItemActive : ''}`}
+        >
+          <Icons.Report />
+          <span>รายงาน</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('govbill')}
+          className={`${styles.mobileNavItem} ${activeTab === 'govbill' ? styles.mobileNavItemActive : ''}`}
+        >
+          <Icons.GovBill />
+          <span>บิลกลาง</span>
         </button>
         <button
           onClick={() => setActiveTab('settings')}
@@ -2309,12 +2375,8 @@ table { border-collapse: collapse; }
         setCheckOutKeycardsReturned={setCheckOutKeycardsReturned}
         checkOutRefundProratedRent={checkOutRefundProratedRent}
         setCheckOutRefundProratedRent={setCheckOutRefundProratedRent}
-        checkOutCleaningFee={checkOutCleaningFee}
-        setCheckOutCleaningFee={setCheckOutCleaningFee}
-        checkOutRepairFee={checkOutRepairFee}
-        setCheckOutRepairFee={setCheckOutRepairFee}
-        checkOutOtherDeductions={checkOutOtherDeductions}
-        setCheckOutOtherDeductions={setCheckOutOtherDeductions}
+        checkOutOtherFees={checkOutOtherFees}
+        setCheckOutOtherFees={setCheckOutOtherFees}
         checkOutNote={checkOutNote}
         setCheckOutNote={setCheckOutNote}
         showCheckOutReceiptModal={showCheckOutReceiptModal}
@@ -2485,7 +2547,7 @@ table { border-collapse: collapse; }
         showTransferModal={showTransferModal}
         setShowTransferModal={setShowTransferModal}
         selectedRoom={selectedRoom}
-        vacantRooms={buildings.flatMap((b: any) => b.floors.flatMap((f: any) => f.rooms)).filter((r: any) => r.status === 'VACANT')}
+        vacantRooms={buildings.flatMap((b: any) => b.floors.flatMap((f: any) => f.rooms.map((r: any) => ({ ...r, buildingName: b.name })))).filter((r: any) => r.status === 'VACANT')}
         handleExecuteTransfer={handleExecuteTransfer}
         styles={styles}
       />

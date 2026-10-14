@@ -24,6 +24,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const body = (await request.json()) as any;
     const {
       roomId,
       customerName,
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       paymentMethod,
       slipImage,
       note,
-    } = await request.json();
+    } = body || {};
 
     if (!roomId || !customerName || !customerPhone || !expectedCheckInDate) {
       return NextResponse.json(

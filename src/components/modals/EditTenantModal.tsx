@@ -212,7 +212,7 @@ export default function EditTenantModal({
 
             {/* Category 2: Emergency Contact */}
             <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f59e0b', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--status-warning)', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 📞 2. ผู้ติดต่อกรณีฉุกเฉิน
               </h3>
 

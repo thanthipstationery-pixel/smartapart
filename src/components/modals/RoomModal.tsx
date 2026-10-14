@@ -129,7 +129,7 @@ export default function RoomModal({
                   display: 'inline-block',
                   padding: '0.15rem 0.4rem',
                   fontSize: '0.75rem',
-                  borderRadius: '4px',
+                  borderRadius: 'var(--radius-md)',
                   backgroundColor:
                     selectedRoom.status === 'VACANT'
                       ? 'var(--status-vacant-bg)'
@@ -186,8 +186,8 @@ export default function RoomModal({
                 </button>
 
                 <button
-                  className={`${styles.btn}`}
-                  style={{ backgroundColor: '#ffc107', color: '#000', fontWeight: 600 }}
+                  className={`${styles.btn} ${styles.btnWarning}`}
+                  style={{ fontWeight: 600 }}
                   onClick={() => {
                     setBookingName('');
                     setBookingPhone('');
@@ -208,8 +208,9 @@ export default function RoomModal({
 
                 <button
                   className={`${styles.btn} ${styles.btnSecondary}`}
+                  style={{ fontWeight: 600 }}
                   onClick={async () => {
-                    if (confirm('เปลี่ยนสถานะห้องพักเป็น "ปิดปรับปรุง/ซ่อมบำรุง" ใช่หรือไม่?')) {
+                    if (confirm('คุณต้องการปิดปรับปรุงห้องพักนี้ใช่หรือไม่?')) {
                       const res = await fetch(`/api/rooms/${selectedRoom.id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -275,7 +276,7 @@ export default function RoomModal({
                         </button>
                         <button
                           className={`${styles.btn}`}
-                          style={{ backgroundColor: '#17a2b8', color: '#fff' }}
+                          style={{ backgroundColor: '#17a2b8', color: '#ffffff' }}
                           onClick={() => handleBookingCancel(activeB.id, 'REFUND')}
                         >
                           ↩️ ยกเลิก (คืนมัดจำ)
@@ -307,7 +308,7 @@ export default function RoomModal({
                     border: '1.5px solid #fde047',
                     borderRadius: 'var(--radius-md)',
                     marginBottom: '1rem',
-                    color: '#92400e',
+                    color: 'var(--status-warning-text)',
                   }}
                 >
                   <div style={{ fontWeight: 700, fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -366,15 +367,15 @@ export default function RoomModal({
                   </p>
                 )}
                 {selectedRoom.tenants[0].emergencyName && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0.4rem 0 0.3rem 0', flexWrap: 'wrap', gap: '0.5rem', backgroundColor: '#fff1f2', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid #fecdd3' }}>
-                    <p style={{ fontSize: '0.85rem', color: '#e11d48', fontWeight: 600, margin: 0 }}>
-                      🚨 ผู้ติดต่อฉุกเฉิน: {selectedRoom.tenants[0].emergencyName} ({selectedRoom.tenants[0].emergencyRel || 'ญาติ'}) - {formatPhone(selectedRoom.tenants[0].emergencyPhone)}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0.4rem 0 0.3rem 0', flexWrap: 'wrap', gap: '0.5rem', backgroundColor: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0' }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      <span style={{ color: 'var(--status-danger)', fontWeight: 'bold' }}>🚨 ผู้ติดต่อฉุกเฉิน:</span> {selectedRoom.tenants[0].emergencyName} ({selectedRoom.tenants[0].emergencyRel || 'ญาติ'}) - {formatPhone(selectedRoom.tenants[0].emergencyPhone)}
                     </p>
                     {selectedRoom.tenants[0].emergencyPhone && (
                       <a
                         href={`tel:${selectedRoom.tenants[0].emergencyPhone}`}
                         className={`${styles.btn}`}
-                        style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', backgroundColor: '#e11d48', color: '#ffffff', textDecoration: 'none' }}
+                        style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', backgroundColor: 'var(--card-bg)', color: '#334155', border: '1px solid #cbd5e1', textDecoration: 'none', fontWeight: 600 }}
                       >
                         📞 โทร
                       </a>
@@ -395,7 +396,7 @@ export default function RoomModal({
                   <span style={{ color: '#0284c7', fontWeight: 600 }}>
                     💵 เงินมัดจำประกัน: {(selectedRoom.tenants[0].securityDeposit || 0).toLocaleString()} ฿
                   </span>
-                  <span style={{ color: '#7c3aed', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--accent-purple)', fontWeight: 600 }}>
                     🔑 คีย์การ์ด ({selectedRoom.tenants[0].keycardCount || 0} ใบ): มัดจำ {(selectedRoom.tenants[0].keycardDeposit || 0).toLocaleString()} ฿ {selectedRoom.tenants[0].keycardCode ? `[${selectedRoom.tenants[0].keycardCode}]` : ''}
                   </span>
                   <span style={{ color: 'var(--text-secondary)' }}>
@@ -404,38 +405,45 @@ export default function RoomModal({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => handleOpenInvoiceModal(selectedRoom)}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '1rem' }}>
+                <button 
+                  className={`${styles.btn} ${styles.btnPrimary}`} 
+                  style={{ gridColumn: '1 / -1', padding: '0.75rem', fontSize: '0.95rem' }}
+                  onClick={() => handleOpenInvoiceModal(selectedRoom)}>
                   ออกบิลค่าเช่า/น้ำไฟ
                 </button>
                 {handleOpenRoomTransferModal && (
                   <button
                     className={`${styles.btn}`}
-                    style={{ backgroundColor: '#7c3aed', color: '#fff', fontWeight: 'bold' }}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--accent-purple)', border: '1px solid var(--accent-purple)', fontWeight: 'bold' }}
                     onClick={() => handleOpenRoomTransferModal(selectedRoom)}
                   >
                     🔄 ย้ายห้องพัก
                   </button>
                 )}
-                <button className={`${styles.btn} ${styles.btnDanger}`} onClick={() => handleOpenCheckOutModal(selectedRoom.tenants[0])}>
-                  🚪 แจ้งย้ายออก & คิดเงินคืนมัดจำ (Check-out)
+                {handleOpenReplaceMeterModal && (
+                  <button
+                    className={`${styles.btn}`}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-info)', border: '1px solid var(--status-info)', fontWeight: 'bold' }}
+                    onClick={() => handleOpenReplaceMeterModal(selectedRoom)}
+                  >
+                    🔧 เปลี่ยนมิเตอร์
+                  </button>
+                )}
+                <button 
+                  className={`${styles.btn}`} 
+                  style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-warning-text)', border: '1px solid var(--status-warning-text)', fontWeight: 'bold' }} 
+                  onClick={() => handleOpenCheckOutModal(selectedRoom.tenants[0])}
+                >
+                  🚪 แจ้งย้ายออก
                 </button>
                 {handleCancelCheckIn && (
                   <button
                     className={`${styles.btn}`}
-                    style={{ backgroundColor: '#ef4444', color: '#fff', fontWeight: 'bold' }}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-danger)', border: '1px solid var(--status-danger)', fontWeight: 'bold' }}
                     onClick={() => handleCancelCheckIn(selectedRoom.tenants[0].id)}
                   >
-                    🗑️ ยกเลิกการเข้าพัก
-                  </button>
-                )}
-                {handleOpenReplaceMeterModal && (
-                  <button
-                    className={`${styles.btn}`}
-                    style={{ backgroundColor: '#0284c7', color: '#fff', fontWeight: 'bold' }}
-                    onClick={() => handleOpenReplaceMeterModal(selectedRoom)}
-                  >
-                    🔧 เปลี่ยนมิเตอร์น้ำ/ไฟ
+                    🗑️ ยกเลิกการเช่า
                   </button>
                 )}
               </div>
@@ -470,10 +478,10 @@ export default function RoomModal({
                 e.preventDefault();
                 const form = e.currentTarget;
                 const rentPrice = (form.elements.namedItem('rentPrice') as HTMLInputElement).value;
-                const roomType = (form.elements.namedItem('roomType') as HTMLSelectElement).value;
-                const waterType = (form.elements.namedItem('waterType') as HTMLSelectElement).value;
+                const roomType = (form.elements.namedItem('roomType') as unknown as HTMLSelectElement).value;
+                const waterType = (form.elements.namedItem('waterType') as unknown as HTMLSelectElement).value;
                 const flatWater = (form.elements.namedItem('flatWater') as HTMLInputElement).value;
-                const elecType = (form.elements.namedItem('elecType') as HTMLSelectElement).value;
+                const elecType = (form.elements.namedItem('elecType') as unknown as HTMLSelectElement).value;
                 const flatElec = (form.elements.namedItem('flatElec') as HTMLInputElement).value;
 
                 try {
@@ -494,7 +502,7 @@ export default function RoomModal({
                     setShowRoomModal(false);
                     refreshDashboardData();
                   } else {
-                    const d = await res.json();
+                    const d = await res.json() as any;
                     alert(d.error || 'เกิดข้อผิดพลาด');
                   }
                 } catch (err) {
@@ -686,22 +694,17 @@ export default function RoomModal({
 
                 <button
                   type="submit"
-                  className={styles.btn}
+                  className={`${styles.btn} ${styles.btnPrimary}`}
                   style={{
                     flex: '2 1 200px',
-                    backgroundColor: 'var(--primary-color)',
-                    color: '#ffffff',
                     fontWeight: 'bold',
                     fontSize: '0.88rem',
                     padding: '0.65rem 1rem',
                     borderRadius: 'var(--radius-md)',
-                    border: 'none',
-                    cursor: 'pointer',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     textAlign: 'center',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                   }}
                 >
                   💾 บันทึกข้อมูลราคาและค่าห้องพัก

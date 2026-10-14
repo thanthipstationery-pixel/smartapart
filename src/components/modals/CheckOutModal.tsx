@@ -26,12 +26,8 @@ interface CheckOutModalProps {
   setCheckOutKeycardsReturned: (val: string) => void;
   checkOutRefundProratedRent: boolean;
   setCheckOutRefundProratedRent: (val: boolean) => void;
-  checkOutCleaningFee: string;
-  setCheckOutCleaningFee: (val: string) => void;
-  checkOutRepairFee: string;
-  setCheckOutRepairFee: (val: string) => void;
-  checkOutOtherDeductions: string;
-  setCheckOutOtherDeductions: (val: string) => void;
+  checkOutOtherFees: {name: string, amount: string}[];
+  setCheckOutOtherFees: (val: {name: string, amount: string}[]) => void;
   checkOutNote: string;
   setCheckOutNote: (val: string) => void;
   showCheckOutReceiptModal: boolean;
@@ -62,12 +58,8 @@ export default function CheckOutModal({
   setCheckOutKeycardsReturned,
   checkOutRefundProratedRent,
   setCheckOutRefundProratedRent,
-  checkOutCleaningFee,
-  setCheckOutCleaningFee,
-  checkOutRepairFee,
-  setCheckOutRepairFee,
-  checkOutOtherDeductions,
-  setCheckOutOtherDeductions,
+  checkOutOtherFees,
+  setCheckOutOtherFees,
   checkOutNote,
   setCheckOutNote,
   showCheckOutReceiptModal,
@@ -114,7 +106,7 @@ export default function CheckOutModal({
                       fontWeight: 700,
                       border: 'none',
                       cursor: 'pointer',
-                      backgroundColor: checkOutActionType === 'RECORD_NOTICE_ONLY' ? '#3b82f6' : 'transparent',
+                      backgroundColor: checkOutActionType === 'RECORD_NOTICE_ONLY' ? 'var(--status-info)' : 'transparent',
                       color: checkOutActionType === 'RECORD_NOTICE_ONLY' ? '#ffffff' : 'var(--text-secondary)',
                       transition: 'all 0.2s ease',
                       display: 'flex',
@@ -136,7 +128,7 @@ export default function CheckOutModal({
                       fontWeight: 700,
                       border: 'none',
                       cursor: 'pointer',
-                      backgroundColor: checkOutActionType === 'FINAL_CHECKOUT' ? '#ef4444' : 'transparent',
+                      backgroundColor: checkOutActionType === 'FINAL_CHECKOUT' ? 'var(--status-danger)' : 'transparent',
                       color: checkOutActionType === 'FINAL_CHECKOUT' ? '#ffffff' : 'var(--text-secondary)',
                       transition: 'all 0.2s ease',
                       display: 'flex',
@@ -166,7 +158,7 @@ export default function CheckOutModal({
                     <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>
                       💵 มัดจำประกันสัญญา: {(activeCheckOutTenant.securityDeposit || 0).toLocaleString()} ฿
                     </span>
-                    <span style={{ color: '#7c3aed', fontWeight: 600 }}>
+                    <span style={{ color: 'var(--accent-purple)', fontWeight: 600 }}>
                       🔑 มัดจำคีย์การ์ด: {(activeCheckOutTenant.keycardDeposit || 0).toLocaleString()} ฿ (
                       {activeCheckOutTenant.keycardCount || 0} ใบ)
                     </span>
@@ -217,7 +209,7 @@ export default function CheckOutModal({
                         style={{
                           padding: '0.75rem 1rem',
                           borderRadius: 'var(--radius-md)',
-                          backgroundColor: check.meetsNoticePeriod ? '#f0fdf4' : checkOutOverrideForfeit ? '#fefce8' : '#fef2f2',
+                          backgroundColor: check.meetsNoticePeriod ? '#f0fdf4' : checkOutOverrideForfeit ? '#fefce8' : 'var(--status-danger-bg)',
                           border: `1.5px solid ${check.meetsNoticePeriod ? '#86efac' : checkOutOverrideForfeit ? '#fde047' : '#fca5a5'}`,
                         }}
                       >
@@ -225,7 +217,7 @@ export default function CheckOutModal({
                           style={{
                             fontWeight: 'bold',
                             fontSize: '0.88rem',
-                            color: check.meetsNoticePeriod ? '#166534' : checkOutOverrideForfeit ? '#854d0e' : '#991b1b',
+                            color: check.meetsNoticePeriod ? '#166534' : checkOutOverrideForfeit ? '#854d0e' : 'var(--status-danger-text)',
                             marginBottom: '0.3rem',
                           }}
                         >
@@ -261,8 +253,8 @@ export default function CheckOutModal({
 
                 {/* MODE 1 UI: RECORD NOTICE ONLY */}
                 {checkOutActionType === 'RECORD_NOTICE_ONLY' && (
-                  <div style={{ backgroundColor: '#eff6ff', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #bfdbfe' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1e40af', marginBottom: '0.4rem' }}>
+                  <div style={{ backgroundColor: 'var(--status-info-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #bfdbfe' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--status-info)', marginBottom: '0.4rem' }}>
                       📌 สำหรับบันทึกรับแจ้งย้ายออกล่วงหน้า (ยังไม่คืนห้องวันนี้)
                     </div>
                     <p style={{ fontSize: '0.83rem', color: '#1e3a8a', margin: 0, lineHeight: 1.5 }}>
@@ -293,7 +285,7 @@ export default function CheckOutModal({
                       </div>
                       <div className={styles.formGrid}>
                         <div className={styles.formGroup}>
-                          <label className={styles.formLabel}>💧 มิเตอร์น้ำวันย้ายออก (เดิม {selectedRoom.prevWater ?? 0}) *</label>
+                          <label className={styles.formLabel}>💧 มิเตอร์น้ำวันย้ายออก (เดิม {selectedRoom.currentWater ?? selectedRoom.prevWater ?? (selectedRoom.readings?.[0]?.waterValue ?? 0)}) *</label>
                           <input
                             type="number"
                             step="any"
@@ -305,7 +297,7 @@ export default function CheckOutModal({
                           />
                         </div>
                         <div className={styles.formGroup}>
-                          <label className={styles.formLabel}>⚡ มิเตอร์ไฟวันย้ายออก (เดิม {selectedRoom.prevElec ?? 0}) *</label>
+                          <label className={styles.formLabel}>⚡ มิเตอร์ไฟวันย้ายออก (เดิม {selectedRoom.currentElec ?? selectedRoom.prevElec ?? (selectedRoom.readings?.[0]?.electricityValue ?? 0)}) *</label>
                           <input
                             type="number"
                             step="any"
@@ -397,7 +389,7 @@ export default function CheckOutModal({
                                 cursor: 'pointer',
                                 fontWeight: 600,
                                 fontSize: '0.88rem',
-                                color: '#15803d',
+                                color: 'var(--status-success-text)',
                               }}
                             >
                               <input
@@ -416,35 +408,20 @@ export default function CheckOutModal({
                           </div>
                         );
                       })()}
-
                       <div className={styles.formGrid}>
-                        <div className={styles.formGroup}>
-                          <label className={styles.formLabel}>🧹 ค่าทำความสะอาด (บาท)</label>
-                          <input
-                            type="number"
-                            className={styles.formInput}
-                            value={checkOutCleaningFee}
-                            onChange={(e) => setCheckOutCleaningFee(e.target.value)}
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label className={styles.formLabel}>🛠️ ค่าซ่อมแซม/ของชำรุด (บาท)</label>
-                          <input
-                            type="number"
-                            className={styles.formInput}
-                            value={checkOutRepairFee}
-                            onChange={(e) => setCheckOutRepairFee(e.target.value)}
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label className={styles.formLabel}>📑 ค่าบริการอื่นๆ (บาท)</label>
-                          <input
-                            type="number"
-                            className={styles.formInput}
-                            value={checkOutOtherDeductions}
-                            onChange={(e) => setCheckOutOtherDeductions(e.target.value)}
-                          />
-                        </div>
+                      <div style={{ marginTop: '0.5rem', gridColumn: '1 / -1' }}>
+                        <label className={styles.formLabel}>📝 รายการค่าใช้จ่ายเพิ่มเติม (หักจากผู้เช่า)</label>
+                        {checkOutOtherFees.map((fee, idx) => (
+                          <div key={`checkout-fee-${idx}`} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            <input type="text" className={styles.formInput} value={fee.name} onChange={(e) => { const newF = [...checkOutOtherFees]; newF[idx].name = e.target.value; setCheckOutOtherFees(newF); }} placeholder="ชื่อรายการ (เช่น ค่าทำความสะอาด, ค่าซ่อมแซม)" />
+                            <input type="number" step="any" className={styles.formInput} value={fee.amount} onChange={(e) => { const newF = [...checkOutOtherFees]; newF[idx].amount = e.target.value; setCheckOutOtherFees(newF); }} placeholder="จำนวนเงิน" />
+                            <button type="button" style={{ background: 'none', border: 'none', color: 'var(--status-danger)', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => { const newF = checkOutOtherFees.filter((_, i) => i !== idx); setCheckOutOtherFees(newF); }}>&times;</button>
+                          </div>
+                        ))}
+                        <button type="button" style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: 'var(--status-info)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem', padding: 0 }} onClick={() => setCheckOutOtherFees([...checkOutOtherFees, { name: '', amount: '' }])}>
+                          <span style={{ fontSize: '1.2rem' }}>+</span> เพิ่มรายการค่าใช้จ่าย
+                        </button>
+                      </div>
                         <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                           <label className={styles.formLabel}>📝 หมายเหตุการย้ายออก</label>
                           <input
@@ -462,12 +439,23 @@ export default function CheckOutModal({
                     {(() => {
                       const waterRate = selectedRoom.floor?.building?.waterRate || 18;
                       const elecRate = selectedRoom.floor?.building?.electricityRate || 8;
-                      const prevWater = selectedRoom.prevWater || 0;
-                      const prevElec = selectedRoom.prevElec || 0;
-                      const finalWaterNum = checkOutFinalWater ? parseFloat(checkOutFinalWater) : prevWater;
-                      const finalElecNum = checkOutFinalElec ? parseFloat(checkOutFinalElec) : prevElec;
-                      const waterUnits = Math.max(0, finalWaterNum - prevWater);
-                      const elecUnits = Math.max(0, finalElecNum - prevElec);
+                      let derivedPrevWater = 0;
+                      let derivedPrevElec = 0;
+                      if (selectedRoom.currentWater !== undefined && selectedRoom.currentWater !== null) {
+                        derivedPrevWater = selectedRoom.currentWater;
+                        derivedPrevElec = selectedRoom.currentElec;
+                      } else if (selectedRoom.prevWater !== undefined && selectedRoom.prevWater !== null) {
+                        derivedPrevWater = selectedRoom.prevWater;
+                        derivedPrevElec = selectedRoom.prevElec;
+                      } else if (selectedRoom.readings && selectedRoom.readings.length > 0) {
+                        derivedPrevWater = selectedRoom.readings[0].waterValue;
+                        derivedPrevElec = selectedRoom.readings[0].electricityValue;
+                      }
+
+                      const finalWaterNum = checkOutFinalWater ? parseFloat(checkOutFinalWater) : derivedPrevWater;
+                      const finalElecNum = checkOutFinalElec ? parseFloat(checkOutFinalElec) : derivedPrevElec;
+                      const waterUnits = Math.max(0, finalWaterNum - derivedPrevWater);
+                      const elecUnits = Math.max(0, finalElecNum - derivedPrevElec);
                       const waterCost = waterUnits * waterRate;
                       const elecCost = elecUnits * elecRate;
 
@@ -483,9 +471,10 @@ export default function CheckOutModal({
                       const kcDeposit = activeCheckOutTenant.keycardDeposit || 0;
                       const kcReturned = parseInt(checkOutKeycardsReturned || '0');
                       const kcRefund = kcCount > 0 ? (kcReturned / kcCount) * kcDeposit : 0;
-                      const cleanFee = parseFloat(checkOutCleaningFee || '0');
-                      const repFee = parseFloat(checkOutRepairFee || '0');
-                      const othDed = parseFloat(checkOutOtherDeductions || '0');
+                      const otherFeesTotal = checkOutOtherFees.reduce((sum, fee) => {
+                        const amt = parseFloat(fee.amount);
+                        return sum + (isNaN(amt) ? 0 : amt);
+                      }, 0);
 
                       let proratedRefund = 0;
                       if (checkOutRefundProratedRent) {
@@ -498,14 +487,14 @@ export default function CheckOutModal({
                       }
 
                       const totalRefundable = secDeposit + kcRefund + proratedRefund;
-                      const totalDeductions = waterCost + elecCost + cleanFee + repFee + othDed;
+                      const totalDeductions = waterCost + elecCost + otherFeesTotal;
                       const netRefund = totalRefundable - totalDeductions;
 
                       return (
                         <div
                           style={{
                             backgroundColor: '#0f172a',
-                            color: '#fff',
+                            color: '#ffffff',
                             padding: '1rem 1.25rem',
                             borderRadius: 'var(--radius-md)',
                             marginTop: '0.5rem',
@@ -555,12 +544,15 @@ export default function CheckOutModal({
                                 ➕ คืนค่าเช่าส่วนเฉลี่ย: <strong style={{ color: '#4ade80' }}>+{proratedRefund.toLocaleString()} ฿</strong>
                               </div>
                             )}
-                            <div>
-                              🧹 ค่าทำความสะอาด: <strong style={{ color: '#f87171' }}>-{cleanFee.toLocaleString()} ฿</strong>
-                            </div>
-                            <div>
-                              🛠️ ค่าซ่อมแซม/อื่นๆ: <strong style={{ color: '#f87171' }}>-{(repFee + othDed).toLocaleString()} ฿</strong>
-                            </div>
+                            {checkOutOtherFees.map((fee, idx) => {
+                              const amt = parseFloat(fee.amount);
+                              if (isNaN(amt) || amt <= 0 || !fee.name.trim()) return null;
+                              return (
+                                <div key={`prev-fee-${idx}`}>
+                                  📝 {fee.name}: <strong style={{ color: '#f87171' }}>-{amt.toLocaleString()} ฿</strong>
+                                </div>
+                              );
+                            })}
                           </div>
                           <div
                             style={{
@@ -592,9 +584,9 @@ export default function CheckOutModal({
                 <button
                   type="submit"
                   className={`${styles.btn} ${
-                    checkOutActionType === 'RECORD_NOTICE_ONLY' ? styles.btnSecondary : styles.btnPrimary
+                    checkOutActionType === 'RECORD_NOTICE_ONLY' ? '' : styles.btnPrimary
                   }`}
-                  style={checkOutActionType === 'RECORD_NOTICE_ONLY' ? { backgroundColor: '#3b82f6', color: '#fff' } : {}}
+                  style={checkOutActionType === 'RECORD_NOTICE_ONLY' ? { backgroundColor: 'var(--status-info)', color: '#ffffff', boxShadow: 'var(--shadow-glow-info, 0 4px 15px rgba(59, 130, 246, 0.4))' } : {}}
                 >
                   {checkOutActionType === 'RECORD_NOTICE_ONLY'
                     ? '📌 บันทึกรับแจ้งย้ายออกล่วงหน้า'
@@ -609,7 +601,7 @@ export default function CheckOutModal({
       {/* --- MODAL 2.3: CHECK-OUT SUMMARY RECEIPT MODAL --- */}
       {showCheckOutReceiptModal && checkOutReceiptData && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalCard} style={{ maxWidth: '650px', backgroundColor: '#fff', color: '#0f172a' }}>
+          <div className={styles.modalCard} style={{ maxWidth: '650px', backgroundColor: '#ffffff', color: '#0f172a' }}>
             <div className={styles.modalHeader} style={{ borderBottom: '2px solid #e2e8f0' }}>
               <h2 className={styles.modalTitle} style={{ color: '#0f172a' }}>
                 📄 ใบสรุปการย้ายออกและคืนเงินมัดจำ
@@ -634,7 +626,7 @@ export default function CheckOutModal({
                 style={{
                   padding: '0.85rem 1rem',
                   border: '1px solid #cbd5e1',
-                  borderRadius: '6px',
+                  borderRadius: 'var(--radius-md)',
                   marginBottom: '1.25rem',
                   fontSize: '0.9rem',
                   display: 'grid',
@@ -705,20 +697,14 @@ export default function CheckOutModal({
                       -{checkOutReceiptData.elecCost.toLocaleString()} ฿
                     </td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '0.5rem 0.6rem' }}>🧹 ค่าทำความสะอาดห้องพัก</td>
-                    <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', color: '#dc2626' }}>
-                      -{checkOutReceiptData.cleanFee.toLocaleString()} ฿
-                    </td>
-                  </tr>
-                  {(checkOutReceiptData.repFee > 0 || checkOutReceiptData.othDed > 0) && (
-                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '0.5rem 0.6rem' }}>🛠️ ค่าซ่อมแซม/ความเสียหายอุปกรณ์</td>
+                  {checkOutReceiptData.otherFeeDetails && checkOutReceiptData.otherFeeDetails.map((fee: any, idx: number) => (
+                    <tr key={`receipt-fee-${idx}`} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '0.5rem 0.6rem' }}>📝 {fee.name}</td>
                       <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right', color: '#dc2626' }}>
-                        -{(checkOutReceiptData.repFee + checkOutReceiptData.othDed).toLocaleString()} ฿
+                        -{fee.amount.toLocaleString()} ฿
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
 
@@ -728,7 +714,7 @@ export default function CheckOutModal({
                   padding: '1rem',
                   backgroundColor: '#f8fafc',
                   border: '2px solid #0284c7',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--radius-md)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',

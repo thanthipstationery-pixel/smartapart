@@ -90,7 +90,7 @@ export default function PaymentModal({
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ยอดคงค้างที่ต้องชำระ:</span>
-                  <p style={{ fontWeight: 'bold', fontSize: '1.1rem', margin: 0, color: '#ef4444' }}>
+                  <p style={{ fontWeight: 'bold', fontSize: '1.1rem', margin: 0, color: 'var(--status-danger)' }}>
                     {remainingDue.toLocaleString()} บาท
                   </p>
                 </div>
@@ -108,7 +108,7 @@ export default function PaymentModal({
                   }}
                 >
                   <span>ยอดบิลเต็ม: {selectedInvoice.totalAmount.toLocaleString()} บ.</span>
-                  <span style={{ color: '#10b981', fontWeight: 600 }}>ชำระแล้วสะสม: {approvedPaid.toLocaleString()} บ.</span>
+                  <span style={{ color: 'var(--status-success)', fontWeight: 600 }}>ชำระแล้วสะสม: {approvedPaid.toLocaleString()} บ.</span>
                 </div>
               )}
 
@@ -169,7 +169,7 @@ export default function PaymentModal({
                     <img
                       src={paymentSlipImage}
                       alt="Slip Preview"
-                      style={{ maxHeight: '150px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                      style={{ maxHeight: '150px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
                     />
                   </div>
                 )}

@@ -45,7 +45,7 @@ export default function FloorMapTab({
           <span>ค้างชำระ (Overdue)</span>
         </div>
         <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: '#f59e0b', backgroundColor: '#fef3c7' }}></div>
+          <div className={styles.legendDot} style={{ borderColor: 'var(--status-warning)', backgroundColor: 'var(--status-warning-bg)' }}></div>
           <span>📌 แจ้งย้ายออก (Notice Out)</span>
         </div>
         <div className={styles.legendItem}>
@@ -103,8 +103,8 @@ export default function FloorMapTab({
       {activeBuilding && (
         <div className={styles.sectionCard}>
           <div className={styles.floorContainer}>
-            {/* Floor rows listed backwards so highest floor is at the top visually */}
-            {[...activeBuilding.floors].reverse().map((floor: any) => (
+            {/* Floor rows listed in ascending order */}
+            {[...activeBuilding.floors].map((floor: any) => (
               <div key={floor.id} className={styles.floorRow}>
                 <div className={styles.floorHeader}>ชั้นที่ {floor.number}</div>
                 <div className={styles.roomsGrid}>
@@ -181,13 +181,13 @@ export default function FloorMapTab({
                               <div>📅 เข้าพัก: {new Date(room.activeTenant.startDate).toLocaleDateString('th-TH')}</div>
                             )}
                             {room.activeTenant.expectedCheckOutDate && (
-                              <div style={{ color: '#fbbf24', fontWeight: 600 }}>📌 กำหนดออก: {new Date(room.activeTenant.expectedCheckOutDate).toLocaleDateString('th-TH')}</div>
+                              <div style={{ color: 'var(--status-warning)', fontWeight: 600 }}>📌 กำหนดออก: {new Date(room.activeTenant.expectedCheckOutDate).toLocaleDateString('th-TH')}</div>
                             )}
                             <div style={{ marginTop: '2px' }}>
                               {room.hasUnpaidInvoice ? (
-                                <span style={{ color: '#f87171', fontWeight: 600 }}>⚠️ มีบิลค้างชำระ</span>
+                                <span style={{ color: 'var(--status-danger)', fontWeight: 600 }}>⚠️ มีบิลค้างชำระ</span>
                               ) : (
-                                <span style={{ color: '#4ade80', fontWeight: 600 }}>✅ ปกติ (ไม่มีบิลค้าง)</span>
+                                <span style={{ color: 'var(--status-success)', fontWeight: 600 }}>✅ ปกติ (ไม่มีบิลค้าง)</span>
                               )}
                             </div>
                           </div>
@@ -264,10 +264,10 @@ export default function FloorMapTab({
                           <div style={{
                             fontSize: '0.66rem',
                             fontWeight: 700,
-                            backgroundColor: '#fef3c7',
+                            backgroundColor: 'var(--status-warning-bg)',
                             color: '#b45309',
                             padding: '0.12rem 0.3rem',
-                            borderRadius: '4px',
+                            borderRadius: 'var(--radius-md)',
                             border: '1px solid #fde047',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',

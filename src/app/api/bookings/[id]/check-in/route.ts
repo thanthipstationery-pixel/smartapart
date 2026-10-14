@@ -7,7 +7,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const { startDate, idCard, email, lineId, startingWaterMeter, startingElecMeter } = await request.json();
+    const body = (await request.json()) as any;
+    const { startDate, idCard, email, lineId, startingWaterMeter, startingElecMeter } = body || {};
 
     const booking = await prisma.booking.findUnique({
       where: { id },

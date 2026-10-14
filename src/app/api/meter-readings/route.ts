@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(readings);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching meter readings:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการดึงข้อมูลมิเตอร์' },
@@ -35,7 +35,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { roomId, waterValue, electricityValue, readingDate, allowDownwardCorrection } = await request.json();
+    const body = (await request.json()) as any;
+    const { roomId, waterValue, electricityValue, readingDate, allowDownwardCorrection } = body || {};
 
     if (!roomId) {
       return NextResponse.json(
@@ -154,7 +155,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(savedReading);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving meter reading:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดในการบันทึกค่ามิเตอร์' },

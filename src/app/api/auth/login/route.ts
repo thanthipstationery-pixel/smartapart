@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { signJWT } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const body = (await request.json()) as any;
+    const { username, password } = body || {};
 
     if (!username || !password) {
       return NextResponse.json(
@@ -55,15 +56,15 @@ export async function POST(request: Request) {
       name: 'admin_session',
       value: token,
       httpOnly: true,
-      secure: false, // Must be false in dev (HTTP), true only in production (HTTPS)
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
       maxAge: 60 * 60 * 24, // 24 hours
     });
 
     return response;
-  } catch (error) {
-    console.error('Login API Error:', error);
+  } catch (error: any) {
+    console.error('Login Error:', error);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดจากทางเซิร์ฟเวอร์' },
       { status: 500 }

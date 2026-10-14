@@ -28,7 +28,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const { name, phone, email, address, lineId, geminiApiKey } = await request.json();
+    const body = (await request.json()) as any;
+    const { name, phone, email, address, lineId, geminiApiKey } = body || {};
 
     if (!name) {
       return NextResponse.json({ error: 'กรุณาระบุชื่อกิจการ' }, { status: 400 });

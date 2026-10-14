@@ -43,3 +43,11 @@ prisma/dev.db
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# backups & scratch
+_backup*
+*.backup
+*.log
+*.err
+.superpowers/sdd/
+

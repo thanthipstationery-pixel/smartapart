@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { image } = await request.json();
+    const body = (await request.json()) as any;
+    const { image } = body || {};
 
     if (!image) {
       return NextResponse.json({ error: 'ไม่พบข้อมูลรูปถ่ายบัตรประชาชน' }, { status: 400 });
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       }
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as any;
     const candidateText = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // Extract JSON block from response text

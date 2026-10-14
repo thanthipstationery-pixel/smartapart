@@ -137,6 +137,13 @@ export default function InvoiceDetailModal({
 
   styles,
 }: InvoiceDetailModalProps) {
+  const formatRate = (rate: any) => {
+    if (typeof rate === 'number') {
+      return Number.isInteger(rate) ? rate : Number(rate.toFixed(2));
+    }
+    return rate;
+  };
+
   return (
     <>
       {/* --- MODAL 3: INVOICE GENERATOR MODAL --- */}
@@ -396,7 +403,7 @@ export default function InvoiceDetailModal({
                             style={{
                               background: 'none',
                               border: 'none',
-                              color: '#ef4444',
+                              color: 'var(--status-danger)',
                               cursor: 'pointer',
                               fontSize: '1.1rem',
                               padding: '0 0.3rem',
@@ -529,7 +536,7 @@ export default function InvoiceDetailModal({
                       padding: '0.35rem 0.75rem',
                       fontSize: '0.85rem',
                       fontWeight: 'bold',
-                      backgroundColor: activePrintTab === 'receipt' ? '#10b981' : 'transparent',
+                      backgroundColor: activePrintTab === 'receipt' ? 'var(--status-success)' : 'transparent',
                       color: activePrintTab === 'receipt' ? '#ffffff' : 'var(--text-secondary)',
                       boxShadow: 'none',
                     }}
@@ -550,7 +557,7 @@ export default function InvoiceDetailModal({
                 <button
                   type="button"
                   className={`${styles.btn} ${styles.btnSecondary}`}
-                  style={{ fontSize: '0.85rem', backgroundColor: '#f59e0b', color: '#ffffff', border: 'none', fontWeight: 'bold' }}
+                  style={{ fontSize: '0.85rem', backgroundColor: 'var(--status-warning)', color: 'var(--text-primary)', border: 'none', fontWeight: 'bold' }}
                   onClick={() => handleOpenEditInvoiceModal(selectedInvoice)}
                 >
                   ✏️ แก้ไขใบแจ้งหนี้
@@ -589,8 +596,8 @@ export default function InvoiceDetailModal({
                   <div
                     className="a5-printable-card"
                     style={{
-                      backgroundColor: '#ffffff',
-                      color: '#000000',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-primary)',
                       padding: '16px 20px',
                       border: '1px solid #000000',
                       borderRadius: '2px',
@@ -610,8 +617,8 @@ export default function InvoiceDetailModal({
                     {/* Black Title Banner: ใบเสร็จรับเงิน */}
                     <div
                       style={{
-                        backgroundColor: '#000000',
-                        color: '#ffffff',
+                        backgroundColor: 'var(--text-primary)',
+                        color: 'var(--text-primary)',
                         textAlign: 'center',
                         fontWeight: 'bold',
                         fontSize: '18px',
@@ -712,10 +719,10 @@ export default function InvoiceDetailModal({
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {selectedInvoice.room.waterBillingType === 'FLAT'
                               ? 'เหมาจ่าย'
-                              : selectedInvoice.waterRate ??
+                              : formatRate(selectedInvoice.waterRate ??
                                 (selectedInvoice.waterCost > 0 && selectedInvoice.currentWater - selectedInvoice.previousWater > 0
                                   ? selectedInvoice.waterCost / (selectedInvoice.currentWater - selectedInvoice.previousWater)
-                                  : selectedInvoice.room.floor.building.waterRate)}
+                                  : selectedInvoice.room.floor.building.waterRate))}
                           </td>
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {Math.max(0, selectedInvoice.currentWater - selectedInvoice.previousWater)}
@@ -735,10 +742,10 @@ export default function InvoiceDetailModal({
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {selectedInvoice.room.elecBillingType === 'FLAT'
                               ? 'เหมาจ่าย'
-                              : selectedInvoice.electricityRate ??
+                              : formatRate(selectedInvoice.electricityRate ??
                                 (selectedInvoice.electricityCost > 0 && selectedInvoice.currentElec - selectedInvoice.previousElec > 0
                                   ? selectedInvoice.electricityCost / (selectedInvoice.currentElec - selectedInvoice.previousElec)
-                                  : selectedInvoice.room.floor.building.electricityRate)}
+                                  : selectedInvoice.room.floor.building.electricityRate))}
                           </td>
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {Math.max(0, selectedInvoice.currentElec - selectedInvoice.previousElec)}
@@ -817,8 +824,8 @@ export default function InvoiceDetailModal({
                   <div
                     className="a5-printable-card"
                     style={{
-                      backgroundColor: '#ffffff',
-                      color: '#000000',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-primary)',
                       padding: '16px 20px',
                       border: '1px solid #000000',
                       borderRadius: '2px',
@@ -838,8 +845,8 @@ export default function InvoiceDetailModal({
                     {/* Black Title Banner: ใบแจ้งหนี้ */}
                     <div
                       style={{
-                        backgroundColor: '#000000',
-                        color: '#ffffff',
+                        backgroundColor: 'var(--text-primary)',
+                        color: 'var(--text-primary)',
                         textAlign: 'center',
                         fontWeight: 'bold',
                         fontSize: '18px',
@@ -940,10 +947,10 @@ export default function InvoiceDetailModal({
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {selectedInvoice.room.waterBillingType === 'FLAT'
                               ? 'เหมาจ่าย'
-                              : selectedInvoice.waterRate ??
+                              : formatRate(selectedInvoice.waterRate ??
                                 (selectedInvoice.waterCost > 0 && selectedInvoice.currentWater - selectedInvoice.previousWater > 0
                                   ? selectedInvoice.waterCost / (selectedInvoice.currentWater - selectedInvoice.previousWater)
-                                  : selectedInvoice.room.floor.building.waterRate)}
+                                  : selectedInvoice.room.floor.building.waterRate))}
                           </td>
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {Math.max(0, selectedInvoice.currentWater - selectedInvoice.previousWater)}
@@ -963,10 +970,10 @@ export default function InvoiceDetailModal({
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {selectedInvoice.room.elecBillingType === 'FLAT'
                               ? 'เหมาจ่าย'
-                              : selectedInvoice.electricityRate ??
+                              : formatRate(selectedInvoice.electricityRate ??
                                 (selectedInvoice.electricityCost > 0 && selectedInvoice.currentElec - selectedInvoice.previousElec > 0
                                   ? selectedInvoice.electricityCost / (selectedInvoice.currentElec - selectedInvoice.previousElec)
-                                  : selectedInvoice.room.floor.building.electricityRate)}
+                                  : selectedInvoice.room.floor.building.electricityRate))}
                           </td>
                           <td style={{ borderRight: '1px solid #000000', padding: '4px 8px', textAlign: 'center' }}>
                             {Math.max(0, selectedInvoice.currentElec - selectedInvoice.previousElec)}
@@ -1047,11 +1054,11 @@ export default function InvoiceDetailModal({
                             justifyContent: 'space-between',
                             backgroundColor: '#fafafa',
                             padding: '8px 12px',
-                            borderRadius: '4px',
+                            borderRadius: 'var(--radius-md)',
                           }}
                         >
                           <div style={{ fontSize: '11px', color: '#333333' }}>
-                            <div style={{ fontWeight: 'bold', color: '#000', fontSize: '12px' }}>📲 สแกนชำระเงินด้วย PromptPay</div>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '12px' }}>📲 สแกนชำระเงินด้วย PromptPay</div>
                             <div>ยอดชำระ: <strong>{selectedInvoice.totalAmount.toLocaleString()} บาท</strong></div>
                             <div>ชื่อบัญชี: <strong>{accName}</strong></div>
                             {bObj?.promptPayId && <div>เลข PromptPay: <strong>{bObj.promptPayId}</strong></div>}
@@ -1060,10 +1067,10 @@ export default function InvoiceDetailModal({
                             <img
                               src={qrImgUrl}
                               alt="PromptPay QR Code"
-                              style={{ width: '75px', height: '75px', objectFit: 'contain', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: '#fff' }}
+                              style={{ width: '75px', height: '75px', objectFit: 'contain', border: '1px solid #cbd5e1', borderRadius: 'var(--radius-md)', backgroundColor: '#ffffff' }}
                             />
                           ) : (
-                            <div style={{ fontSize: '0.72rem', color: '#64748b', textAlign: 'center', padding: '0.4rem', border: '1px dashed #cbd5e1', borderRadius: '4px' }}>
+                            <div style={{ fontSize: '0.72rem', color: '#64748b', textAlign: 'center', padding: '0.4rem', border: '1px dashed #cbd5e1', borderRadius: 'var(--radius-md)' }}>
                               ยังไม่ได้ตั้งค่า<br />รูป QR Code
                             </div>
                           )}
@@ -1266,7 +1273,7 @@ export default function InvoiceDetailModal({
                         {editOtherFeeItems.length > 1 && (
                           <button
                             type="button"
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.1rem' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--status-danger)', cursor: 'pointer', fontSize: '1.1rem' }}
                             onClick={() => setEditOtherFeeItems(editOtherFeeItems.filter((i) => i.id !== item.id))}
                           >
                             &times;

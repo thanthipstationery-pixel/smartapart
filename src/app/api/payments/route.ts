@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { invoiceId, amountPaid, paymentMethod, slipImage, status } = await request.json();
+    const body = (await request.json()) as any;
+    const { invoiceId, amountPaid, paymentMethod, slipImage, status } = body || {};
 
     if (!invoiceId || amountPaid === undefined) {
       return NextResponse.json(
