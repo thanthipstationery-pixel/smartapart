@@ -1576,3 +1576,235 @@
   box-shadow: var(--shadow-glow-danger, 0 6px 20px rgba(244, 63, 94, 0.6));
   transform: translateY(-2px);
 }
+
+/* ============================================================
+   ⚙️ Settings Tab Responsive Form & Grid Styles
+   ============================================================ */
+
+/* Building selector row */
+.settingsBuildingSelectorRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.settingsBuildingSelectorRow select {
+  max-width: 320px;
+  width: 100%;
+}
+
+/* Building Settings Card */
+.settingsBuildingCard {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  background: var(--card-bg);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 2 Columns on Desktop, Single Column stack on Mobile/Tablet */
+.settingsBuildingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Contact sub-grid: 2 cols on Desktop, 1 col on Mobile */
+.settingsContactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* PromptPay sub-grid: 2 cols on Desktop, 1 col on Mobile */
+.settingsPromptPayGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* QR Code upload row */
+.settingsQrRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.settingsQrInput {
+  flex: 1 1 200px;
+  min-width: 0 !important;
+}
+
+.settingsQrUploadBtn {
+  margin: 0 !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  background-color: var(--status-info-text);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+/* Utility rates grid: 2x2 on Desktop, 2 cols or 1 col on Mobile */
+.settingsRatesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+/* Database Backup grid: 2 cols on Desktop, 1 col on Mobile */
+.settingsBackupGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.settingsBackupCard {
+  padding: 1.5rem;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-inset);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Property form grid: auto-fit on Desktop, 1 col on Mobile */
+.settingsPropertyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Section 4 Filter container */
+.settingsFilterCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-inset);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.settingsFilterRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.settingsAdvancedFilterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 860px) {
+  .settingsBuildingGrid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .settingsBackupGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .settingsFilterRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .settingsBuildingCard {
+    padding: 1rem 0.75rem;
+  }
+
+  .settingsBackupCard {
+    padding: 1rem 0.75rem;
+  }
+
+  .settingsFilterCard {
+    padding: 1rem 0.75rem;
+  }
+
+  .settingsContactGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .settingsPromptPayGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .settingsPropertyGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .settingsQrRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .settingsQrInput {
+    width: 100%;
+    flex: none;
+  }
+
+  .settingsQrUploadBtn {
+    width: 100%;
+    padding: 0.65rem;
+  }
+
+  .settingsBuildingSelectorRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .settingsBuildingSelectorRow select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .settingsRatesGrid {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+  }
+
+  .settingsAdvancedFilterGrid {
+    grid-template-columns: 1fr;
+  }
+}

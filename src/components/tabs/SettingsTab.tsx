@@ -217,7 +217,253 @@ export default function SettingsTab({
 
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Section 0: Global Property & AI API Key Settings */}
+      {/* Section 1: Database & Backups */}
+      <div className={styles.sectionCard}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: 'var(--radius-md)',
+              background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              boxShadow: 'var(--shadow-sm)',
+              fontSize: '1.2rem',
+              flexShrink: 0,
+            }}
+          >
+            🗄️
+          </div>
+          <div>
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+              จัดการฐานข้อมูลและสำรองข้อมูล (Database & Backups)
+            </h2>
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              สำรองข้อมูลฐานข้อมูลและกู้คืนข้อมูลแบบ 1-Click สำหรับจัดการข้อมูลทั้งหมดของระบบ (Property, อาคาร, ห้องพัก, ผู้เช่า, บิล, มิเตอร์ และการชำระเงิน)
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.settingsBackupGrid}>
+          {/* Card 1: Database Backup */}
+          <div className={styles.settingsBackupCard}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.3rem' }}>📦</span>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  สำรองข้อมูลฐานข้อมูล (Database Backup)
+                </h3>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
+                สำรองข้อมูลทั้งหมดของระบบออกมาเป็นไฟล์ SQL (.sql) รวมทั้งข้อมูลกิจการ, อาคาร, ห้องพัก, ผู้เช่า, บันทึกมิเตอร์, ใบแจ้งหนี้ และประวัติการรับชำระเงินทั้งหมด เพื่อเก็บรักษาหรือย้ายเครื่อง
+              </p>
+              <div
+                style={{
+                  padding: '0.75rem 1rem',
+                  backgroundColor: 'var(--status-info-bg, rgba(59, 130, 246, 0.08))',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  borderRadius: 'var(--radius-md)',
+                  marginBottom: '1.25rem',
+                  fontSize: '0.8rem',
+                  color: 'var(--status-info-text, #1e40af)',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                }}
+              >
+                <span style={{ fontSize: '1rem', flexShrink: 0 }}>💡</span>
+                <span>
+                  คำแนะนำ: ควรสำรองข้อมูลเป็นประจำทุกสิ้นเดือน หรือก่อนเริ่มรอบบิลใหม่ เพื่อป้องกันการสูญหายของข้อมูล
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDownloadBackup}
+              disabled={isExporting}
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1.25rem',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                cursor: isExporting ? 'not-allowed' : 'pointer',
+                opacity: isExporting ? 0.7 : 1,
+              }}
+            >
+              {isExporting ? (
+                <>
+                  <svg
+                    style={{ animation: 'spin 1s linear infinite' }}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="12" y1="2" x2="12" y2="6"></line>
+                    <line x1="12" y1="18" x2="12" y2="22"></line>
+                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                    <line x1="2" y1="12" x2="6" y2="12"></line>
+                    <line x1="18" y1="12" x2="22" y2="12"></line>
+                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                  </svg>
+                  <span>กำลังดาวน์โหลดไฟล์สำรอง...</span>
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>📥 ดาวน์โหลดไฟล์สำรอง (.sql)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Card 2: Database Restore */}
+          <div className={styles.settingsBackupCard}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.3rem' }}>⚠️</span>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  กู้คืนข้อมูลจากไฟล์สำรอง (Database Restore)
+                </h3>
+              </div>
+
+              {/* แถบเตือนสีส้มแดง */}
+              <div
+                style={{
+                  padding: '0.85rem 1rem',
+                  backgroundColor: 'var(--status-danger-bg, #fef2f2)',
+                  border: '1px solid var(--status-danger, #ef4444)',
+                  borderRadius: 'var(--radius-md)',
+                  marginBottom: '1.25rem',
+                  color: 'var(--status-danger-text, #991b1b)',
+                  fontSize: '0.82rem',
+                  lineHeight: 1.5,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.6rem',
+                }}
+              >
+                <span style={{ fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}>⚠️</span>
+                <div>
+                  <strong style={{ display: 'block', marginBottom: '0.2rem' }}>
+                    คำเตือน: การกู้คืนจะล้างข้อมูลเดิมและแทนที่ด้วยข้อมูลจากไฟล์สำรองทั้งหมด
+                  </strong>
+                  <span>กรุณาตรวจสอบไฟล์ให้ถูกต้องก่อนดำเนินการ ข้อมูลปัจจุบันที่ไม่ตรงกับไฟล์สำรองจะสูญหายถาวร</span>
+                </div>
+              </div>
+
+              {/* File input group */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label
+                  className={styles.formLabel}
+                  style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', display: 'block' }}
+                >
+                  เลือกไฟล์สำรอง (.sql) ที่ต้องการกู้คืน:
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".sql"
+                  onChange={handleFileChange}
+                  className={styles.formInput}
+                  style={{
+                    padding: '0.5rem',
+                    fontSize: '0.85rem',
+                    backgroundColor: 'var(--card-bg)',
+                    cursor: 'pointer',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {restoreFile && (
+                  <div
+                    style={{
+                      marginTop: '0.5rem',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      backgroundColor: 'var(--card-bg)',
+                      padding: '0.4rem 0.75rem',
+                      borderRadius: 'var(--radius-sm, 6px)',
+                      border: '1px dashed var(--border-color)',
+                    }}
+                  >
+                    <span>📄 {restoreFile.name} ({formatFileSize(restoreFile.size)})</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRestoreFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--status-danger, #ef4444)',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        padding: 0,
+                      }}
+                    >
+                      ✕ นำออก
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenRestoreModal}
+              disabled={!restoreFile}
+              className={`${styles.btn} ${styles.btnDanger}`}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1.25rem',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                cursor: !restoreFile ? 'not-allowed' : 'pointer',
+                opacity: !restoreFile ? 0.5 : 1,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>⚠️ กู้คืนข้อมูลทันที</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Section 2: Global Property & AI API Key Settings */}
       <div className={styles.sectionCard}>
         <h2 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>🏢 ตั้งค่าข้อมูลกิจการ & Google Gemini AI Key (Property & System Settings)</h2>
         <form
@@ -249,7 +495,7 @@ export default function SettingsTab({
             }
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div className={styles.settingsPropertyGrid}>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>ชื่อกิจการ / อพาร์ทเมนท์หลัก *</label>
               <input
@@ -522,17 +768,17 @@ export default function SettingsTab({
         </form>
       </div>
 
-      {/* Section 1: Building & Utilities Rate Settings */}
+      {/* Section 3: Building & Utilities Rate Settings */}
       <div className={styles.sectionCard}>
         <h2 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>ตั้งค่าอัตราสาธารณูปโภคและข้อมูลติดต่อประจำตึก (Building & Utility Settings)</h2>
 
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <div className={styles.settingsBuildingSelectorRow}>
           <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>เลือกอาคารที่ต้องการตั้งค่า:</span>
           <select
             value={settingsBuildingId}
             onChange={(e) => setSettingsBuildingId(e.target.value)}
             className={styles.formInput}
-            style={{ maxWidth: '300px', padding: '0.5rem' }}
+            style={{ padding: '0.5rem' }}
           >
             {buildings.map((b) => (
               <option key={b.id} value={b.id}>
@@ -551,14 +797,7 @@ export default function SettingsTab({
           return (
             <div
               key={b.id}
-              style={{
-                border: '1px solid var(--border-color)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-card)',
-                padding: '1.5rem',
-                background: 'var(--card-bg)',
-                maxWidth: '800px',
-              }}
+              className={styles.settingsBuildingCard}
             >
               <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', margin: '0 0 1.25rem 0', fontSize: '1.15rem', color: 'var(--primary-color)' }}>
                 ตั้งค่าอาคาร: {b.name}
@@ -616,200 +855,201 @@ export default function SettingsTab({
                   }
                 }}
               >
-                <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-                  <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่ออาคาร *</label>
-                  <input
-                    type="text"
-                    name="bName"
-                    defaultValue={b.name}
-                    className={styles.formInput}
-                    required
-                  />
-                </div>
+                <div className={styles.settingsBuildingGrid}>
+                  {/* Column 1: ข้อมูลอาคาร & ช่องทางติดต่อ */}
+                  <div>
+                    <h4 style={{ margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      📋 ข้อมูลอาคารและสถานที่ตั้ง
+                    </h4>
 
-                <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-                  <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ที่ตั้งอาคาร (แสดงบนหัวบิลใบแจ้งหนี้)</label>
-                  <textarea
-                    name="bAddress"
-                    defaultValue={b.address || ''}
-                    className={styles.formInput}
-                    style={{ minHeight: '80px', fontFamily: 'inherit' }}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เบอร์โทรติดต่อ</label>
-                    <input
-                      type="text"
-                      name="bPhone"
-                      defaultValue={b.phone || ''}
-                      className={styles.formInput}
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>Line ID</label>
-                    <input
-                      type="text"
-                      name="bLineId"
-                      defaultValue={b.lineId || ''}
-                      className={styles.formInput}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-                  <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>อีเมลติดต่อ</label>
-                  <input
-                    type="email"
-                    name="bEmail"
-                    defaultValue={b.email || ''}
-                    className={styles.formInput}
-                  />
-                </div>
-
-                <h4 style={{ margin: '1.25rem 0 0.75rem 0', paddingBottom: '0.25rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600 }}>
-                  📲 ตั้งค่า PromptPay QR Code รับเงินประจำตึก
-                </h4>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เลข PromptPay (เบอร์โทร/เลขบัตร)</label>
-                    <input
-                      type="text"
-                      name="bPromptPayId"
-                      inputMode="numeric"
-                      pattern="[0-9-]*"
-                      placeholder="เช่น 0962624963"
-                      defaultValue={b.promptPayId || ''}
-                      className={styles.formInput}
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่อบัญชี PromptPay</label>
-                    <input
-                      type="text"
-                      name="bPromptPayName"
-                      placeholder="เช่น ธารทิพย์ อพาร์ทเมนท์"
-                      defaultValue={b.promptPayName || b.name || ''}
-                      className={styles.formInput}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.formGroup} style={{ marginBottom: '1.25rem' }}>
-                  <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>รูปภาพ PromptPay QR Code (อัปโหลดรูปประจำตึก)</label>
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      type="text"
-                      name="bPromptPayQrUrl"
-                      id={`qrUrl-${b.id}`}
-                      placeholder="https://... หรืออัปโหลดรูปฝั่งขวา"
-                      defaultValue={b.promptPayQrUrl || ''}
-                      className={styles.formInput}
-                      style={{ flex: 1, minWidth: '200px' }}
-                    />
-                    <label
-                      className={styles.btn}
-                      style={{
-                        margin: 0,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        fontSize: '0.85rem',
-                        backgroundColor: 'var(--status-info-text)',
-                        color: '#fff',
-                        fontWeight: 600,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      📷 อัปโหลดรูป QR
+                    <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่ออาคาร *</label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={(evt) => {
-                          const file = evt.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                              const targetInput = document.getElementById(`qrUrl-${b.id}`) as HTMLInputElement;
-                              if (targetInput && e.target?.result) {
-                                targetInput.value = e.target.result as string;
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
+                        type="text"
+                        name="bName"
+                        defaultValue={b.name}
+                        className={styles.formInput}
+                        required
                       />
-                    </label>
-                  </div>
-                </div>
+                    </div>
 
-                <h4 style={{ margin: '1.25rem 0 0.75rem 0', paddingBottom: '0.25rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600 }}>ตั้งค่าอัตราสาธารณูปโภค</h4>
+                    <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ที่ตั้งอาคาร (แสดงบนหัวบิลใบแจ้งหนี้)</label>
+                      <textarea
+                        name="bAddress"
+                        defaultValue={b.address || ''}
+                        className={styles.formInput}
+                        style={{ minHeight: '80px', fontFamily: 'inherit' }}
+                      />
+                    </div>
 
-                <div className={styles.formGroup} style={{ marginBottom: '1.25rem', padding: '1.5rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-inset)' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>
-                    <input
-                      type="checkbox"
-                      name="bUseDynamicUtilityRate"
-                      defaultChecked={b.useDynamicUtilityRate}
-                      style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                    />
-                    เปิดใช้งานระบบคำนวณค่าน้ำ-ไฟตามกฎหมาย สคบ. (Dynamic Rate)
-                  </label>
-                  <p style={{ margin: '0.5rem 0 0 2rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    หากเปิดใช้งาน ระบบจะคำนวณบิลค่าน้ำ-ไฟแบบขั้นบันไดหรือตามเงื่อนไขที่กฎหมายกำหนด
-                  </p>
-                </div>
+                    <div className={styles.settingsContactGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เบอร์โทรติดต่อ</label>
+                        <input
+                          type="text"
+                          name="bPhone"
+                          defaultValue={b.phone || ''}
+                          className={styles.formInput}
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>Line ID</label>
+                        <input
+                          type="text"
+                          name="bLineId"
+                          defaultValue={b.lineId || ''}
+                          className={styles.formInput}
+                        />
+                      </div>
+                    </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำ (บาท/หน่วย) *</label>
-                    <input
-                      type="number"
-                      step="any"
-                      inputMode="decimal"
-                      name="wRate"
-                      defaultValue={b.waterRate}
-                      className={styles.formInput}
-                      required
-                    />
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>อีเมลติดต่อ</label>
+                      <input
+                        type="email"
+                        name="bEmail"
+                        defaultValue={b.email || ''}
+                        className={styles.formInput}
+                      />
+                    </div>
                   </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าไฟ (บาท/หน่วย) *</label>
-                    <input
-                      type="number"
-                      step="any"
-                      inputMode="decimal"
-                      name="eRate"
-                      defaultValue={b.electricityRate}
-                      className={styles.formInput}
-                      required
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำขั้นต่ำ (บาท)</label>
-                    <input
-                      type="number"
-                      step="any"
-                      inputMode="decimal"
-                      name="minWater"
-                      defaultValue={b.minimumWaterCost || 0}
-                      className={styles.formInput}
-                    />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าปรับชำระล่าช้า (บาท)</label>
-                    <input
-                      type="number"
-                      step="any"
-                      inputMode="decimal"
-                      name="lFee"
-                      defaultValue={b.lateFee || 0}
-                      className={styles.formInput}
-                    />
+
+                  {/* Column 2: การเงิน & อัตราสาธารณูปโภค */}
+                  <div>
+                    <h4 style={{ margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      📲 ตั้งค่า PromptPay QR Code รับเงินประจำตึก
+                    </h4>
+
+                    <div className={styles.settingsPromptPayGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เลข PromptPay (เบอร์โทร/เลขบัตร)</label>
+                        <input
+                          type="text"
+                          name="bPromptPayId"
+                          inputMode="numeric"
+                          pattern="[0-9-]*"
+                          placeholder="เช่น 0962624963"
+                          defaultValue={b.promptPayId || ''}
+                          className={styles.formInput}
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่อบัญชี PromptPay</label>
+                        <input
+                          type="text"
+                          name="bPromptPayName"
+                          placeholder="เช่น ธารทิพย์ อพาร์ทเมนท์"
+                          defaultValue={b.promptPayName || b.name || ''}
+                          className={styles.formInput}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '1.25rem' }}>
+                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>รูปภาพ PromptPay QR Code (อัปโหลดรูปประจำตึก)</label>
+                      <div className={styles.settingsQrRow}>
+                        <input
+                          type="text"
+                          name="bPromptPayQrUrl"
+                          id={`qrUrl-${b.id}`}
+                          placeholder="https://... หรืออัปโหลดรูปฝั่งขวา"
+                          defaultValue={b.promptPayQrUrl || ''}
+                          className={`${styles.formInput} ${styles.settingsQrInput}`}
+                        />
+                        <label
+                          className={`${styles.btn} ${styles.settingsQrUploadBtn}`}
+                        >
+                          📷 อัปโหลดรูป QR
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(evt) => {
+                              const file = evt.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                  const targetInput = document.getElementById(`qrUrl-${b.id}`) as HTMLInputElement;
+                                  if (targetInput && e.target?.result) {
+                                    targetInput.value = e.target.result as string;
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <h4 style={{ margin: '1.25rem 0 0.75rem 0', paddingBottom: '0.25rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      ⚡ ตั้งค่าอัตราสาธารณูปโภค
+                    </h4>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-inset)' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                        <input
+                          type="checkbox"
+                          name="bUseDynamicUtilityRate"
+                          defaultChecked={b.useDynamicUtilityRate}
+                          style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                        />
+                        เปิดใช้งานระบบคำนวณค่าน้ำ-ไฟตามกฎหมาย สคบ. (Dynamic Rate)
+                      </label>
+                      <p style={{ margin: '0.4rem 0 0 1.95rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        หากเปิดใช้งาน ระบบจะคำนวณบิลค่าน้ำ-ไฟแบบขั้นบันไดหรือตามเงื่อนไขที่กฎหมายกำหนด
+                      </p>
+                    </div>
+
+                    <div className={styles.settingsRatesGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำ (บาท/หน่วย) *</label>
+                        <input
+                          type="number"
+                          step="any"
+                          inputMode="decimal"
+                          name="wRate"
+                          defaultValue={b.waterRate}
+                          className={styles.formInput}
+                          required
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าไฟ (บาท/หน่วย) *</label>
+                        <input
+                          type="number"
+                          step="any"
+                          inputMode="decimal"
+                          name="eRate"
+                          defaultValue={b.electricityRate}
+                          className={styles.formInput}
+                          required
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำขั้นต่ำ (บาท)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          inputMode="decimal"
+                          name="minWater"
+                          defaultValue={b.minimumWaterCost || 0}
+                          className={styles.formInput}
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าปรับชำระล่าช้า (บาท)</label>
+                        <input
+                          type="number"
+                          step="any"
+                          inputMode="decimal"
+                          name="lFee"
+                          defaultValue={b.lateFee || 0}
+                          className={styles.formInput}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -818,8 +1058,9 @@ export default function SettingsTab({
                   className={`${styles.btn} ${styles.btnPrimary}`}
                   style={{
                     width: '100%',
-                    padding: '0.65rem 1rem',
-                    fontSize: '0.9rem',
+                    marginTop: '1.5rem',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.95rem',
                     fontWeight: 'bold',
                     display: 'flex',
                     justifyContent: 'center',
@@ -827,7 +1068,7 @@ export default function SettingsTab({
                     textAlign: 'center',
                   }}
                 >
-                  บันทึกการตั้งค่าอาคาร
+                  💾 บันทึกการตั้งค่าอาคาร
                 </button>
               </form>
             </div>
@@ -835,7 +1076,7 @@ export default function SettingsTab({
         })()}
       </div>
 
-      {/* Section 2: Room List & Settings */}
+      {/* Section 4: Room List & Settings */}
       <div className={styles.sectionCard}>
         <h2 className={styles.sectionTitle}>ข้อมูลห้องพักและราคาเช่ารายห้อง (Rooms List & Rates)</h2>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
@@ -843,21 +1084,9 @@ export default function SettingsTab({
         </p>
 
         {/* Advanced Responsive Filter Bar */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            background: 'var(--bg-color)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-inset)',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-          }}
-        >
+        <div className={styles.settingsFilterCard}>
           {/* Row 1: Building & Search */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          <div className={styles.settingsFilterRow}>
             <div className={styles.formGroup} style={{ marginBottom: 0 }}>
               <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>อาคาร</label>
               <select
@@ -914,7 +1143,7 @@ export default function SettingsTab({
 
           {/* Row 2: Advanced Dropdowns */}
           {showRoomsAdvancedFilters && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+            <div className={styles.settingsAdvancedFilterGrid}>
               <div className={styles.formGroup} style={{ marginBottom: 0 }}>
                 <label className={styles.formLabel} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>ประเภทห้องพัก</label>
                 <select
@@ -1259,273 +1488,6 @@ export default function SettingsTab({
             </>
           );
         })()}
-      </div>
-
-      {/* Section 3: Database & Backups */}
-      <div className={styles.sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              boxShadow: 'var(--shadow-sm)',
-              fontSize: '1.2rem',
-              flexShrink: 0,
-            }}
-          >
-            🗄️
-          </div>
-          <div>
-            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
-              จัดการฐานข้อมูลและสำรองข้อมูล (Database & Backups)
-            </h2>
-            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              สำรองข้อมูลฐานข้อมูลและกู้คืนข้อมูลแบบ 1-Click สำหรับจัดการข้อมูลทั้งหมดของระบบ (Property, อาคาร, ห้องพัก, ผู้เช่า, บิล, มิเตอร์ และการชำระเงิน)
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
-          {/* Card 1: Database Backup */}
-          <div
-            style={{
-              padding: '1.5rem',
-              backgroundColor: 'var(--bg-color)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-inset)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>📦</span>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  สำรองข้อมูลฐานข้อมูล (Database Backup)
-                </h3>
-              </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
-                สำรองข้อมูลทั้งหมดของระบบออกมาเป็นไฟล์ SQL (.sql) รวมทั้งข้อมูลกิจการ, อาคาร, ห้องพัก, ผู้เช่า, บันทึกมิเตอร์, ใบแจ้งหนี้ และประวัติการรับชำระเงินทั้งหมด เพื่อเก็บรักษาหรือย้ายเครื่อง
-              </p>
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  backgroundColor: 'var(--status-info-bg, rgba(59, 130, 246, 0.08))',
-                  border: '1px solid rgba(59, 130, 246, 0.2)',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '1.25rem',
-                  fontSize: '0.8rem',
-                  color: 'var(--status-info-text, #1e40af)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.5rem',
-                }}
-              >
-                <span style={{ fontSize: '1rem', flexShrink: 0 }}>💡</span>
-                <span>
-                  คำแนะนำ: ควรสำรองข้อมูลเป็นประจำทุกสิ้นเดือน หรือก่อนเริ่มรอบบิลใหม่ เพื่อป้องกันการสูญหายของข้อมูล
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleDownloadBackup}
-              disabled={isExporting}
-              className={`${styles.btn} ${styles.btnPrimary}`}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                cursor: isExporting ? 'not-allowed' : 'pointer',
-                opacity: isExporting ? 0.7 : 1,
-              }}
-            >
-              {isExporting ? (
-                <>
-                  <svg
-                    style={{ animation: 'spin 1s linear infinite' }}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="12" y1="2" x2="12" y2="6"></line>
-                    <line x1="12" y1="18" x2="12" y2="22"></line>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                    <line x1="2" y1="12" x2="6" y2="12"></line>
-                    <line x1="18" y1="12" x2="22" y2="12"></line>
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                  </svg>
-                  <span>กำลังดาวน์โหลดไฟล์สำรอง...</span>
-                </>
-              ) : (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  <span>📥 ดาวน์โหลดไฟล์สำรอง (.sql)</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Card 2: Database Restore */}
-          <div
-            style={{
-              padding: '1.5rem',
-              backgroundColor: 'var(--bg-color)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-inset)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>⚠️</span>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  กู้คืนข้อมูลจากไฟล์สำรอง (Database Restore)
-                </h3>
-              </div>
-
-              {/* แถบเตือนสีส้มแดง */}
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  backgroundColor: 'var(--status-danger-bg, #fef2f2)',
-                  border: '1px solid var(--status-danger, #ef4444)',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '1.25rem',
-                  color: 'var(--status-danger-text, #991b1b)',
-                  fontSize: '0.82rem',
-                  lineHeight: 1.5,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                }}
-              >
-                <span style={{ fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}>⚠️</span>
-                <div>
-                  <strong style={{ display: 'block', marginBottom: '0.2rem' }}>
-                    คำเตือน: การกู้คืนจะล้างข้อมูลเดิมและแทนที่ด้วยข้อมูลจากไฟล์สำรองทั้งหมด
-                  </strong>
-                  <span>กรุณาตรวจสอบไฟล์ให้ถูกต้องก่อนดำเนินการ ข้อมูลปัจจุบันที่ไม่ตรงกับไฟล์สำรองจะสูญหายถาวร</span>
-                </div>
-              </div>
-
-              {/* File input group */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label
-                  className={styles.formLabel}
-                  style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', display: 'block' }}
-                >
-                  เลือกไฟล์สำรอง (.sql) ที่ต้องการกู้คืน:
-                </label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".sql"
-                  onChange={handleFileChange}
-                  className={styles.formInput}
-                  style={{
-                    padding: '0.5rem',
-                    fontSize: '0.85rem',
-                    backgroundColor: 'var(--card-bg)',
-                    cursor: 'pointer',
-                    width: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                />
-                {restoreFile && (
-                  <div
-                    style={{
-                      marginTop: '0.5rem',
-                      fontSize: '0.8rem',
-                      color: 'var(--text-secondary)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      backgroundColor: 'var(--card-bg)',
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: 'var(--radius-sm, 6px)',
-                      border: '1px dashed var(--border-color)',
-                    }}
-                  >
-                    <span>📄 {restoreFile.name} ({formatFileSize(restoreFile.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRestoreFile(null);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--status-danger, #ef4444)',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        padding: 0,
-                      }}
-                    >
-                      ✕ นำออก
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleOpenRestoreModal}
-              disabled={!restoreFile}
-              className={`${styles.btn} ${styles.btnDanger}`}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                cursor: !restoreFile ? 'not-allowed' : 'pointer',
-                opacity: !restoreFile ? 0.5 : 1,
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-              <span>⚠️ กู้คืนข้อมูลทันที</span>
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Safety Confirmation Modal */}
