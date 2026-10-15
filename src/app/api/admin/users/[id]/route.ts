@@ -78,34 +78,45 @@ async function authenticateOwner(request: Request | NextRequest): Promise<AuthRe
   if (!userId) {
     const admin = await prisma.admin.findUnique({
       where: { username: payload.username },
-      select: { id: true, isActive: true },
+      select: { id: true, isActive: true, role: true },
     });
-    if (!admin || !admin.isActive) {
+    if (!admin || !admin.isActive || admin.role !== 'OWNER') {
       return {
         success: false,
         response: NextResponse.json(
-          { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งานหรือไม่มีในระบบ' },
+          { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งาน ไม่มีในระบบ หรือไม่มีสิทธิ์ OWNER' },
           { status: 403 }
         ),
       };
     }
     userId = admin.id;
   } else {
-    // If user exists in DB, ensure isActive is not false
     const admin = await prisma.admin.findUnique({
       where: { id: userId },
-      select: { isActive: true },
+      select: { id: true, isActive: true, role: true },
     });
-    if (admin && !admin.isActive) {
+    if (!admin) {
+      if (userId !== 'legacy-external-owner-id') {
+        return {
+          success: false,
+          response: NextResponse.json(
+            { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งาน ไม่มีในระบบ หรือไม่มีสิทธิ์ OWNER' },
+            { status: 403 }
+          ),
+        };
+      }
+    } else if (!admin.isActive || admin.role !== 'OWNER') {
       return {
         success: false,
         response: NextResponse.json(
-          { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งาน' },
+          { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งาน ไม่มีในระบบ หรือไม่มีสิทธิ์ OWNER' },
           { status: 403 }
         ),
       };
     }
+
   }
+
 
   return {
     success: true,

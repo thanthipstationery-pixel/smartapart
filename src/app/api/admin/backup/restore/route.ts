@@ -52,6 +52,14 @@ export async function POST(request: NextRequest | Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (payload.role !== 'OWNER') {
+      return NextResponse.json(
+        { error: 'สงวนสิทธิ์เฉพาะผู้ดูแลระดับ OWNER เท่านั้น' },
+        { status: 403 }
+      );
+    }
+
+
     const contentType = request.headers.get('content-type') || '';
     let sqlContent: string | null = null;
 

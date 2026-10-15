@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -35,6 +36,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกมิเตอร์' },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as any;
     const { roomId, waterValue, electricityValue, readingDate, allowDownwardCorrection } = body || {};
 
@@ -44,6 +53,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
 
     const date = readingDate ? new Date(readingDate) : new Date();
     const year = date.getUTCFullYear();
@@ -130,6 +140,7 @@ export async function POST(request: Request) {
       }
     }
 
+    const operatorName = session?.name || session?.username || 'ระบบ';
     let savedReading;
     if (existingReading) {
       // Update existing reading for this month (correcting a mistake)
@@ -139,6 +150,7 @@ export async function POST(request: Request) {
           waterValue: water,
           electricityValue: elec,
           readingDate: date,
+          recordedBy: operatorName,
         },
       });
     } else {
@@ -149,10 +161,11 @@ export async function POST(request: Request) {
           waterValue: water,
           electricityValue: elec,
           readingDate: date,
-          recordedBy: 'admin',
+          recordedBy: operatorName,
         },
       });
     }
+
 
     return NextResponse.json(savedReading);
   } catch (error: any) {

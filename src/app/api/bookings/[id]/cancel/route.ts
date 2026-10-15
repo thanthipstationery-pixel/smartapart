@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ยกเลิกการจอง' },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = (await request.json()) as any;
+
     const { action } = body || {}; // "REFUND" or "FORFEIT"
 
     const booking = await prisma.booking.findUnique({

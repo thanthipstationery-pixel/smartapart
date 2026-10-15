@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกรับเงิน' },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as any;
     const { invoiceId, amountPaid, paymentMethod, slipImage, status } = body || {};
 
@@ -38,8 +47,10 @@ export async function POST(request: Request) {
           paymentMethod: paymentMethod || 'TRANSFER',
           slipImage: slipImage || null,
           status: paymentStatus,
+          recordedBy: session?.name || session?.username || 'ระบบ',
         },
       });
+
 
       // If payment is approved, aggregate all approved payments for this invoice
       if (paymentStatus === 'APPROVED') {

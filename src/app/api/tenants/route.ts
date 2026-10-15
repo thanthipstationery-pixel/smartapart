@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function GET(request: Request) {
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -43,7 +45,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ลงทะเบียนผู้เช่า' },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as any;
+
     const {
       name,
       phone,

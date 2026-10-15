@@ -50,3 +50,49 @@ export async function verifyJWT(token: string): Promise<JWTPayloadData | null> {
     return null;
   }
 }
+
+export async function getAuthSession(
+  request?: Request
+): Promise<JWTPayloadData | null> {
+  let token: string | undefined;
+
+  // 1. Try reading cookie via Next.js cookies() from next/headers
+  try {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    token = cookieStore.get('admin_session')?.value;
+  } catch {
+    // Outside Next request context (e.g. standalone tests or scripts)
+  }
+
+  // 2. Try NextRequest cookies if request object has .cookies
+  if (!token && request && 'cookies' in request && typeof (request as any).cookies?.get === 'function') {
+    token = (request as any).cookies.get('admin_session')?.value;
+  }
+
+  // 3. Fallback: Parse Cookie header directly
+  if (!token && request) {
+    const cookieHeader = request.headers.get('cookie');
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|;\s*)admin_session=([^;]+)/);
+      if (match) {
+        token = decodeURIComponent(match[1]);
+      }
+    }
+  }
+
+  // 4. Fallback: Authorization Bearer header
+  if (!token && request) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7).trim();
+    }
+  }
+
+  if (!token) {
+    return null;
+  }
+
+  return await verifyJWT(token);
+}
+
