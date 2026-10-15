@@ -1,18 +1,23 @@
 # SmartApart — Handoff Document
-Last updated: 2026-10-15 — Balanced Settings Layout & Header Theme Switcher Active ✅
+Last updated: 2026-10-15 — Complete User Management & Role-Based Access Control (RBAC) System Active ✅
 
 ## Production URL
 https://smartapart.ai-pro.workers.dev
-Current Version ID: 0c9b815b-3a7e-42fe-9c8a-e1da227304a4
+Current Version ID: acc0e093-bd71-40d2-8b88-944d52d4891f
 
-## Status: ALL APIs WORKING (verified 2026-10-14)
+## Status: ALL APIs WORKING (verified 2026-10-15)
 
 | Endpoint | Result |
 |---|---|
-| POST /api/auth/login | ✅ 200 |
-| GET /api/auth/me | ✅ 200 |
-| GET /api/admin/backup/export | ✅ 200 |
-| POST /api/admin/backup/restore | ✅ 200 |
+| POST /api/auth/login | ✅ 200 (Active status & role check) |
+| GET /api/auth/me | ✅ 200 (Returns id & role) |
+| POST /api/auth/change-password | ✅ 200 (Self-service password change) |
+| GET /api/admin/users | ✅ 200 (OWNER only) |
+| POST /api/admin/users | ✅ 201 (OWNER only) |
+| PUT /api/admin/users/[id] | ✅ 200 (OWNER only) |
+| DELETE /api/admin/users/[id] | ✅ 200 (OWNER only, protected invariants) |
+| GET /api/admin/backup/export | ✅ 200 (OWNER only) |
+| POST /api/admin/backup/restore | ✅ 200 (OWNER only) |
 | GET /api/property | ✅ 200 |
 | PUT /api/property | ✅ 200 |
 | GET /api/buildings | ✅ 200 |
@@ -23,7 +28,7 @@ Current Version ID: 0c9b815b-3a7e-42fe-9c8a-e1da227304a4
 | GET /api/invoices | ✅ 200 |
 | GET /api/invoices/[id] | ✅ 200 |
 | GET /api/meter-readings | ✅ 200 |
-| POST /api/meter-readings | ✅ 200 |
+| POST /api/meter-readings | ✅ 200 (records operator in recordedBy) |
 | GET /api/bookings | ✅ 200 |
 | GET /api/rooms/[id] | ✅ 200 |
 
@@ -234,7 +239,34 @@ Error 4: "Cannot read properties of undefined (reading 'default')"
   → Fix: patch wasm.js ให้ import จาก './wasm-worker-loader.mjs' โดยตรง ✅
 ```
 
+### 9. User Management & Role-Based Access Control (RBAC) (2026-10-15)
+- **Roles:**
+  - `OWNER` (👑 เจ้าของหอพัก): สิทธิ์สูงสุด จัดการระบบ, ผู้ใช้งาน, กู้คืน/สำรองฐานข้อมูล, และทำธุรกรรมทุกส่วน
+  - `STAFF` (👔 พนักงาน): ปฏิบัติการรายวัน (จดมิเตอร์, ออกบิล, บันทึกรับเงิน, จัดการผู้เช่า) ปิดกั้นการสำรอง/กู้คืนฐานข้อมูลและจัดการผู้ใช้
+  - `VIEWER` (👁️ ผู้ตรวจการ): โหมดตรวจการ (Read-Only) ดูข้อมูลและพิมพ์เอกสารรายงานได้เท่านั้น ได้รับ HTTP 403 Forbidden เมื่อพยายามสร้าง/แก้ไข/ลบข้อมูล
+- **Top Header Profile & Change Password:**
+  - Profile pill button ใน Header แสดง Avatar, ชื่อผู้ใช้, และ Role Badge
+  - Popover dropdown พร้อมเมนู "🔑 เปลี่ยนรหัสผ่านของฉัน" (เปิด `ChangePasswordModal`), "👥 จัดการผู้ใช้งานระบบ" (เฉพาะ OWNER), และ "🚪 ออกจากระบบ"
+  - แถบเตือนสีฟ้าสดใสสำหรับ `VIEWER`: "👁️ โหมดตรวจการ (Read-Only Mode): คุณสามารถดูข้อมูลและพิมพ์รายงานได้เท่านั้น"
+- **Settings Tab User Administration:**
+  - Section "👥 จัดการผู้ใช้งานและสิทธิ์เข้าถึงระบบ (User Management & Roles)" แสดงเฉพาะผู้ใช้ที่มีสิทธิ์ `OWNER`
+  - รองรับทั้ง Desktop Table และ Mobile Cards
+  - ป้องกัน Invariants: ห้ามลบบัญชีตนเอง, ห้ามลบ OWNER คนสุดท้ายของระบบ, ห้ามลดสิทธิ์ตนเอง หรือระงับบัญชีตนเอง
+  - `UserManagementModal`: โหมด `create` (สร้างผู้ใช้ใหม่), `edit` (แก้ไขชื่อ/เบอร์/สิทธิ์/สถานะ), `reset-password` (รีเซ็ตรหัสผ่านพนักงาน)
+- **Operational Accountability (`recordedBy`):**
+  - บันทึกชื่อหรือ username ของผู้ดำเนินการลงในฟิลด์ `recordedBy` อัตโนมัติในตาราง `MeterReading`, `Payment`, และ `Booking`
+  - แสดง Badge "📝 จดโดย: ..." บนหน้าจดมิเตอร์ และ "(ผู้รับชำระ: ...)" บนบันทึกการชำระเงิน
+- **D1 Migration Applied (2026-10-15):**
+  ```sql
+  ALTER TABLE Admin ADD COLUMN role TEXT NOT NULL DEFAULT 'OWNER';
+  ALTER TABLE Admin ADD COLUMN phone TEXT;
+  ALTER TABLE Admin ADD COLUMN isActive INTEGER NOT NULL DEFAULT 1;
+  ALTER TABLE Payment ADD COLUMN recordedBy TEXT;
+  ALTER TABLE Booking ADD COLUMN recordedBy TEXT;
+  ```
+
 ---
+
 
 ## Database
 - Cloudflare D1: `smartapart-db` (ID: b45375ef-d42c-4175-8e75-dcc764c8e647)
