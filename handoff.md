@@ -1,9 +1,9 @@
 # SmartApart — Handoff Document
-Last updated: 2026-10-14 — Security Hardened + Backup & Restore System Active ✅
+Last updated: 2026-10-15 — Balanced Settings Layout & Header Theme Switcher Active ✅
 
 ## Production URL
 https://smartapart.ai-pro.workers.dev
-Current Version ID: cfa51f77-5894-4422-9d63-40c7b019698c
+Current Version ID: 0c9b815b-3a7e-42fe-9c8a-e1da227304a4
 
 ## Status: ALL APIs WORKING (verified 2026-10-14)
 
