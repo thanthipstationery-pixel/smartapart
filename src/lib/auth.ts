@@ -15,20 +15,37 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
   throw new Error('[FATAL] JWT_SECRET environment variable is missing in production.');
 }
 
-export async function signJWT(payload: { username: string; name: string }) {
+export interface JWTPayloadData {
+  id?: string;
+  username: string;
+  name: string;
+  role?: string;
+}
+
+export async function signJWT(payload: JWTPayloadData): Promise<string> {
   const secret = getJwtSecret();
-  return new SignJWT(payload)
+  return new SignJWT({
+    id: payload.id || '',
+    username: payload.username,
+    name: payload.name,
+    role: payload.role || 'OWNER',
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
     .sign(secret);
 }
 
-export async function verifyJWT(token: string) {
+export async function verifyJWT(token: string): Promise<JWTPayloadData | null> {
   try {
     const secret = getJwtSecret();
     const { payload } = await jwtVerify(token, secret);
-    return payload as { username: string; name: string };
+    return {
+      id: (payload.id as string) || undefined,
+      username: payload.username as string,
+      name: payload.name as string,
+      role: (payload.role as string) || 'OWNER',
+    };
   } catch {
     return null;
   }

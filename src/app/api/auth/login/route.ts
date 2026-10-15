@@ -29,6 +29,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (admin.isActive === false || (admin as any).isActive === 0) {
+      return NextResponse.json(
+        { error: 'บัญชีผู้ใช้นี้ถูกระงับการใช้งานชั่วคราว กรุณาติดต่อผู้ดูแลระบบ' },
+        { status: 403 }
+      );
+    }
+
     const isMatch = await bcrypt.compare(cleanPassword, admin.password);
 
     if (!isMatch) {
@@ -39,15 +46,19 @@ export async function POST(request: NextRequest) {
     }
 
     const token = await signJWT({
+      id: admin.id,
       username: admin.username,
       name: admin.name,
+      role: admin.role,
     });
 
     const response = NextResponse.json({
       success: true,
       user: {
+        id: admin.id,
         username: admin.username,
         name: admin.name,
+        role: admin.role,
       },
     });
 
