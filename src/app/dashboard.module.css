@@ -846,6 +846,64 @@
   background-color: rgba(var(--status-unpaid-rgb, 244, 63, 94), 0.05);
 }
 
+/* Style Dropdown Popover */
+.styleDropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 220px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card-hover);
+  padding: 0.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  backdrop-filter: var(--glass-blur, none);
+  -webkit-backdrop-filter: var(--glass-blur, none);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.styleDropdownHeader {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.4rem 0.6rem 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.25rem;
+}
+
+.styleDropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  width: 100%;
+}
+
+.styleDropdownItem:hover {
+  background-color: var(--bg-color);
+}
+
+.styleDropdownItemActive {
+  background-color: rgba(99, 102, 241, 0.12);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
 /* Mobile responsive bottom navigation */
 .mobileNav {
   display: none;
@@ -1611,7 +1669,102 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;
+}
+
+/* Settings Section 3: Left & Right Balanced Columns */
+.settingsColLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.settingsSubCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+
+.settingsPromptPayCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.qrPreviewWrapper {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.qrPreviewBox {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.05) 0%, var(--bg-color) 50%, rgba(37, 99, 235, 0.03) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: var(--shadow-inset);
+  flex: 1;
+}
+
+.qrHeaderBadge {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 1.5rem;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  text-transform: uppercase;
+  box-shadow: var(--shadow-sm);
+}
+
+.qrImageFrame {
+  background-color: #ffffff;
+  padding: 0.75rem 1.25rem 1rem 1.25rem;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  border-top: none;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+}
+
+.qrImageFrame img {
+  width: 175px;
+  height: 175px;
+  object-fit: contain;
+  display: block;
+  border-radius: var(--radius-sm);
+}
+
+.qrImageFrame svg {
+  width: 175px;
+  height: 175px;
+  display: block;
 }
 
 /* Contact sub-grid: 2 cols on Desktop, 1 col on Mobile */
@@ -1746,6 +1899,17 @@
 @media (max-width: 600px) {
   .settingsBuildingCard {
     padding: 1rem 0.75rem;
+  }
+
+  .settingsSubCard,
+  .settingsPromptPayCard {
+    padding: 1rem 0.75rem;
+  }
+
+  .qrImageFrame img,
+  .qrImageFrame svg {
+    width: 140px;
+    height: 140px;
   }
 
   .settingsBackupCard {

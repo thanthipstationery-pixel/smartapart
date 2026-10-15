@@ -80,19 +80,19 @@ export default function SettingsTab({
   handleRoomClick,
   styles,
 }: SettingsTabProps) {
-  const [visualStyle, setVisualStyle] = React.useState('claymorphism');
+  // Building QR Code and PromptPay live preview state
+  const [qrPreviewUrl, setQrPreviewUrl] = React.useState('');
+  const [promptPayIdInput, setPromptPayIdInput] = React.useState('');
+  const [promptPayNameInput, setPromptPayNameInput] = React.useState('');
 
   React.useEffect(() => {
-    const current = document.documentElement.getAttribute('data-style') || 'claymorphism';
-    setVisualStyle(current);
-  }, []);
-
-  const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newStyle = e.target.value;
-    setVisualStyle(newStyle);
-    document.documentElement.setAttribute('data-style', newStyle);
-    localStorage.setItem('visualStyle', newStyle);
-  };
+    const currentBuilding = buildings.find((x) => x.id === settingsBuildingId);
+    if (currentBuilding) {
+      setQrPreviewUrl(currentBuilding.promptPayQrUrl || '');
+      setPromptPayIdInput(currentBuilding.promptPayId || '');
+      setPromptPayNameInput(currentBuilding.promptPayName || currentBuilding.name || '');
+    }
+  }, [settingsBuildingId, buildings]);
 
   // Database backup and restore state
   const [isExporting, setIsExporting] = React.useState(false);
@@ -549,39 +549,6 @@ export default function SettingsTab({
             </div>
             </div>
 
-          {/* Global Theme Switcher Setting Box */}
-          <div
-            style={{
-              padding: '1.25rem',
-              backgroundColor: 'var(--bg-color)',
-              border: 'var(--glass-border, 1px solid var(--border-color))',
-              borderRadius: 'var(--radius-lg)',
-              marginBottom: '1.25rem',
-              boxShadow: 'var(--shadow-inset)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  🎨 สไตล์แอปพลิเคชัน (App Visual Style)
-                </h3>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                  เลือกรูปแบบดีไซน์การแสดงผลของแอปพลิเคชันที่ต้องการ
-                </p>
-              </div>
-              <select
-                value={visualStyle}
-                onChange={handleStyleChange}
-                className={styles.formSelect}
-                style={{ width: 'auto', minWidth: '200px', cursor: 'pointer', backgroundColor: 'var(--card-bg)' }}
-              >
-                <option value="claymorphism">☁️ Claymorphism (นุ่มฟู 3 มิติ)</option>
-                <option value="flat">🔲 Flat / Minimalist (แบนเรียบ)</option>
-                <option value="glass">🧊 Glassmorphism (กระจกโปร่งแสง)</option>
-              </select>
-            </div>
-          </div>
-
           {/* Premium AI Gemini API Key Setting Box */}
           <div
             style={{
@@ -856,198 +823,283 @@ export default function SettingsTab({
                 }}
               >
                 <div className={styles.settingsBuildingGrid}>
-                  {/* Column 1: ข้อมูลอาคาร & ช่องทางติดต่อ */}
-                  <div>
-                    <h4 style={{ margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      📋 ข้อมูลอาคารและสถานที่ตั้ง
-                    </h4>
+                  {/* Column 1: ข้อมูลอาคาร & อัตราสาธารณูปโภค (2 Cards Stacked) */}
+                  <div className={styles.settingsColLeft}>
+                    {/* Subcard 1: ข้อมูลอาคารและสถานที่ตั้ง */}
+                    <div className={styles.settingsSubCard}>
+                      <h4 style={{ margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        📋 ข้อมูลอาคารและสถานที่ตั้ง
+                      </h4>
 
-                    <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่ออาคาร *</label>
-                      <input
-                        type="text"
-                        name="bName"
-                        defaultValue={b.name}
-                        className={styles.formInput}
-                        required
-                      />
-                    </div>
-
-                    <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ที่ตั้งอาคาร (แสดงบนหัวบิลใบแจ้งหนี้)</label>
-                      <textarea
-                        name="bAddress"
-                        defaultValue={b.address || ''}
-                        className={styles.formInput}
-                        style={{ minHeight: '80px', fontFamily: 'inherit' }}
-                      />
-                    </div>
-
-                    <div className={styles.settingsContactGrid}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เบอร์โทรติดต่อ</label>
+                      <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่ออาคาร *</label>
                         <input
                           type="text"
-                          name="bPhone"
-                          defaultValue={b.phone || ''}
+                          name="bName"
+                          defaultValue={b.name}
+                          className={styles.formInput}
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ที่ตั้งอาคาร (แสดงบนหัวบิลใบแจ้งหนี้)</label>
+                        <textarea
+                          name="bAddress"
+                          defaultValue={b.address || ''}
+                          className={styles.formInput}
+                          style={{ minHeight: '80px', fontFamily: 'inherit' }}
+                        />
+                      </div>
+
+                      <div className={styles.settingsContactGrid}>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เบอร์โทรติดต่อ</label>
+                          <input
+                            type="text"
+                            name="bPhone"
+                            defaultValue={b.phone || ''}
+                            className={styles.formInput}
+                          />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>Line ID</label>
+                          <input
+                            type="text"
+                            name="bLineId"
+                            defaultValue={b.lineId || ''}
+                            className={styles.formInput}
+                          />
+                        </div>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>อีเมลติดต่อ</label>
+                        <input
+                          type="email"
+                          name="bEmail"
+                          defaultValue={b.email || ''}
                           className={styles.formInput}
                         />
                       </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>Line ID</label>
-                        <input
-                          type="text"
-                          name="bLineId"
-                          defaultValue={b.lineId || ''}
-                          className={styles.formInput}
-                        />
-                      </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>อีเมลติดต่อ</label>
-                      <input
-                        type="email"
-                        name="bEmail"
-                        defaultValue={b.email || ''}
-                        className={styles.formInput}
-                      />
+                    {/* Subcard 2: ตั้งค่าอัตราสาธารณูปโภค */}
+                    <div className={styles.settingsSubCard}>
+                      <h4 style={{ margin: '0 0 0.85rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        ⚡ ตั้งค่าอัตราสาธารณูปโภค
+                      </h4>
+
+                      <div className={styles.formGroup} style={{ marginBottom: '1rem', padding: '0.85rem 1rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-inset)' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            name="bUseDynamicUtilityRate"
+                            defaultChecked={b.useDynamicUtilityRate}
+                            style={{ width: '1.15rem', height: '1.15rem', cursor: 'pointer' }}
+                          />
+                          เปิดใช้งานระบบคำนวณค่าน้ำ-ไฟตามกฎหมาย สคบ. (Dynamic Rate)
+                        </label>
+                        <p style={{ margin: '0.35rem 0 0 1.9rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          หากเปิดใช้งาน ระบบจะคำนวณบิลค่าน้ำ-ไฟแบบขั้นบันไดหรือตามเงื่อนไขที่กฎหมายกำหนด
+                        </p>
+                      </div>
+
+                      <div className={styles.settingsRatesGrid}>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำ (บาท/หน่วย) *</label>
+                          <input
+                            type="number"
+                            step="any"
+                            inputMode="decimal"
+                            name="wRate"
+                            defaultValue={b.waterRate}
+                            className={styles.formInput}
+                            required
+                          />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าไฟ (บาท/หน่วย) *</label>
+                          <input
+                            type="number"
+                            step="any"
+                            inputMode="decimal"
+                            name="eRate"
+                            defaultValue={b.electricityRate}
+                            className={styles.formInput}
+                            required
+                          />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำขั้นต่ำ (บาท)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            inputMode="decimal"
+                            name="minWater"
+                            defaultValue={b.minimumWaterCost || 0}
+                            className={styles.formInput}
+                          />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าปรับชำระล่าช้า (บาท)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            inputMode="decimal"
+                            name="lFee"
+                            defaultValue={b.lateFee || 0}
+                            className={styles.formInput}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Column 2: การเงิน & อัตราสาธารณูปโภค */}
-                  <div>
-                    <h4 style={{ margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      📲 ตั้งค่า PromptPay QR Code รับเงินประจำตึก
-                    </h4>
+                  {/* Column 2: PromptPay & ขยายขนาด Live QR Preview Card (Equal Height) */}
+                  <div className={styles.settingsPromptPayCard}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem 0', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-color)' }}>
+                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          📲 บัญชี PromptPay และ QR Code รับเงินประจำตึก
+                        </h4>
+                        <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(37, 99, 235, 0.1)', color: 'var(--status-info-text)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', fontWeight: 600 }}>
+                          สแกนจ่ายบนบิล
+                        </span>
+                      </div>
 
-                    <div className={styles.settingsPromptPayGrid}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เลข PromptPay (เบอร์โทร/เลขบัตร)</label>
+                      <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>เลข PromptPay (เบอร์โทร หรือ เลขบัตร/เลขภาษี)</label>
                         <input
                           type="text"
                           name="bPromptPayId"
                           inputMode="numeric"
                           pattern="[0-9-]*"
                           placeholder="เช่น 0962624963"
-                          defaultValue={b.promptPayId || ''}
+                          value={promptPayIdInput}
+                          onChange={(e) => setPromptPayIdInput(e.target.value)}
                           className={styles.formInput}
                         />
                       </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่อบัญชี PromptPay</label>
+
+                      <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ชื่อบัญชี PromptPay (แสดงบนหัวสลิปและใบแจ้งหนี้)</label>
                         <input
                           type="text"
                           name="bPromptPayName"
                           placeholder="เช่น ธารทิพย์ อพาร์ทเมนท์"
-                          defaultValue={b.promptPayName || b.name || ''}
+                          value={promptPayNameInput}
+                          onChange={(e) => setPromptPayNameInput(e.target.value)}
                           className={styles.formInput}
                         />
                       </div>
-                    </div>
 
-                    <div className={styles.formGroup} style={{ marginBottom: '1.25rem' }}>
-                      <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>รูปภาพ PromptPay QR Code (อัปโหลดรูปประจำตึก)</label>
-                      <div className={styles.settingsQrRow}>
-                        <input
-                          type="text"
-                          name="bPromptPayQrUrl"
-                          id={`qrUrl-${b.id}`}
-                          placeholder="https://... หรืออัปโหลดรูปฝั่งขวา"
-                          defaultValue={b.promptPayQrUrl || ''}
-                          className={`${styles.formInput} ${styles.settingsQrInput}`}
-                        />
-                        <label
-                          className={`${styles.btn} ${styles.settingsQrUploadBtn}`}
-                        >
-                          📷 อัปโหลดรูป QR
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>รูปภาพ PromptPay QR Code (อัปโหลดรูปประจำตึก)</label>
+                        <div className={styles.settingsQrRow}>
                           <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(evt) => {
-                              const file = evt.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                  const targetInput = document.getElementById(`qrUrl-${b.id}`) as HTMLInputElement;
-                                  if (targetInput && e.target?.result) {
-                                    targetInput.value = e.target.result as string;
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
+                            type="text"
+                            name="bPromptPayQrUrl"
+                            id={`qrUrl-${b.id}`}
+                            placeholder="https://... หรือกดอัปโหลดรูป"
+                            value={qrPreviewUrl}
+                            onChange={(e) => setQrPreviewUrl(e.target.value)}
+                            className={`${styles.formInput} ${styles.settingsQrInput}`}
                           />
-                        </label>
+                          <label className={`${styles.btn} ${styles.settingsQrUploadBtn}`}>
+                            📷 อัปโหลดรูป QR
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={(evt) => {
+                                const file = evt.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = (e) => {
+                                    const result = e.target?.result as string;
+                                    setQrPreviewUrl(result);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
 
-                    <h4 style={{ margin: '1.25rem 0 0.75rem 0', paddingBottom: '0.25rem', borderBottom: '1px dashed var(--border-color)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      ⚡ ตั้งค่าอัตราสาธารณูปโภค
-                    </h4>
+                    {/* Expanded Live QR Preview Box (ขยายขนาดให้สูงเต็มเท่าฝั่งซ้าย) */}
+                    <div className={styles.qrPreviewWrapper}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                          ✨ ตัวอย่าง QR Code สแกนจ่าย (สัดส่วนขยายใหญ่พอดีกรอบ)
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--status-paid-text)', fontWeight: 600 }}>
+                          ● Live Preview
+                        </span>
+                      </div>
 
-                    <div className={styles.formGroup} style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-inset)' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-                        <input
-                          type="checkbox"
-                          name="bUseDynamicUtilityRate"
-                          defaultChecked={b.useDynamicUtilityRate}
-                          style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                        />
-                        เปิดใช้งานระบบคำนวณค่าน้ำ-ไฟตามกฎหมาย สคบ. (Dynamic Rate)
-                      </label>
-                      <p style={{ margin: '0.4rem 0 0 1.95rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                        หากเปิดใช้งาน ระบบจะคำนวณบิลค่าน้ำ-ไฟแบบขั้นบันไดหรือตามเงื่อนไขที่กฎหมายกำหนด
-                      </p>
-                    </div>
+                      <div className={styles.qrPreviewBox}>
+                        <div className={styles.qrHeaderBadge}>
+                          THAI QR PAYMENT
+                        </div>
+                        <div className={styles.qrImageFrame}>
+                          {qrPreviewUrl ? (
+                            <img src={qrPreviewUrl} alt="PromptPay QR Code" />
+                          ) : (
+                            <svg viewBox="0 0 100 100" fill="currentColor">
+                              {/* Corner Markers */}
+                              <rect x="5" y="5" width="25" height="25" fill="#1e293b" rx="2" />
+                              <rect x="9" y="9" width="17" height="17" fill="#fff" rx="1" />
+                              <rect x="13" y="13" width="9" height="9" fill="#1e293b" />
 
-                    <div className={styles.settingsRatesGrid}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำ (บาท/หน่วย) *</label>
-                        <input
-                          type="number"
-                          step="any"
-                          inputMode="decimal"
-                          name="wRate"
-                          defaultValue={b.waterRate}
-                          className={styles.formInput}
-                          required
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าไฟ (บาท/หน่วย) *</label>
-                        <input
-                          type="number"
-                          step="any"
-                          inputMode="decimal"
-                          name="eRate"
-                          defaultValue={b.electricityRate}
-                          className={styles.formInput}
-                          required
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าน้ำขั้นต่ำ (บาท)</label>
-                        <input
-                          type="number"
-                          step="any"
-                          inputMode="decimal"
-                          name="minWater"
-                          defaultValue={b.minimumWaterCost || 0}
-                          className={styles.formInput}
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ fontSize: '0.85rem', fontWeight: 600 }}>ค่าปรับชำระล่าช้า (บาท)</label>
-                        <input
-                          type="number"
-                          step="any"
-                          inputMode="decimal"
-                          name="lFee"
-                          defaultValue={b.lateFee || 0}
-                          className={styles.formInput}
-                        />
+                              <rect x="70" y="5" width="25" height="25" fill="#1e293b" rx="2" />
+                              <rect x="74" y="9" width="17" height="17" fill="#fff" rx="1" />
+                              <rect x="78" y="13" width="9" height="9" fill="#1e293b" />
+
+                              <rect x="5" y="70" width="25" height="25" fill="#1e293b" rx="2" />
+                              <rect x="9" y="74" width="17" height="17" fill="#fff" rx="1" />
+                              <rect x="13" y="78" width="9" height="9" fill="#1e293b" />
+
+                              {/* Data pattern */}
+                              <rect x="35" y="8" width="6" height="6" fill="#1e293b" />
+                              <rect x="45" y="8" width="10" height="6" fill="#1e293b" />
+                              <rect x="35" y="18" width="8" height="8" fill="#1e293b" />
+                              <rect x="48" y="18" width="14" height="6" fill="#1e293b" />
+
+                              <rect x="8" y="38" width="14" height="8" fill="#1e293b" />
+                              <rect x="25" y="38" width="8" height="14" fill="#1e293b" />
+
+                              {/* Center Logo Frame */}
+                              <rect x="38" y="35" width="24" height="24" fill="#1e293b" rx="5" />
+                              <circle cx="50" cy="47" r="7" fill="#fff" />
+                              <circle cx="50" cy="47" r="4" fill="#2563eb" />
+
+                              <rect x="68" y="38" width="14" height="8" fill="#1e293b" />
+                              <rect x="86" y="38" width="6" height="18" fill="#1e293b" />
+
+                              <rect x="36" y="65" width="18" height="6" fill="#1e293b" />
+                              <rect x="40" y="75" width="8" height="16" fill="#1e293b" />
+                              <rect x="52" y="75" width="14" height="8" fill="#1e293b" />
+                              <rect x="72" y="68" width="20" height="10" fill="#1e293b" />
+                              <rect x="72" y="82" width="14" height="10" fill="#1e293b" />
+                            </svg>
+                          )}
+
+                          <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {promptPayNameInput || b.promptPayName || b.name}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.05em' }}>
+                              {promptPayIdInput || b.promptPayId || 'ยังไม่ได้ระบุเลขบัญชี'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <p style={{ margin: '0.6rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          💡 สแกนจ่ายบนบิล ขยายขนาดชัดเจน สแกนง่าย
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1059,7 +1111,7 @@ export default function SettingsTab({
                   style={{
                     width: '100%',
                     marginTop: '1.5rem',
-                    padding: '0.75rem 1rem',
+                    padding: '0.85rem 1rem',
                     fontSize: '0.95rem',
                     fontWeight: 'bold',
                     display: 'flex',
@@ -1068,7 +1120,7 @@ export default function SettingsTab({
                     textAlign: 'center',
                   }}
                 >
-                  💾 บันทึกการตั้งค่าอาคาร
+                  💾 บันทึกการตั้งค่าอาคาร: {b.name}
                 </button>
               </form>
             </div>

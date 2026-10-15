@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import styles from './dashboard.module.css';
@@ -62,6 +62,9 @@ const Icons = {
   Moon: () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
   ),
+  Palette: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+  ),
   Report: () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
   ),
@@ -76,6 +79,9 @@ export default function Dashboard() {
   // Dashboard states
   const [activeTab, setActiveTab] = useState<'overview' | 'map' | 'meter' | 'invoices' | 'tenants' | 'settings' | 'reports' | 'govbill'>('overview');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [visualStyle, setVisualStyle] = useState<'claymorphism' | 'flat' | 'glass'>('claymorphism');
+  const [showStyleMenu, setShowStyleMenu] = useState(false);
+  const styleMenuRef = useRef<HTMLDivElement>(null);
   const [adminUser, setAdminUser] = useState<{ username: string; name: string } | null>(null);
 
   // Initialize theme selection
@@ -93,19 +99,38 @@ export default function Dashboard() {
     }
 
     // Visual Style (Claymorphism, Flat, Glass)
-    const savedStyle = localStorage.getItem('visualStyle');
-    if (savedStyle) {
-      document.documentElement.setAttribute('data-style', savedStyle);
-    } else {
-      document.documentElement.setAttribute('data-style', 'claymorphism'); // Default
-    }
+    const savedStyle = (localStorage.getItem('visualStyle') as 'claymorphism' | 'flat' | 'glass') || 'claymorphism';
+    setVisualStyle(savedStyle);
+    document.documentElement.setAttribute('data-style', savedStyle);
   }, []);
+
+  // Close style menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (styleMenuRef.current && !styleMenuRef.current.contains(e.target as Node)) {
+        setShowStyleMenu(false);
+      }
+    };
+    if (showStyleMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showStyleMenu]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+  };
+
+  const changeVisualStyle = (style: 'claymorphism' | 'flat' | 'glass') => {
+    setVisualStyle(style);
+    document.documentElement.setAttribute('data-style', style);
+    localStorage.setItem('visualStyle', style);
+    setShowStyleMenu(false);
   };
   const [buildings, setBuildings] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -2018,6 +2043,46 @@ table { border-collapse: collapse; }
             )}
           </div>
           <div className={styles.headerActions}>
+            <div style={{ position: 'relative' }} ref={styleMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowStyleMenu((prev) => !prev)}
+                className={styles.themeToggleBtn}
+                aria-label="เปลี่ยนรูปแบบดีไซน์แอป"
+                title="เปลี่ยนรูปแบบดีไซน์แอป (Clay / Flat / Glass)"
+              >
+                <Icons.Palette />
+              </button>
+              {showStyleMenu && (
+                <div className={styles.styleDropdownMenu}>
+                  <div className={styles.styleDropdownHeader}>รูปแบบดีไซน์ (Style)</div>
+                  <button
+                    type="button"
+                    className={`${styles.styleDropdownItem} ${visualStyle === 'claymorphism' ? styles.styleDropdownItemActive : ''}`}
+                    onClick={() => changeVisualStyle('claymorphism')}
+                  >
+                    <span>☁️ Claymorphism</span>
+                    {visualStyle === 'claymorphism' && <span style={{ fontWeight: 'bold' }}>✓</span>}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.styleDropdownItem} ${visualStyle === 'flat' ? styles.styleDropdownItemActive : ''}`}
+                    onClick={() => changeVisualStyle('flat')}
+                  >
+                    <span>🔲 Flat / Minimal</span>
+                    {visualStyle === 'flat' && <span style={{ fontWeight: 'bold' }}>✓</span>}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.styleDropdownItem} ${visualStyle === 'glass' ? styles.styleDropdownItemActive : ''}`}
+                    onClick={() => changeVisualStyle('glass')}
+                  >
+                    <span>🧊 Glassmorphism</span>
+                    {visualStyle === 'glass' && <span style={{ fontWeight: 'bold' }}>✓</span>}
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={toggleTheme}
               className={styles.themeToggleBtn}
