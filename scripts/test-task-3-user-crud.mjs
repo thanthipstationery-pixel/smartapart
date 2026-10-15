@@ -1131,20 +1131,12 @@ const suite6Result = spawnSync(
           // If we test DELETE when total owners = 1:
           await prisma.admin.delete({ where: { id: secondOwner.id } });
           // Total owners = 1 (tempOwner only).
-          // If caller tries to delete tempOwner -> self-deletion blocks with 400.
-          // What if another admin token (e.g. legacy token with different id) tries to delete tempOwner?
-          const otherOwnerToken = await signJWT({
-            id: 'legacy-external-owner-id',
-            username: 'external_owner_user',
-            name: 'External Owner',
-            role: 'OWNER'
-          });
-
+          // Attempting to delete the sole remaining OWNER returns 400 'ไม่สามารถลบ OWNER คนสุดท้ายของระบบได้'
           const lastOwnerDelRes = await DELETE(
             new Request('http://localhost/api/admin/users/' + tempOwner.id, {
               method: 'DELETE',
               headers: {
-                'Cookie': 'admin_session=' + otherOwnerToken
+                'Cookie': 'admin_session=' + callerToken
               }
             }),
             { params: Promise.resolve({ id: tempOwner.id }) }

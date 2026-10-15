@@ -95,17 +95,7 @@ async function authenticateOwner(request: Request | NextRequest): Promise<AuthRe
       where: { id: userId },
       select: { id: true, isActive: true, role: true },
     });
-    if (!admin) {
-      if (userId !== 'legacy-external-owner-id') {
-        return {
-          success: false,
-          response: NextResponse.json(
-            { error: 'Forbidden: บัญชีผู้ใช้นี้ถูกระงับการใช้งาน ไม่มีในระบบ หรือไม่มีสิทธิ์ OWNER' },
-            { status: 403 }
-          ),
-        };
-      }
-    } else if (!admin.isActive || admin.role !== 'OWNER') {
+    if (!admin || !admin.isActive || admin.role !== 'OWNER') {
       return {
         success: false,
         response: NextResponse.json(
@@ -114,7 +104,6 @@ async function authenticateOwner(request: Request | NextRequest): Promise<AuthRe
         ),
       };
     }
-
   }
 
 
@@ -310,16 +299,7 @@ export async function DELETE(
       );
     }
 
-    // Invariant 1: No self-deletion
-    const isSelf = target.id === session.id || (session.username && target.username.toLowerCase() === session.username.toLowerCase());
-    if (isSelf) {
-      return NextResponse.json(
-        { error: 'ไม่สามารถลบบัญชีของตนเองได้' },
-        { status: 400 }
-      );
-    }
-
-    // Invariant 2: No last-owner deletion
+    // Invariant 1: No last-owner deletion
     if (target.role === 'OWNER') {
       const totalOwners = await prisma.admin.count({
         where: { role: 'OWNER' },
@@ -330,6 +310,15 @@ export async function DELETE(
           { status: 400 }
         );
       }
+    }
+
+    // Invariant 2: No self-deletion
+    const isSelf = target.id === session.id || (session.username && target.username.toLowerCase() === session.username.toLowerCase());
+    if (isSelf) {
+      return NextResponse.json(
+        { error: 'ไม่สามารถลบบัญชีของตนเองได้' },
+        { status: 400 }
+      );
     }
 
     await prisma.admin.delete({
