@@ -14,6 +14,9 @@ model Admin {
   username  String   @unique
   password  String   // Hashed password
   name      String
+  role      String   @default("OWNER")
+  phone     String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 }
 
@@ -94,6 +97,7 @@ model Booking {
   slipImage           String?
   note                String?
   status              String   @default("ACTIVE") // "ACTIVE", "CHECKED_IN", "CANCELLED_REFUNDED", "CANCELLED_FORFEITED"
+  recordedBy          String?
   createdAt           DateTime @default(now())
 }
 
@@ -194,6 +198,7 @@ model Payment {
   paymentMethod String        // "CASH", "TRANSFER"
   slipImage     String?       // URL or local path
   status        String        // "PENDING", "APPROVED", "REJECTED"
+  recordedBy    String?
 }
 
 model MeterReplacement {
