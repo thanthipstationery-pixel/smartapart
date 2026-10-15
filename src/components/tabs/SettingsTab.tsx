@@ -2,8 +2,10 @@
 
 import React from 'react';
 import { getShortBuildingName } from '@/lib/thaiDate';
+import UserManagementModal from '@/components/modals/UserManagementModal';
 
 interface SettingsTabProps {
+  currentUser?: { id?: string; username: string; name: string; role?: string } | null;
   propName: string;
   setPropName: (val: string) => void;
   propPhone: string;
@@ -43,6 +45,7 @@ interface SettingsTabProps {
 }
 
 export default function SettingsTab({
+  currentUser,
   propName,
   setPropName,
   propPhone,
@@ -80,6 +83,64 @@ export default function SettingsTab({
   handleRoomClick,
   styles,
 }: SettingsTabProps) {
+  // User Management state
+  const [users, setUsers] = React.useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = React.useState(false);
+  const [isUserModalOpen, setIsUserModalOpen] = React.useState(false);
+  const [userModalMode, setUserModalMode] = React.useState<'create' | 'edit' | 'reset-password'>('create');
+  const [selectedUser, setSelectedUser] = React.useState<any>(null);
+
+  const fetchUsers = React.useCallback(async () => {
+    if (currentUser?.role !== 'OWNER') return;
+    setLoadingUsers(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin users:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, [currentUser?.role]);
+
+  React.useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const totalOwners = users.filter((u) => u.role === 'OWNER').length;
+
+  const handleDeleteUser = async (u: any) => {
+    if (u.id === currentUser?.id) {
+      alert('ไม่สามารถลบบัญชีของตนเองได้');
+      return;
+    }
+    if (u.role === 'OWNER' && totalOwners <= 1) {
+      alert('ไม่สามารถลบ OWNER คนสุดท้ายของระบบได้');
+      return;
+    }
+    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีผู้ใช้ "${u.name}" (@${u.username})?\n\nการดำเนินการนี้ไม่สามารถเรียกคืนได้`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}`, {
+        method: 'DELETE',
+      });
+      const data = (await res.json().catch(() => ({}))) as any;
+      if (!res.ok) {
+        alert(data?.error || 'เกิดข้อผิดพลาดในการลบผู้ใช้งาน');
+        return;
+      }
+      alert('ลบบัญชีผู้ใช้เรียบร้อยแล้ว');
+      fetchUsers();
+    } catch (err: any) {
+      console.error('Delete user error:', err);
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    }
+  };
+
   // Building QR Code and PromptPay live preview state
   const [qrPreviewUrl, setQrPreviewUrl] = React.useState('');
   const [promptPayIdInput, setPromptPayIdInput] = React.useState('');
@@ -217,250 +278,614 @@ export default function SettingsTab({
 
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Section 1: Database & Backups */}
-      <div className={styles.sectionCard}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              boxShadow: 'var(--shadow-sm)',
-              fontSize: '1.2rem',
-              flexShrink: 0,
-            }}
-          >
-            🗄️
-          </div>
-          <div>
-            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
-              จัดการฐานข้อมูลและสำรองข้อมูล (Database & Backups)
-            </h2>
-            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              สำรองข้อมูลฐานข้อมูลและกู้คืนข้อมูลแบบ 1-Click สำหรับจัดการข้อมูลทั้งหมดของระบบ (Property, อาคาร, ห้องพัก, ผู้เช่า, บิล, มิเตอร์ และการชำระเงิน)
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.settingsBackupGrid}>
-          {/* Card 1: Database Backup */}
-          <div className={styles.settingsBackupCard}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>📦</span>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  สำรองข้อมูลฐานข้อมูล (Database Backup)
-                </h3>
-              </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
-                สำรองข้อมูลทั้งหมดของระบบออกมาเป็นไฟล์ SQL (.sql) รวมทั้งข้อมูลกิจการ, อาคาร, ห้องพัก, ผู้เช่า, บันทึกมิเตอร์, ใบแจ้งหนี้ และประวัติการรับชำระเงินทั้งหมด เพื่อเก็บรักษาหรือย้ายเครื่อง
-              </p>
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  backgroundColor: 'var(--status-info-bg, rgba(59, 130, 246, 0.08))',
-                  border: '1px solid rgba(59, 130, 246, 0.2)',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '1.25rem',
-                  fontSize: '0.8rem',
-                  color: 'var(--status-info-text, #1e40af)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.5rem',
-                }}
-              >
-                <span style={{ fontSize: '1rem', flexShrink: 0 }}>💡</span>
-                <span>
-                  คำแนะนำ: ควรสำรองข้อมูลเป็นประจำทุกสิ้นเดือน หรือก่อนเริ่มรอบบิลใหม่ เพื่อป้องกันการสูญหายของข้อมูล
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleDownloadBackup}
-              disabled={isExporting}
-              className={`${styles.btn} ${styles.btnPrimary}`}
+      {/* Section 1: Database & Backups (Strictly OWNER Only) */}
+      {currentUser?.role === 'OWNER' && (
+        <div className={styles.sectionCard}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div
               style={{
-                width: '100%',
-                padding: '0.75rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.9rem',
+                width: '36px',
+                height: '36px',
+                borderRadius: 'var(--radius-md)',
+                background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem',
-                cursor: isExporting ? 'not-allowed' : 'pointer',
-                opacity: isExporting ? 0.7 : 1,
+                color: '#fff',
+                boxShadow: 'var(--shadow-sm)',
+                fontSize: '1.2rem',
+                flexShrink: 0,
               }}
             >
-              {isExporting ? (
-                <>
-                  <svg
-                    style={{ animation: 'spin 1s linear infinite' }}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="12" y1="2" x2="12" y2="6"></line>
-                    <line x1="12" y1="18" x2="12" y2="22"></line>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                    <line x1="2" y1="12" x2="6" y2="12"></line>
-                    <line x1="18" y1="12" x2="22" y2="12"></line>
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                  </svg>
-                  <span>กำลังดาวน์โหลดไฟล์สำรอง...</span>
-                </>
-              ) : (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  <span>📥 ดาวน์โหลดไฟล์สำรอง (.sql)</span>
-                </>
-              )}
-            </button>
+              🗄️
+            </div>
+            <div>
+              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+                จัดการฐานข้อมูลและสำรองข้อมูล (Database & Backups)
+              </h2>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                สำรองข้อมูลฐานข้อมูลและกู้คืนข้อมูลแบบ 1-Click สำหรับจัดการข้อมูลทั้งหมดของระบบ (Property, อาคาร, ห้องพัก, ผู้เช่า, บิล, มิเตอร์ และการชำระเงิน)
+              </p>
+            </div>
           </div>
 
-          {/* Card 2: Database Restore */}
-          <div className={styles.settingsBackupCard}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>⚠️</span>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  กู้คืนข้อมูลจากไฟล์สำรอง (Database Restore)
-                </h3>
-              </div>
-
-              {/* แถบเตือนสีส้มแดง */}
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  backgroundColor: 'var(--status-danger-bg, #fef2f2)',
-                  border: '1px solid var(--status-danger, #ef4444)',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '1.25rem',
-                  color: 'var(--status-danger-text, #991b1b)',
-                  fontSize: '0.82rem',
-                  lineHeight: 1.5,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                }}
-              >
-                <span style={{ fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}>⚠️</span>
-                <div>
-                  <strong style={{ display: 'block', marginBottom: '0.2rem' }}>
-                    คำเตือน: การกู้คืนจะล้างข้อมูลเดิมและแทนที่ด้วยข้อมูลจากไฟล์สำรองทั้งหมด
-                  </strong>
-                  <span>กรุณาตรวจสอบไฟล์ให้ถูกต้องก่อนดำเนินการ ข้อมูลปัจจุบันที่ไม่ตรงกับไฟล์สำรองจะสูญหายถาวร</span>
+          <div className={styles.settingsBackupGrid}>
+            {/* Card 1: Database Backup */}
+            <div className={styles.settingsBackupCard}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.3rem' }}>📦</span>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    สำรองข้อมูลฐานข้อมูล (Database Backup)
+                  </h3>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1rem 0' }}>
+                  สำรองข้อมูลทั้งหมดของระบบออกมาเป็นไฟล์ SQL (.sql) รวมทั้งข้อมูลกิจการ, อาคาร, ห้องพัก, ผู้เช่า, บันทึกมิเตอร์, ใบแจ้งหนี้ และประวัติการรับชำระเงินทั้งหมด เพื่อเก็บรักษาหรือย้ายเครื่อง
+                </p>
+                <div
+                  style={{
+                    padding: '0.75rem 1rem',
+                    backgroundColor: 'var(--status-info-bg, rgba(59, 130, 246, 0.08))',
+                    border: '1px solid rgba(59, 130, 246, 0.2)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: '1.25rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--status-info-text, #1e40af)',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <span style={{ fontSize: '1rem', flexShrink: 0 }}>💡</span>
+                  <span>
+                    คำแนะนำ: ควรสำรองข้อมูลเป็นประจำทุกสิ้นเดือน หรือก่อนเริ่มรอบบิลใหม่ เพื่อป้องกันการสูญหายของข้อมูล
+                  </span>
                 </div>
               </div>
 
-              {/* File input group */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label
-                  className={styles.formLabel}
-                  style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', display: 'block' }}
-                >
-                  เลือกไฟล์สำรอง (.sql) ที่ต้องการกู้คืน:
-                </label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".sql"
-                  onChange={handleFileChange}
-                  className={styles.formInput}
+              <button
+                type="button"
+                onClick={handleDownloadBackup}
+                disabled={isExporting}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.25rem',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  cursor: isExporting ? 'not-allowed' : 'pointer',
+                  opacity: isExporting ? 0.7 : 1,
+                }}
+              >
+                {isExporting ? (
+                  <>
+                    <svg
+                      style={{ animation: 'spin 1s linear infinite' }}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="12" y1="2" x2="12" y2="6"></line>
+                      <line x1="12" y1="18" x2="12" y2="22"></line>
+                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                      <line x1="2" y1="12" x2="6" y2="12"></line>
+                      <line x1="18" y1="12" x2="22" y2="12"></line>
+                      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    </svg>
+                    <span>กำลังดาวน์โหลดไฟล์สำรอง...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>📥 ดาวน์โหลดไฟล์สำรอง (.sql)</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Card 2: Database Restore */}
+            <div className={styles.settingsBackupCard}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.3rem' }}>⚠️</span>
+                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    กู้คืนข้อมูลจากไฟล์สำรอง (Database Restore)
+                  </h3>
+                </div>
+
+                {/* แถบเตือนสีส้มแดง */}
+                <div
                   style={{
-                    padding: '0.5rem',
-                    fontSize: '0.85rem',
-                    backgroundColor: 'var(--card-bg)',
-                    cursor: 'pointer',
-                    width: '100%',
-                    boxSizing: 'border-box',
+                    padding: '0.85rem 1rem',
+                    backgroundColor: 'var(--status-danger-bg, #fef2f2)',
+                    border: '1px solid var(--status-danger, #ef4444)',
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: '1.25rem',
+                    color: 'var(--status-danger-text, #991b1b)',
+                    fontSize: '0.82rem',
+                    lineHeight: 1.5,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.6rem',
                   }}
-                />
-                {restoreFile && (
-                  <div
-                    style={{
-                      marginTop: '0.5rem',
-                      fontSize: '0.8rem',
-                      color: 'var(--text-secondary)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      backgroundColor: 'var(--card-bg)',
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: 'var(--radius-sm, 6px)',
-                      border: '1px dashed var(--border-color)',
-                    }}
+                >
+                  <span style={{ fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}>⚠️</span>
+                  <div>
+                    <strong style={{ display: 'block', marginBottom: '0.2rem' }}>
+                      คำเตือน: การกู้คืนจะล้างข้อมูลเดิมและแทนที่ด้วยข้อมูลจากไฟล์สำรองทั้งหมด
+                    </strong>
+                    <span>กรุณาตรวจสอบไฟล์ให้ถูกต้องก่อนดำเนินการ ข้อมูลปัจจุบันที่ไม่ตรงกับไฟล์สำรองจะสูญหายถาวร</span>
+                  </div>
+                </div>
+
+                {/* File input group */}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label
+                    className={styles.formLabel}
+                    style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem', display: 'block' }}
                   >
-                    <span>📄 {restoreFile.name} ({formatFileSize(restoreFile.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRestoreFile(null);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
+                    เลือกไฟล์สำรอง (.sql) ที่ต้องการกู้คืน:
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".sql"
+                    onChange={handleFileChange}
+                    className={styles.formInput}
+                    style={{
+                      padding: '0.5rem',
+                      fontSize: '0.85rem',
+                      backgroundColor: 'var(--card-bg)',
+                      cursor: 'pointer',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  {restoreFile && (
+                    <div
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--status-danger, #ef4444)',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        padding: 0,
+                        marginTop: '0.5rem',
+                        fontSize: '0.8rem',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: 'var(--card-bg)',
+                        padding: '0.4rem 0.75rem',
+                        borderRadius: 'var(--radius-sm, 6px)',
+                        border: '1px dashed var(--border-color)',
                       }}
                     >
-                      ✕ นำออก
-                    </button>
-                  </div>
-                )}
+                      <span>📄 {restoreFile.name} ({formatFileSize(restoreFile.size)})</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRestoreFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--status-danger, #ef4444)',
+                          cursor: 'pointer',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          padding: 0,
+                        }}
+                      >
+                        ✕ นำออก
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenRestoreModal}
+                disabled={!restoreFile}
+                className={`${styles.btn} ${styles.btnDanger}`}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.25rem',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  cursor: !restoreFile ? 'not-allowed' : 'pointer',
+                  opacity: !restoreFile ? 0.5 : 1,
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                <span>⚠️ กู้คืนข้อมูลทันที</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section: User Management & Roles (Strictly OWNER Only) */}
+      {currentUser?.role === 'OWNER' && (
+        <div className={styles.sectionCard}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  boxShadow: 'var(--shadow-sm)',
+                  fontSize: '1.2rem',
+                  flexShrink: 0,
+                }}
+              >
+                👥
+              </div>
+              <div>
+                <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+                  จัดการผู้ใช้งานและสิทธิ์เข้าถึงระบบ (User Management & Roles)
+                </h2>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                  จัดการบัญชีผู้ดูแล พนักงานประจำตึก และผู้ตรวจการ พร้อมกำหนดสิทธิ์การเข้าถึงข้อมูล
+                </p>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={handleOpenRestoreModal}
-              disabled={!restoreFile}
-              className={`${styles.btn} ${styles.btnDanger}`}
+              onClick={() => {
+                setSelectedUser(null);
+                setUserModalMode('create');
+                setIsUserModalOpen(true);
+              }}
+              className={`${styles.btn} ${styles.btnPrimary}`}
               style={{
-                width: '100%',
-                padding: '0.75rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                cursor: !restoreFile ? 'not-allowed' : 'pointer',
-                opacity: !restoreFile ? 0.5 : 1,
+                gap: '0.4rem',
+                fontWeight: 600,
+                padding: '0.6rem 1.1rem',
+                fontSize: '0.875rem',
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-              <span>⚠️ กู้คืนข้อมูลทันที</span>
+              <span>+ เพิ่มผู้ใช้งานใหม่</span>
             </button>
           </div>
+
+          {loadingUsers ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-secondary)' }}>
+              ⏳ กำลังโหลดรายชื่อผู้ใช้งาน...
+            </div>
+          ) : users.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-secondary)' }}>
+              ไม่พบข้อมูลผู้ใช้งานในระบบ
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <div className={styles.usersDesktopTable} style={{ overflowX: 'auto' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>ผู้ใช้งาน</th>
+                      <th style={{ textAlign: 'center' }}>บทบาท</th>
+                      <th style={{ textAlign: 'center' }}>เบอร์โทรศัพท์</th>
+                      <th style={{ textAlign: 'center' }}>สถานะ</th>
+                      <th style={{ textAlign: 'center', minWidth: '220px' }}>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => {
+                      const isCurrent = u.id === currentUser?.id;
+                      const isOwnerRole = u.role === 'OWNER';
+                      const isDeleteDisabled = isCurrent || (isOwnerRole && totalOwners <= 1);
+                      const deleteTooltip = isCurrent
+                        ? 'ไม่สามารถลบบัญชีของตนเองได้'
+                        : isOwnerRole && totalOwners <= 1
+                        ? 'ไม่สามารถลบ OWNER คนสุดท้ายของระบบได้'
+                        : 'ลบบัญชีผู้ใช้นี้';
+
+                      return (
+                        <tr key={u.id}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <div
+                                style={{
+                                  width: '38px',
+                                  height: '38px',
+                                  borderRadius: '50%',
+                                  background: isOwnerRole
+                                    ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                                    : u.role === 'STAFF'
+                                    ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                    : 'linear-gradient(135deg, #10b981, #059669)',
+                                  color: '#ffffff',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 700,
+                                  fontSize: '0.95rem',
+                                  flexShrink: 0,
+                                  boxShadow: 'var(--shadow-sm)',
+                                }}
+                              >
+                                {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+                                    {u.name}
+                                  </span>
+                                  {isCurrent && (
+                                    <span
+                                      style={{
+                                        fontSize: '0.68rem',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                                        color: 'var(--primary-color)',
+                                        border: '1px solid rgba(59, 130, 246, 0.25)',
+                                        padding: '0.1rem 0.45rem',
+                                        borderRadius: '9999px',
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      คุณ
+                                    </span>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
+                                  @{u.username}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td style={{ textAlign: 'center' }}>
+                            <span
+                              className={`${styles.profileRoleBadge} ${
+                                isOwnerRole ? styles.roleOwner : u.role === 'STAFF' ? styles.roleStaff : styles.roleViewer
+                              }`}
+                            >
+                              {isOwnerRole
+                                ? '👑 เจ้าของหอพัก (Owner)'
+                                : u.role === 'STAFF'
+                                ? '👔 พนักงาน (Staff)'
+                                : '👁️ ผู้ตรวจการ (Viewer)'}
+                            </span>
+                          </td>
+
+                          <td style={{ textAlign: 'center', fontSize: '0.88rem', color: u.phone ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            {u.phone || '-'}
+                          </td>
+
+                          <td style={{ textAlign: 'center' }}>
+                            {u.isActive ? (
+                              <span style={{ color: 'var(--status-paid-text, #15803d)', fontWeight: 600, fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                                🟢 ใช้งานอยู่
+                              </span>
+                            ) : (
+                              <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                                ⚪ ระงับชั่วคราว
+                              </span>
+                            )}
+                          </td>
+
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
+                              <button
+                                type="button"
+                                className={`${styles.btn} ${styles.btnSecondary}`}
+                                style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', fontWeight: 600 }}
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setUserModalMode('edit');
+                                  setIsUserModalOpen(true);
+                                }}
+                              >
+                                ✏️ แก้ไข
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.btn} ${styles.btnSecondary}`}
+                                style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', fontWeight: 600 }}
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setUserModalMode('reset-password');
+                                  setIsUserModalOpen(true);
+                                }}
+                              >
+                                🔑 รีเซ็ตรหัส
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.btn} ${styles.btnDanger}`}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 600,
+                                  opacity: isDeleteDisabled ? 0.4 : 1,
+                                  cursor: isDeleteDisabled ? 'not-allowed' : 'pointer',
+                                }}
+                                disabled={isDeleteDisabled}
+                                title={deleteTooltip}
+                                onClick={() => handleDeleteUser(u)}
+                              >
+                                🗑️ ลบ
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards View */}
+              <div className={styles.usersMobileList}>
+                {users.map((u) => {
+                  const isCurrent = u.id === currentUser?.id;
+                  const isOwnerRole = u.role === 'OWNER';
+                  const isDeleteDisabled = isCurrent || (isOwnerRole && totalOwners <= 1);
+                  const deleteTooltip = isCurrent
+                    ? 'ไม่สามารถลบบัญชีของตนเองได้'
+                    : isOwnerRole && totalOwners <= 1
+                    ? 'ไม่สามารถลบ OWNER คนสุดท้ายของระบบได้'
+                    : 'ลบบัญชีผู้ใช้นี้';
+
+                  return (
+                    <div key={u.id} className={styles.userCard}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          <div
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              background: isOwnerRole
+                                ? 'linear-gradient(135deg, #f59e0b, #d97706)'
+                                : u.role === 'STAFF'
+                                ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                : 'linear-gradient(135deg, #10b981, #059669)',
+                              color: '#ffffff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>{u.name}</strong>
+                              {isCurrent && (
+                                <span
+                                  style={{
+                                    fontSize: '0.65rem',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                                    color: 'var(--primary-color)',
+                                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                                    padding: '0.05rem 0.4rem',
+                                    borderRadius: '9999px',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  คุณ
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>@{u.username}</div>
+                          </div>
+                        </div>
+
+                        {u.isActive ? (
+                          <span style={{ color: 'var(--status-paid-text, #15803d)', fontWeight: 600, fontSize: '0.75rem' }}>
+                            🟢 ใช้งานอยู่
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.75rem' }}>
+                            ⚪ ระงับชั่วคราว
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', borderTop: '1px dashed var(--border-color)', borderBottom: '1px dashed var(--border-color)', fontSize: '0.82rem' }}>
+                        <div>
+                          <span
+                            className={`${styles.profileRoleBadge} ${
+                              isOwnerRole ? styles.roleOwner : u.role === 'STAFF' ? styles.roleStaff : styles.roleViewer
+                            }`}
+                          >
+                            {isOwnerRole
+                              ? '👑 เจ้าของหอพัก'
+                              : u.role === 'STAFF'
+                              ? '👔 พนักงาน'
+                              : '👁️ ผู้ตรวจการ'}
+                          </span>
+                        </div>
+                        <div style={{ color: 'var(--text-secondary)' }}>
+                          📞 {u.phone || '-'}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem', marginTop: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className={`${styles.btn} ${styles.btnSecondary}`}
+                          style={{ padding: '0.45rem', fontSize: '0.8rem', fontWeight: 600 }}
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setUserModalMode('edit');
+                            setIsUserModalOpen(true);
+                          }}
+                        >
+                          ✏️ แก้ไข
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.btn} ${styles.btnSecondary}`}
+                          style={{ padding: '0.45rem', fontSize: '0.8rem', fontWeight: 600 }}
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setUserModalMode('reset-password');
+                            setIsUserModalOpen(true);
+                          }}
+                        >
+                          🔑 รีเซ็ต
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.btn} ${styles.btnDanger}`}
+                          style={{
+                            padding: '0.45rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            opacity: isDeleteDisabled ? 0.4 : 1,
+                            cursor: isDeleteDisabled ? 'not-allowed' : 'pointer',
+                          }}
+                          disabled={isDeleteDisabled}
+                          title={deleteTooltip}
+                          onClick={() => handleDeleteUser(u)}
+                        >
+                          🗑️ ลบ
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      )}
 
 
       {/* Section 2: Global Property & AI API Key Settings */}
@@ -1739,6 +2164,18 @@ export default function SettingsTab({
           </div>
         </div>
       )}
+
+      {/* User Management Modal */}
+      <UserManagementModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        mode={userModalMode}
+        user={selectedUser}
+        currentUserId={currentUser?.id}
+        totalOwners={totalOwners}
+        onSuccess={fetchUsers}
+        styles={styles}
+      />
 
       <style>{`
         @keyframes spin {

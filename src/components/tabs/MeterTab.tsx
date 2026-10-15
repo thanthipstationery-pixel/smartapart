@@ -253,7 +253,14 @@ export default function MeterTab({
 
                           return (
                             <tr key={room.id} style={isVacantRoom ? { opacity: 0.7 } : undefined}>
-                              <td style={{ fontWeight: 'bold' }}>{room.number}</td>
+                              <td style={{ fontWeight: 'bold' }}>
+                                <div>{room.number}</div>
+                                {room.meterRecordedBy && (
+                                  <div style={{ marginTop: '0.2rem' }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem', fontWeight: 'normal' }}>📝 จดโดย: {room.meterRecordedBy}</span>
+                                  </div>
+                                )}
+                              </td>
                               <td>{room.type === 'AC' ? 'แอร์' : 'พัดลม'}</td>
                               <td>
                                 <span style={{ fontSize: '0.85rem', color: room.status === 'OCCUPIED' ? 'var(--primary-color)' : 'inherit' }}>
@@ -352,6 +359,11 @@ export default function MeterTab({
                           <div className={styles.meterCardSubtitle}>
                             {room.type === 'AC' ? 'แอร์' : 'พัดลม'} • {room.status === 'OCCUPIED' ? (room.activeTenant ? room.activeTenant.name : 'มีผู้เช่า') : 'ห้องว่าง'}
                           </div>
+                          {room.meterRecordedBy && (
+                            <div style={{ marginTop: '0.25rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>📝 จดโดย: {room.meterRecordedBy}</span>
+                            </div>
+                          )}
                         </div>
 
                         <div className={styles.meterGrid} style={meterEntryMode !== 'BOTH' ? { gridTemplateColumns: '1fr' } : undefined}>

@@ -53,6 +53,7 @@ export async function GET(request: Request) {
         readingDate: true,
         waterValue: true,
         electricityValue: true,
+        recordedBy: true,
       },
     });
 
@@ -96,8 +97,8 @@ export async function GET(request: Request) {
 
     // Pre-index readings by room for fast O(1) lookup
     const roomReadingsMap = new Map<string, {
-      current?: { waterValue: number; electricityValue: number };
-      prev?: { waterValue: number; electricityValue: number };
+      current?: { waterValue: number; electricityValue: number; recordedBy?: string | null };
+      prev?: { waterValue: number; electricityValue: number; recordedBy?: string | null };
     }>();
 
     for (const r of periodReadings) {
@@ -114,9 +115,9 @@ export async function GET(request: Request) {
 
       const d = new Date(r.readingDate);
       if (!entry.current && d >= startOfPeriod && d <= endOfPeriod) {
-        entry.current = { waterValue: r.waterValue, electricityValue: r.electricityValue };
+        entry.current = { waterValue: r.waterValue, electricityValue: r.electricityValue, recordedBy: r.recordedBy };
       } else if (!entry.prev && d < startOfPeriod) {
-        entry.prev = { waterValue: r.waterValue, electricityValue: r.electricityValue };
+        entry.prev = { waterValue: r.waterValue, electricityValue: r.electricityValue, recordedBy: r.recordedBy };
       }
     }
 
@@ -238,6 +239,7 @@ export async function GET(request: Request) {
             currentWater,
             currentElec,
             isMeterRecorded: Boolean(currentReading || (periodInvoice && periodInvoice.billingPeriod === period)),
+            meterRecordedBy: currentReading?.recordedBy || null,
             activeTenant: activeTenant
               ? {
                   id: activeTenant.id,

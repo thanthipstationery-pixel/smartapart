@@ -2329,7 +2329,7 @@ table { border-collapse: collapse; }
         {/* --- 6. SETTINGS TAB --- */}
         {activeTab === 'settings' && (
           <SettingsTab
-            {...({ currentUser: adminUser } as any)}
+            currentUser={adminUser}
             propName={propName}
             setPropName={setPropName}
             propPhone={propPhone}

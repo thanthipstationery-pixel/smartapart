@@ -1195,6 +1195,14 @@
   display: none;
 }
 
+.usersDesktopTable {
+  display: block;
+}
+
+.usersMobileList {
+  display: none;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
   .statsGrid {
@@ -1519,6 +1527,29 @@
     font-weight: 700;
     text-decoration: none;
     text-align: center;
+  }
+
+  /* User Management Mobile Cards */
+  .usersDesktopTable {
+    display: none;
+  }
+
+  .usersMobileList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  .userCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }
 

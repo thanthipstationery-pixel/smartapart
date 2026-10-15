@@ -103,12 +103,33 @@ export default function PaymentModal({
                     fontSize: '0.85rem',
                     color: 'var(--text-secondary)',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '0 0.25rem',
+                    flexDirection: 'column',
+                    gap: '0.4rem',
+                    padding: '0.65rem 0.85rem',
+                    backgroundColor: 'var(--bg-color)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-color)',
                   }}
                 >
-                  <span>ยอดบิลเต็ม: {selectedInvoice.totalAmount.toLocaleString()} บ.</span>
-                  <span style={{ color: 'var(--status-success)', fontWeight: 600 }}>ชำระแล้วสะสม: {approvedPaid.toLocaleString()} บ.</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>ยอดบิลเต็ม: {selectedInvoice.totalAmount.toLocaleString()} บ.</span>
+                    <span style={{ color: 'var(--status-success)', fontWeight: 600 }}>ชำระแล้วสะสม: {approvedPaid.toLocaleString()} บ.</span>
+                  </div>
+                  {selectedInvoice.payments && selectedInvoice.payments.length > 0 && (
+                    <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '0.4rem', marginTop: '0.2rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.78rem' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>ประวัติการชำระเงิน:</div>
+                      {selectedInvoice.payments.map((p: any, idx: number) => (
+                        <div key={p.id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>
+                            • {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('th-TH') : '-'} ({p.paymentMethod === 'TRANSFER' ? 'โอนเงิน' : 'เงินสด'}) (ผู้รับชำระ: {p.recordedBy || 'ระบบ'})
+                          </span>
+                          <span style={{ fontWeight: 600, color: p.status === 'APPROVED' ? 'var(--status-success)' : 'var(--text-secondary)' }}>
+                            {p.amountPaid?.toLocaleString()} บ.
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
