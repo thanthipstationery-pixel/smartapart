@@ -26,6 +26,7 @@ import BulkInvoiceModal from '@/components/modals/BulkInvoiceModal';
 import OverdueModal from '@/components/modals/OverdueModal';
 import RoomTransferModal from '@/components/modals/RoomTransferModal';
 import ReplaceMeterModal from '@/components/modals/ReplaceMeterModal';
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal';
 
 // Inline SVGs for lightweight, zero-dependency modern icons
 const Icons = {
@@ -82,7 +83,10 @@ export default function Dashboard() {
   const [visualStyle, setVisualStyle] = useState<'claymorphism' | 'flat' | 'glass'>('claymorphism');
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const styleMenuRef = useRef<HTMLDivElement>(null);
-  const [adminUser, setAdminUser] = useState<{ username: string; name: string } | null>(null);
+  const [adminUser, setAdminUser] = useState<{ id?: string; username: string; name: string; role?: string } | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Initialize theme selection
   useEffect(() => {
@@ -104,20 +108,23 @@ export default function Dashboard() {
     document.documentElement.setAttribute('data-style', savedStyle);
   }, []);
 
-  // Close style menu on outside click
+  // Close menus on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (styleMenuRef.current && !styleMenuRef.current.contains(e.target as Node)) {
         setShowStyleMenu(false);
       }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
     };
-    if (showStyleMenu) {
+    if (showStyleMenu || showProfileMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showStyleMenu]);
+  }, [showStyleMenu, showProfileMenu]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -1983,7 +1990,13 @@ table { border-collapse: collapse; }
         {adminUser && (
           <div className={styles.userInfo}>
             <div className={styles.userName}>{adminUser.name}</div>
-            <div className={styles.userRole}>ผู้ดูแลระบบ (Admin)</div>
+            <div className={styles.userRole}>
+              {adminUser.role === 'STAFF'
+                ? '👔 พนักงาน'
+                : adminUser.role === 'VIEWER'
+                ? '👁️ ผู้ตรวจการ'
+                : '👑 เจ้าของหอพัก'}
+            </div>
             <button onClick={handleLogout} className={styles.logoutBtn}>
               <Icons.Logout />
               <span>ออกจากระบบ</span>
@@ -2091,11 +2104,122 @@ table { border-collapse: collapse; }
             >
               {theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}
             </button>
+
+            {/* Header Profile Dropdown */}
+            {adminUser && (
+              <div className={styles.profileMenuContainer} ref={profileMenuRef}>
+                <button
+                  type="button"
+                  className={styles.profileTriggerBtn}
+                  onClick={() => setShowProfileMenu((prev) => !prev)}
+                  aria-label="โปรไฟล์ผู้ใช้งาน"
+                  aria-expanded={showProfileMenu}
+                  title={`${adminUser.name} (@${adminUser.username})`}
+                >
+                  <div className={styles.profileAvatar}>
+                    {(adminUser.name || adminUser.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <span className={styles.profileTriggerName}>
+                    {adminUser.name || adminUser.username}
+                  </span>
+                  <span
+                    className={`${styles.profileRoleBadge} ${
+                      adminUser.role === 'STAFF'
+                        ? styles.roleStaff
+                        : adminUser.role === 'VIEWER'
+                        ? styles.roleViewer
+                        : styles.roleOwner
+                    }`}
+                  >
+                    {adminUser.role === 'STAFF'
+                      ? '👔 STAFF'
+                      : adminUser.role === 'VIEWER'
+                      ? '👁️ VIEWER'
+                      : '👑 OWNER'}
+                  </span>
+                </button>
+
+                {showProfileMenu && (
+                  <div className={styles.profileDropdownMenu}>
+                    <div className={styles.profileDropdownHeader}>
+                      <div className={styles.profileDropdownAvatar}>
+                        {(adminUser.name || adminUser.username || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      <div className={styles.profileDropdownName}>{adminUser.name}</div>
+                      <div className={styles.profileDropdownUsername}>@{adminUser.username}</div>
+                      <span
+                        className={`${styles.profileRoleBadge} ${
+                          adminUser.role === 'STAFF'
+                            ? styles.roleStaff
+                            : adminUser.role === 'VIEWER'
+                            ? styles.roleViewer
+                            : styles.roleOwner
+                        }`}
+                      >
+                        {adminUser.role === 'STAFF'
+                          ? '👔 พนักงาน (Staff)'
+                          : adminUser.role === 'VIEWER'
+                          ? '👁️ ผู้ตรวจการ (Viewer)'
+                          : '👑 เจ้าของหอพัก (Owner)'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={styles.profileDropdownItem}
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        setShowChangePasswordModal(true);
+                      }}
+                    >
+                      <span style={{ fontSize: '1rem' }}>🔑</span>
+                      <span>เปลี่ยนรหัสผ่านของฉัน</span>
+                    </button>
+
+                    {(!adminUser.role || adminUser.role === 'OWNER') && (
+                      <button
+                        type="button"
+                        className={styles.profileDropdownItem}
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          setActiveTab('settings');
+                        }}
+                      >
+                        <span style={{ fontSize: '1rem' }}>👥</span>
+                        <span>จัดการผู้ใช้งานระบบ</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className={`${styles.profileDropdownItem} ${styles.profileDropdownItemDanger}`}
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        handleLogout();
+                      }}
+                    >
+                      <span style={{ fontSize: '1rem' }}>🚪</span>
+                      <span>ออกจากระบบ</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <button onClick={handleLogout} className={styles.mobileLogoutBtn} aria-label="ออกจากระบบ" title="ออกจากระบบ">
               <Icons.Logout />
             </button>
           </div>
         </header>
+
+        {adminUser?.role === 'VIEWER' && (
+          <div className={styles.readOnlyBanner}>
+            <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>👁️</span>
+            <div>
+              <strong>โหมดตรวจการ (Read-Only Mode):</strong> คุณสามารถดูข้อมูลและพิมพ์รายงานได้เท่านั้น ไม่สามารถแก้ไขหรือบันทึกข้อมูลได้
+            </div>
+          </div>
+        )}
 
         {/* --- 1. OVERVIEW TAB --- */}
         {activeTab === 'overview' && (
@@ -2205,6 +2329,7 @@ table { border-collapse: collapse; }
         {/* --- 6. SETTINGS TAB --- */}
         {activeTab === 'settings' && (
           <SettingsTab
+            {...({ currentUser: adminUser } as any)}
             propName={propName}
             setPropName={setPropName}
             propPhone={propPhone}
@@ -3107,7 +3232,12 @@ table { border-collapse: collapse; }
         </div>
       )}
 
-
+      {/* --- CHANGE PASSWORD MODAL --- */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        username={adminUser?.username}
+      />
 
     </div>
   );
