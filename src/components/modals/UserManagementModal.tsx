@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface UserManagementModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function UserManagementModal({
   onSuccess,
   styles,
 }: UserManagementModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +42,10 @@ export default function UserManagementModal({
   const [successMessage, setSuccessMessage] = useState('');
 
   const isSelf = Boolean(user && currentUserId && (user.id === currentUserId));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,7 +72,7 @@ export default function UserManagementModal({
     }
   }, [isOpen, mode, user]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleClose = () => {
     if (loading) return;
@@ -206,7 +212,7 @@ export default function UserManagementModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className={styles.modalOverlay}
       onClick={(e) => {
@@ -514,6 +520,7 @@ export default function UserManagementModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

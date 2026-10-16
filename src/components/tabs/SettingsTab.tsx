@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { getShortBuildingName } from '@/lib/thaiDate';
 import UserManagementModal from '@/components/modals/UserManagementModal';
 
@@ -156,12 +157,17 @@ export default function SettingsTab({
   }, [settingsBuildingId, buildings]);
 
   // Database backup and restore state
+  const [mounted, setMounted] = React.useState(false);
   const [isExporting, setIsExporting] = React.useState(false);
   const [restoreFile, setRestoreFile] = React.useState<File | null>(null);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = React.useState(false);
   const [confirmChecked, setConfirmChecked] = React.useState(false);
   const [isRestoring, setIsRestoring] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -1968,7 +1974,7 @@ export default function SettingsTab({
       </div>
 
       {/* Safety Confirmation Modal */}
-      {isRestoreModalOpen && restoreFile && (
+      {isRestoreModalOpen && restoreFile && mounted && createPortal(
         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
           <div
             className={styles.modalCard}
@@ -2162,7 +2168,8 @@ export default function SettingsTab({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* User Management Modal */}

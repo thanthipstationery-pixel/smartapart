@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from '@/app/dashboard.module.css';
 
 interface ChangePasswordModalProps {
@@ -14,6 +15,7 @@ export default function ChangePasswordModal({
   onClose,
   username,
 }: ChangePasswordModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,7 +24,11 @@ export default function ChangePasswordModal({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const resetForm = () => {
     setCurrentPassword('');
@@ -95,7 +101,7 @@ export default function ChangePasswordModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className={styles.modalOverlay}
       onClick={(e) => {
@@ -240,6 +246,7 @@ export default function ChangePasswordModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
