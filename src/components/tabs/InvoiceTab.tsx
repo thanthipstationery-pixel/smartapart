@@ -21,9 +21,10 @@ interface InvoiceTabProps {
   setSelectedInvoice: (invoice: any) => void;
   setPaymentAmount: (amount: string) => void;
   setShowPaymentModal: (val: boolean) => void;
-  invoices: any[];
+  invoices?: any[];
   buildings: any[];
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function InvoiceTab({
@@ -47,6 +48,7 @@ export default function InvoiceTab({
   invoices,
   buildings,
   styles,
+  isViewer = false,
 }: InvoiceTabProps) {
   return (
     <div className="fade-in">
@@ -104,10 +106,10 @@ export default function InvoiceTab({
             <option value="ALL">📅 ทุกรอบบิล</option>
             {Array.from(new Set([
               ...(invoiceFilterPeriod !== 'ALL' ? [invoiceFilterPeriod] : []),
-              ...invoices.map((i) => i.billingPeriod)
+              ...((invoices || []).map((i: any) => i.billingPeriod))
             ])).sort().reverse().map((p) => (
               <option key={p} value={p}>
-                {p === invoiceFilterPeriod && invoiceFilterPeriod !== 'ALL' && invoices.length === 0 
+                {p === invoiceFilterPeriod && invoiceFilterPeriod !== 'ALL' && (!invoices || invoices.length === 0) 
                   ? `รอบบิลปัจจุบัน (${formatThaiBillingPeriod(p)})` 
                   : formatThaiBillingPeriod(p)}
               </option>
@@ -147,6 +149,8 @@ export default function InvoiceTab({
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button
             type="button"
+            disabled={isViewer}
+            title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถออกบิลได้' : undefined}
             onClick={() => {
               setShowBulkBillModal(true);
               fetchBulkRooms(bulkBillPeriod);
@@ -163,6 +167,8 @@ export default function InvoiceTab({
               color: 'var(--text-primary)',
               boxShadow: "var(--shadow-glow-success)",
               whiteSpace: 'nowrap',
+              opacity: isViewer ? 0.6 : 1,
+              cursor: isViewer ? 'not-allowed' : 'pointer',
             }}
           >
             ⚡ ออกใบแจ้งหนี้ทุกห้อง
@@ -265,7 +271,14 @@ export default function InvoiceTab({
                         {inv.status !== 'PAID' && (
                           <button
                             className={`${styles.btn} ${styles.btnSuccess}`}
-                            style={{ padding: '0.375rem 0.75rem', fontSize: '0.8rem' }}
+                            disabled={isViewer}
+                            title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถรับชำระเงินได้' : undefined}
+                            style={{
+                              padding: '0.375rem 0.75rem',
+                              fontSize: '0.8rem',
+                              opacity: isViewer ? 0.5 : 1,
+                              cursor: isViewer ? 'not-allowed' : 'pointer'
+                            }}
                             onClick={() => {
                               setSelectedInvoice(inv);
                               const approvedPaid = (inv.payments || [])
@@ -378,7 +391,16 @@ export default function InvoiceTab({
                       {inv.status !== 'PAID' && (
                         <button
                           className={`${styles.btn} ${styles.btnSuccess}`}
-                          style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', fontWeight: 600 }}
+                          disabled={isViewer}
+                          title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถรับชำระเงินได้' : undefined}
+                          style={{
+                            flex: 1,
+                            padding: '0.45rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            opacity: isViewer ? 0.5 : 1,
+                            cursor: isViewer ? 'not-allowed' : 'pointer'
+                          }}
                           onClick={() => {
                             setSelectedInvoice(inv);
                             const approvedPaid = (inv.payments || [])

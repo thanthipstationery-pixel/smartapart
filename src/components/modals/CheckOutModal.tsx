@@ -34,6 +34,7 @@ interface CheckOutModalProps {
   setShowCheckOutReceiptModal: (val: boolean) => void;
   checkOutReceiptData: any;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function CheckOutModal({
@@ -66,6 +67,7 @@ export default function CheckOutModal({
   setShowCheckOutReceiptModal,
   checkOutReceiptData,
   styles,
+  isViewer = false,
 }: CheckOutModalProps) {
   return (
     <>
@@ -82,7 +84,16 @@ export default function CheckOutModal({
               </button>
             </div>
 
-            <form onSubmit={handleCheckOutSubmit}>
+            <form
+              onSubmit={(e) => {
+                if (isViewer) {
+                  e.preventDefault();
+                  alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการแจ้งย้ายออกหรือคืนห้อง');
+                  return;
+                }
+                handleCheckOutSubmit(e);
+              }}
+            >
               <div className={styles.modalBody} style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}>
                 {/* 🔀 Mode Action Switcher */}
                 <div
@@ -583,12 +594,21 @@ export default function CheckOutModal({
                 </button>
                 <button
                   type="submit"
+                  disabled={isViewer}
+                  title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการแจ้งย้ายออกหรือคืนห้อง' : undefined}
                   className={`${styles.btn} ${
                     checkOutActionType === 'RECORD_NOTICE_ONLY' ? '' : styles.btnPrimary
                   }`}
-                  style={checkOutActionType === 'RECORD_NOTICE_ONLY' ? { backgroundColor: 'var(--status-info)', color: '#ffffff', boxShadow: 'var(--shadow-glow-info, 0 4px 15px rgba(59, 130, 246, 0.4))' } : {}}
+                  style={{
+                    ...(checkOutActionType === 'RECORD_NOTICE_ONLY'
+                      ? { backgroundColor: 'var(--status-info)', color: '#ffffff', boxShadow: 'var(--shadow-glow-info, 0 4px 15px rgba(59, 130, 246, 0.4))' }
+                      : {}),
+                    ...(isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                  }}
                 >
-                  {checkOutActionType === 'RECORD_NOTICE_ONLY'
+                  {isViewer
+                    ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)'
+                    : checkOutActionType === 'RECORD_NOTICE_ONLY'
                     ? '📌 บันทึกรับแจ้งย้ายออกล่วงหน้า'
                     : '🚪 ยืนยันคืนห้องพัก & พิมพ์ใบสรุป A5'}
                 </button>

@@ -67,6 +67,15 @@ const { GET: exportBackup } = await import('../src/app/api/admin/backup/export/r
 const { POST: restoreBackup } = await import('../src/app/api/admin/backup/restore/route.ts');
 const { GET: getAdminUsers, POST: createAdminUser } = await import('../src/app/api/admin/users/route.ts');
 const { PUT: updateAdminUser, DELETE: deleteAdminUser } = await import('../src/app/api/admin/users/[id]/route.ts');
+const { POST: postMonthlyUtility } = await import('../src/app/api/buildings/monthly-utility/route.ts');
+const { POST: postReplaceMeter } = await import('../src/app/api/rooms/[id]/replace-meter/route.ts');
+const { PUT: putRoom } = await import('../src/app/api/rooms/[id]/route.ts');
+const { POST: postInvoice } = await import('../src/app/api/invoices/route.ts');
+const { POST: postBulkInvoice } = await import('../src/app/api/invoices/bulk/route.ts');
+const { PUT: putInvoice } = await import('../src/app/api/invoices/[id]/route.ts');
+const { PUT: putBuilding } = await import('../src/app/api/buildings/route.ts');
+const { PUT: putProperty } = await import('../src/app/api/property/route.ts');
+const { POST: postRefundKeycard } = await import('../src/app/api/tenants/[id]/refund-keycard/route.ts');
 
 console.log('================================================================');
 console.log('  TEST SUITE: TASK 4 - VIEWER MUTATION GUARDS & recordedBy      ');
@@ -717,6 +726,110 @@ try {
     });
     const session2 = await getAuthSession(invalidReq);
     assert.strictEqual(session2, null);
+  });
+
+  // ============================================================================
+  // SUITE 6: Complete VIEWER 403 Mutation Guards (All 9 Additional Endpoints)
+  // ============================================================================
+  console.log('\n--- Suite 6: Complete VIEWER 403 Mutation Guards ---');
+
+  await runTest('6.1: POST /api/buildings/monthly-utility rejects VIEWER with 403', async () => {
+    const req = makeRequest('http://localhost/api/buildings/monthly-utility', 'POST', {
+      buildingId: testBuilding.id,
+      period: '2026-08',
+      waterTotalBill: 500,
+    }, testTokens.viewer);
+    const res = await postMonthlyUtility(req);
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.2: POST /api/rooms/[id]/replace-meter rejects VIEWER with 403', async () => {
+    const req = makeRequest(`http://localhost/api/rooms/${testRoom1.id}/replace-meter`, 'POST', {
+      waterOldFinalReading: 100,
+      waterNewStartingReading: 0,
+      replacedDate: '2026-08-01',
+    }, testTokens.viewer);
+    const res = await postReplaceMeter(req, { params: Promise.resolve({ id: testRoom1.id }) });
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.3: PUT /api/rooms/[id] rejects VIEWER with 403', async () => {
+    const req = makeRequest(`http://localhost/api/rooms/${testRoom1.id}`, 'PUT', {
+      basePrice: 5000,
+    }, testTokens.viewer);
+    const res = await putRoom(req, { params: Promise.resolve({ id: testRoom1.id }) });
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.4: POST /api/invoices rejects VIEWER with 403', async () => {
+    const req = makeRequest('http://localhost/api/invoices', 'POST', {
+      roomId: testRoom1.id,
+      billingPeriod: '2026-08',
+      dueDate: '2026-08-05',
+    }, testTokens.viewer);
+    const res = await postInvoice(req);
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.5: POST /api/invoices/bulk rejects VIEWER with 403', async () => {
+    const req = makeRequest('http://localhost/api/invoices/bulk', 'POST', {
+      period: '2026-08',
+      dueDate: '2026-08-05',
+    }, testTokens.viewer);
+    const res = await postBulkInvoice(req);
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.6: PUT /api/invoices/[id] rejects VIEWER with 403', async () => {
+    const req = makeRequest(`http://localhost/api/invoices/${testInvoice.id}`, 'PUT', {
+      totalAmount: 9999,
+    }, testTokens.viewer);
+    const res = await putInvoice(req, { params: Promise.resolve({ id: testInvoice.id }) });
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.7: PUT /api/buildings rejects VIEWER with 403', async () => {
+    const req = makeRequest('http://localhost/api/buildings', 'PUT', {
+      id: testBuilding.id,
+      name: 'Hacked Building Name',
+    }, testTokens.viewer);
+    const res = await putBuilding(req);
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.8: PUT /api/property rejects VIEWER with 403', async () => {
+    const req = makeRequest('http://localhost/api/property', 'PUT', {
+      name: 'Hacked Property Name',
+    }, testTokens.viewer);
+    const res = await putProperty(req);
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
+  });
+
+  await runTest('6.9: POST /api/tenants/[id]/refund-keycard rejects VIEWER with 403', async () => {
+    const req = makeRequest(`http://localhost/api/tenants/${testTenant.id}/refund-keycard`, 'POST', {
+      returnedCount: 1,
+      refundAmount: 100,
+    }, testTokens.viewer);
+    const res = await postRefundKeycard(req, { params: Promise.resolve({ id: testTenant.id }) });
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.ok(data.error.includes('โหมดตรวจการ'));
   });
 
 } finally {

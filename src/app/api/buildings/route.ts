@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
@@ -336,6 +337,14 @@ export async function GET(request: Request) {
 // PUT endpoint to update building utility rates & PromptPay settings
 export async function PUT(request: Request) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลอาคาร' },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as any;
     const { id, name, waterRate, electricityRate, minimumWaterCost, lateFee, defaultDueDay, phone, email, address, lineId, promptPayId, promptPayName, promptPayQrUrl, useDynamicUtilityRate } = body || {};
 

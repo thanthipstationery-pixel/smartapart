@@ -28,6 +28,7 @@ interface MeterTabProps {
   handleMeterInput: (roomId: string, type: 'water' | 'elec', val: string) => void;
   handleSingleMeterSubmit: (roomId: string, prevWater: number, prevElec: number) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function MeterTab({
@@ -55,6 +56,7 @@ export default function MeterTab({
   handleMeterInput,
   handleSingleMeterSubmit,
   styles,
+  isViewer = false,
 }: MeterTabProps) {
   return (
     <div className="fade-in">
@@ -143,6 +145,8 @@ export default function MeterTab({
         <div className={styles.meterFilterActionsRow}>
           <button
             type="button"
+            disabled={isViewer}
+            title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถออกบิลได้' : undefined}
             onClick={() => {
               setBulkBillPeriod(meterPeriod);
               setShowBulkBillModal(true);
@@ -158,6 +162,8 @@ export default function MeterTab({
               justifyContent: 'center',
               gap: '0.4rem',
               whiteSpace: 'nowrap',
+              opacity: isViewer ? 0.6 : 1,
+              cursor: isViewer ? 'not-allowed' : 'pointer',
             }}
           >
             ⚡ ออกใบแจ้งหนี้ทุกห้อง
@@ -165,6 +171,8 @@ export default function MeterTab({
 
           <button
             className={`${styles.btn} ${styles.btnSuccess}`}
+            disabled={isViewer}
+            title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถบันทึกมิเตอร์ได้' : undefined}
             style={{
               padding: '0.55rem 1rem',
               fontSize: '0.85rem',
@@ -174,10 +182,12 @@ export default function MeterTab({
               justifyContent: 'center',
               gap: '0.4rem',
               whiteSpace: 'nowrap',
+              opacity: isViewer ? 0.6 : 1,
+              cursor: isViewer ? 'not-allowed' : 'pointer',
             }}
             onClick={handleSaveAllMeters}
           >
-            💾 บันทึกที่กรอกทั้งหมด (Save All)
+            {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '💾 บันทึกที่กรอกทั้งหมด (Save All)'}
           </button>
         </div>
       </div>
@@ -276,12 +286,12 @@ export default function MeterTab({
                                       step="any"
                                       inputMode="decimal"
                                       pattern="[0-9.]*"
-                                      disabled={isLocked}
+                                      disabled={isLocked || isViewer}
                                       className={`${styles.meterInput} ${meterErrors[room.id] === 'water' ? styles.meterInputError : ''}`}
                                       placeholder={isVacantRoom ? "ห้องว่าง" : "เลขใหม่"}
                                       value={waterReadings[room.id] !== undefined ? waterReadings[room.id] : (room.currentWater !== null && room.currentWater !== undefined ? room.currentWater.toString() : '')}
                                       onChange={(e) => handleMeterInput(room.id, 'water', e.target.value)}
-                                      style={isLocked ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
+                                      style={isLocked || isViewer ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
                                     />
                                   </td>
                                 </>
@@ -295,18 +305,27 @@ export default function MeterTab({
                                       step="any"
                                       inputMode="decimal"
                                       pattern="[0-9.]*"
-                                      disabled={isLocked}
+                                      disabled={isLocked || isViewer}
                                       className={`${styles.meterInput} ${meterErrors[room.id] === 'elec' ? styles.meterInputError : ''}`}
                                       placeholder={isVacantRoom ? "ห้องว่าง" : "เลขใหม่"}
                                       value={elecReadings[room.id] !== undefined ? elecReadings[room.id] : (room.currentElec !== null && room.currentElec !== undefined ? room.currentElec.toString() : '')}
                                       onChange={(e) => handleMeterInput(room.id, 'elec', e.target.value)}
-                                      style={isLocked ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
+                                      style={isLocked || isViewer ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
                                     />
                                   </td>
                                 </>
                               )}
                               <td>
-                                {isVacantRoom ? (
+                                {isViewer ? (
+                                  <button
+                                    disabled
+                                    className={`${styles.btn} ${styles.btnSecondary}`}
+                                    style={{ padding: '0.375rem 0.75rem', fontSize: '0.8rem', minWidth: '75px', opacity: 0.6, cursor: 'not-allowed' }}
+                                    title="โหมดตรวจการ (Read-Only) ไม่สามารถบันทึกมิเตอร์ได้"
+                                  >
+                                    🔒 ตรวจการ
+                                  </button>
+                                ) : isVacantRoom ? (
                                   <button
                                     disabled
                                     className={`${styles.btn} ${styles.btnSecondary}`}
@@ -376,12 +395,12 @@ export default function MeterTab({
                                 step="any"
                                 inputMode="decimal"
                                 pattern="[0-9.]*"
-                                disabled={isLocked}
+                                disabled={isLocked || isViewer}
                                 className={`${styles.meterInput} ${meterErrors[room.id] === 'water' ? styles.meterInputError : ''}`}
                                 placeholder={isVacantRoom ? "ห้องว่าง" : "เลขใหม่"}
                                 value={waterReadings[room.id] !== undefined ? waterReadings[room.id] : (room.currentWater !== null && room.currentWater !== undefined ? room.currentWater.toString() : (room.prevWater !== undefined && room.prevWater !== null ? room.prevWater.toString() : ''))}
                                 onChange={(e) => handleMeterInput(room.id, 'water', e.target.value)}
-                                style={isLocked ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
+                                style={isLocked || isViewer ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
                               />
                             </div>
                           )}
@@ -395,18 +414,27 @@ export default function MeterTab({
                                 step="any"
                                 inputMode="decimal"
                                 pattern="[0-9.]*"
-                                disabled={isLocked}
+                                disabled={isLocked || isViewer}
                                 className={`${styles.meterInput} ${meterErrors[room.id] === 'elec' ? styles.meterInputError : ''}`}
                                 placeholder={isVacantRoom ? "ห้องว่าง" : "เลขใหม่"}
                                 value={elecReadings[room.id] !== undefined ? elecReadings[room.id] : (room.currentElec !== null && room.currentElec !== undefined ? room.currentElec.toString() : (room.prevElec !== undefined && room.prevElec !== null ? room.prevElec.toString() : ''))}
                                 onChange={(e) => handleMeterInput(room.id, 'elec', e.target.value)}
-                                style={isLocked ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
+                                style={isLocked || isViewer ? { opacity: 0.65, backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' } : undefined}
                               />
                             </div>
                           )}
                         </div>
 
-                        {isVacantRoom ? (
+                        {isViewer ? (
+                          <button
+                            disabled
+                            className={`${styles.btn} ${styles.btnSecondary}`}
+                            style={{ width: '100%', padding: '0.5rem', fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.6, cursor: 'not-allowed' }}
+                            title="โหมดตรวจการ (Read-Only) ไม่สามารถบันทึกมิเตอร์ได้"
+                          >
+                            🔒 โหมดตรวจการ (อ่านอย่างเดียว)
+                          </button>
+                        ) : isVacantRoom ? (
                           <button
                             disabled
                             className={`${styles.btn} ${styles.btnSecondary}`}

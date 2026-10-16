@@ -34,6 +34,7 @@ interface EditTenantModalProps {
   setEditTenantStartDate?: (val: string) => void;
   editTenantSaving: boolean;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function EditTenantModal({
@@ -67,6 +68,7 @@ export default function EditTenantModal({
   setEditTenantStartDate,
   editTenantSaving,
   styles,
+  isViewer = false,
 }: EditTenantModalProps) {
   if (!showEditTenantModal || !editingTenant) return null;
 
@@ -82,7 +84,16 @@ export default function EditTenantModal({
           </button>
         </div>
 
-        <form onSubmit={handleSaveTenantInfo}>
+        <form
+          onSubmit={(e) => {
+            if (isViewer) {
+              e.preventDefault();
+              alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า');
+              return;
+            }
+            handleSaveTenantInfo(e);
+          }}
+        >
           <div className={styles.modalBody} style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Category 1: Tenant Personal Details */}
             <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
@@ -277,8 +288,14 @@ export default function EditTenantModal({
             <button type="button" className={styles.btn} onClick={() => setShowEditTenantModal(false)}>
               ยกเลิก
             </button>
-            <button type="submit" disabled={editTenantSaving} className={`${styles.btn} ${styles.btnPrimary}`}>
-              {editTenantSaving ? '⏳ กำลังบันทึก...' : '💾 บันทึกการเปลี่ยนแปลง'}
+            <button
+              type="submit"
+              disabled={editTenantSaving || isViewer}
+              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              style={isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+            >
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : (editTenantSaving ? '⏳ กำลังบันทึก...' : '💾 บันทึกการเปลี่ยนแปลง')}
             </button>
           </div>
         </form>

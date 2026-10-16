@@ -84,6 +84,7 @@ export default function Dashboard() {
   const [showStyleMenu, setShowStyleMenu] = useState(false);
   const styleMenuRef = useRef<HTMLDivElement>(null);
   const [adminUser, setAdminUser] = useState<{ id?: string; username: string; name: string; role?: string } | null>(null);
+  const isViewer = adminUser?.role === 'VIEWER';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -667,6 +668,10 @@ table { border-collapse: collapse; }
 
   // --- Bulk Bill: Generate all bills ---
   const handleBulkGenerate = async () => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ออกบิล');
+      return;
+    }
     const filteredList = bulkRoomList.filter(r => bulkBuildingFilter === 'ALL' || r.buildingId === bulkBuildingFilter);
     const eligible = filteredList.filter(r => !r.hasInvoice && r.hasMeter);
     if (eligible.length === 0) {
@@ -797,6 +802,10 @@ table { border-collapse: collapse; }
 
   const handleSaveTenantInfo = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า');
+      return;
+    }
     if (!editingTenant) return;
     setEditTenantSaving(true);
     try {
@@ -836,6 +845,10 @@ table { border-collapse: collapse; }
   };
 
   const handleCancelCheckIn = async (tenantId: string) => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ยกเลิกการเข้าพัก');
+      return;
+    }
     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเข้าพักนี้?\n\nข้อมูลผู้เช่า บิลแรกเข้า และมิเตอร์จะถูกลบออกจากระบบ และห้องจะกลับเป็นสถานะ "ว่าง" 100%')) return;
     try {
       const res = await fetch(`/api/tenants/${tenantId}`, { method: 'DELETE' });
@@ -862,6 +875,10 @@ table { border-collapse: collapse; }
   };
 
   const handleExecuteTransfer = async (data: any) => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำรายการย้ายห้องพัก');
+      return;
+    }
     if (!selectedRoom || !selectedRoom.tenants?.[0]) return;
     const tenantId = selectedRoom.tenants[0].id;
     const res = await fetch(`/api/tenants/${tenantId}/transfer`, {
@@ -998,6 +1015,10 @@ table { border-collapse: collapse; }
 
   const handleCheckInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำสัญญาเข้าพัก');
+      return;
+    }
     if (!selectedRoom) return;
 
     try {
@@ -1079,6 +1100,10 @@ table { border-collapse: collapse; }
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการจองห้องพัก');
+      return;
+    }
     if (!selectedRoom) return;
 
     try {
@@ -1124,6 +1149,10 @@ table { border-collapse: collapse; }
   };
 
   const handleBookingCheckInSubmit = async (bookingId: string) => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำสัญญาเข้าพัก');
+      return;
+    }
     if (!selectedRoom) return;
     try {
       const latestReading = selectedRoom.readings?.[0];
@@ -1155,6 +1184,10 @@ table { border-collapse: collapse; }
   };
 
   const handleBookingCancel = async (bookingId: string, action: 'REFUND' | 'FORFEIT') => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ยกเลิกการจอง');
+      return;
+    }
     const actionText = action === 'REFUND' ? 'คืนเงินมัดจำ' : 'ริบเงินมัดจำ';
     if (!confirm(`ยืนยันการยกเลิกการจองห้องพัก (${actionText}) ใช่หรือไม่?`)) return;
 
@@ -1215,6 +1248,10 @@ table { border-collapse: collapse; }
 
   const handleCheckOutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการแจ้งย้ายออกหรือคืนห้อง');
+      return;
+    }
     if (!activeCheckOutTenant || !selectedRoom) return;
 
     try {
@@ -1395,6 +1432,10 @@ table { border-collapse: collapse; }
   };
 
   const handleSingleMeterSubmit = async (roomId: string, prevWater: number, prevElec: number) => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกมิเตอร์');
+      return;
+    }
     const water = waterReadings[roomId];
     const elec = elecReadings[roomId];
 
@@ -1534,6 +1575,10 @@ table { border-collapse: collapse; }
   };
 
   const handleSaveAllMeters = async () => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกมิเตอร์');
+      return;
+    }
     if (!activeBuilding) return;
     
     // Find all rooms in active building that have some readings entered and aren't already saved
@@ -1656,6 +1701,10 @@ table { border-collapse: collapse; }
 
   const handleGenerateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ออกบิล');
+      return;
+    }
     if (!selectedRoom) return;
 
     try {
@@ -1762,6 +1811,10 @@ table { border-collapse: collapse; }
 
   const handleEditInvoiceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขใบแจ้งหนี้');
+      return;
+    }
     if (!editInvoiceId) return;
 
     try {
@@ -1832,6 +1885,10 @@ table { border-collapse: collapse; }
 
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการชำระเงิน');
+      return;
+    }
     if (!selectedInvoice) return;
 
     try {
@@ -2255,6 +2312,7 @@ table { border-collapse: collapse; }
         {/* --- 3. METER READING TAB --- */}
         {activeTab === 'meter' && (
           <MeterTab
+            isViewer={isViewer}
             selectedBuildingId={selectedBuildingId}
             setSelectedBuildingId={setSelectedBuildingId}
             buildings={buildings}
@@ -2285,6 +2343,7 @@ table { border-collapse: collapse; }
         {/* --- 4. INVOICES TAB --- */}
         {activeTab === 'invoices' && (
           <InvoiceTab
+            isViewer={isViewer}
             invoiceStatusFilter={invoiceStatusFilter}
             setInvoiceStatusFilter={setInvoiceStatusFilter}
             invoiceFilterPeriod={invoiceFilterPeriod}
@@ -2311,6 +2370,7 @@ table { border-collapse: collapse; }
         {/* --- 5. TENANTS DIRECTORY TAB --- */}
         {activeTab === 'tenants' && (
           <TenantTab
+            isViewer={isViewer}
             tenantsList={tenantsList}
             refreshTenants={refreshTenants}
             tenantSearchQuery={tenantSearchQuery}
@@ -2329,6 +2389,7 @@ table { border-collapse: collapse; }
         {/* --- 6. SETTINGS TAB --- */}
         {activeTab === 'settings' && (
           <SettingsTab
+            isViewer={isViewer}
             currentUser={adminUser}
             propName={propName}
             setPropName={setPropName}
@@ -2381,6 +2442,7 @@ table { border-collapse: collapse; }
         {/* --- 8. GOV BILL TAB --- */}
         {activeTab === 'govbill' && (
           <GovBillTab
+            isViewer={isViewer}
             buildings={buildings}
             styles={styles}
           />
@@ -2452,6 +2514,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 1: ROOM DETAILS MODAL --- */}
       <RoomModal
+        isViewer={isViewer}
         showRoomModal={showRoomModal}
         setShowRoomModal={setShowRoomModal}
         selectedRoom={selectedRoom}
@@ -2496,6 +2559,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 2: CHECK IN MODAL --- */}
       <CheckInModal
+        isViewer={isViewer}
         showCheckInModal={showCheckInModal}
         setShowCheckInModal={setShowCheckInModal}
         setShowRoomModal={setShowRoomModal}
@@ -2544,6 +2608,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 2.2 & 2.3: CHECK-OUT & RECEIPT MODALS --- */}
       <CheckOutModal
+        isViewer={isViewer}
         showCheckOutModal={showCheckOutModal}
         setShowCheckOutModal={setShowCheckOutModal}
         selectedRoom={selectedRoom}
@@ -2577,6 +2642,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 2.5: BOOKING MODAL --- */}
       <BookingModal
+        isViewer={isViewer}
         showBookingModal={showBookingModal}
         setShowBookingModal={setShowBookingModal}
         setShowRoomModal={setShowRoomModal}
@@ -2609,6 +2675,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 3: INVOICE GENERATOR, DETAIL A5 & EDIT INVOICE MODALS --- */}
       <InvoiceDetailModal
+        isViewer={isViewer}
         showInvoiceModal={showInvoiceModal}
         setShowInvoiceModal={setShowInvoiceModal}
         selectedRoom={selectedRoom}
@@ -2670,6 +2737,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 4: RECORD PAYMENT MODAL --- */}
       <PaymentModal
+        isViewer={isViewer}
         showPaymentModal={showPaymentModal}
         setShowPaymentModal={setShowPaymentModal}
         selectedInvoice={selectedInvoice}
@@ -2700,6 +2768,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 4.7: EDIT TENANT MODAL --- */}
       <EditTenantModal
+        isViewer={isViewer}
         showEditTenantModal={showEditTenantModal}
         setShowEditTenantModal={setShowEditTenantModal}
         editingTenant={editingTenant}
@@ -2734,6 +2803,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 4.8: ROOM TRANSFER MODAL --- */}
       <RoomTransferModal
+        isViewer={isViewer}
         showTransferModal={showTransferModal}
         setShowTransferModal={setShowTransferModal}
         selectedRoom={selectedRoom}
@@ -2744,6 +2814,7 @@ table { border-collapse: collapse; }
 
       {/* --- MODAL 4.9: REPLACE METER MODAL --- */}
       <ReplaceMeterModal
+        isViewer={isViewer}
         showReplaceMeterModal={showReplaceMeterModal}
         setShowReplaceMeterModal={setShowReplaceMeterModal}
         selectedRoom={selectedRoom}
@@ -2820,13 +2891,17 @@ table { border-collapse: collapse; }
                           <td>
                             <button
                               className={`${styles.btn} ${styles.btnSuccess} ${styles.btnFilterPill}`}
+                              disabled={isViewer}
+                              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์รับชำระเงิน' : undefined}
+                              style={isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                               onClick={() => {
+                                if (isViewer) return;
                                 setSelectedInvoice(inv);
                                 setPaymentAmount(inv.totalAmount.toString());
                                 setShowPaymentModal(true);
                               }}
                             >
-                              ชำระเงิน
+                              {isViewer ? '🔒 ตรวจการ' : 'ชำระเงิน'}
                             </button>
                           </td>
                         </tr>
@@ -3209,7 +3284,8 @@ table { border-collapse: collapse; }
                 return (
                   <button
                     type="button"
-                    disabled={bulkGenerating || eligibleCount === 0}
+                    disabled={bulkGenerating || eligibleCount === 0 || isViewer}
+                    title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ออกบิล' : undefined}
                     onClick={handleBulkGenerate}
                     className={`${styles.btn} ${styles.btnSuccess}`}
                     style={{
@@ -3217,11 +3293,13 @@ table { border-collapse: collapse; }
                       fontSize: '0.95rem',
                       fontWeight: 800,
                       boxShadow: 'var(--shadow-glow-success)',
-                      opacity: (bulkGenerating || eligibleCount === 0) ? 0.5 : 1,
-                      cursor: (bulkGenerating || eligibleCount === 0) ? 'not-allowed' : 'pointer'
+                      opacity: (bulkGenerating || eligibleCount === 0 || isViewer) ? 0.5 : 1,
+                      cursor: (bulkGenerating || eligibleCount === 0 || isViewer) ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    {bulkGenerating
+                    {isViewer
+                      ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)'
+                      : bulkGenerating
                       ? '⏳ กำลังสร้างใบแจ้งหนี้...'
                       : `🚀 ยืนยันออกบิลทุกห้องพร้อมกัน (${eligibleCount} ห้อง)`}
                   </button>

@@ -43,6 +43,7 @@ interface SettingsTabProps {
   activeBuilding: any;
   handleRoomClick: (roomId: string) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function SettingsTab({
@@ -83,7 +84,9 @@ export default function SettingsTab({
   activeBuilding,
   handleRoomClick,
   styles,
+  isViewer: isViewerProp,
 }: SettingsTabProps) {
+  const isViewer = isViewerProp ?? (currentUser?.role === 'VIEWER');
   // User Management state
   const [users, setUsers] = React.useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(false);
@@ -900,6 +903,10 @@ export default function SettingsTab({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            if (isViewer) {
+              alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลการตั้งค่า');
+              return;
+            }
             try {
               const res = await fetch('/api/property', {
                 method: 'PUT',
@@ -1144,6 +1151,8 @@ export default function SettingsTab({
           <button
             type="submit"
             className={`${styles.btn} ${styles.btnPrimary}`}
+            disabled={isViewer}
+            title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขการตั้งค่ากิจการ' : undefined}
             style={{
               width: '100%',
               padding: '0.75rem 1.5rem',
@@ -1154,14 +1163,22 @@ export default function SettingsTab({
               justifyContent: 'center',
               gap: '0.5rem',
               borderRadius: 'var(--radius-md)',
+              opacity: isViewer ? 0.6 : 1,
+              cursor: isViewer ? 'not-allowed' : 'pointer',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            <span>บันทึกตั้งค่ากิจการ & Gemini API Key</span>
+            {isViewer ? (
+              <span>🔒 โหมดตรวจการ (อ่านอย่างเดียว)</span>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>บันทึกตั้งค่ากิจการ & Gemini API Key</span>
+              </>
+            )}
           </button>
         </form>
       </div>
@@ -1204,6 +1221,10 @@ export default function SettingsTab({
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  if (isViewer) {
+                    alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลการตั้งค่าอาคาร');
+                    return;
+                  }
                   const form = e.currentTarget;
                   const name = (form.elements.namedItem('bName') as HTMLInputElement).value;
                   const wRate = (form.elements.namedItem('wRate') as HTMLInputElement).value;
@@ -1539,6 +1560,8 @@ export default function SettingsTab({
                 <button
                   type="submit"
                   className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isViewer}
+                  title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขการตั้งค่าอาคาร' : undefined}
                   style={{
                     width: '100%',
                     marginTop: '1.5rem',
@@ -1549,9 +1572,11 @@ export default function SettingsTab({
                     justifyContent: 'center',
                     alignItems: 'center',
                     textAlign: 'center',
+                    opacity: isViewer ? 0.6 : 1,
+                    cursor: isViewer ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  💾 บันทึกการตั้งค่าอาคาร: {b.name}
+                  {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : `💾 บันทึกการตั้งค่าอาคาร: ${b.name}`}
                 </button>
               </form>
             </div>

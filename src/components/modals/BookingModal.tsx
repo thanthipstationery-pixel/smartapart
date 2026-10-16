@@ -32,6 +32,7 @@ interface BookingModalProps {
   bookingNote: string;
   setBookingNote: (val: string) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function BookingModal({
@@ -63,6 +64,7 @@ export default function BookingModal({
   bookingNote,
   setBookingNote,
   styles,
+  isViewer = false,
 }: BookingModalProps) {
   if (!showBookingModal || !selectedRoom) return null;
 
@@ -114,7 +116,16 @@ export default function BookingModal({
           </button>
         </div>
 
-        <form onSubmit={handleBookingSubmit}>
+        <form
+          onSubmit={(e) => {
+            if (isViewer) {
+              e.preventDefault();
+              alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการจองห้องพัก');
+              return;
+            }
+            handleBookingSubmit(e);
+          }}
+        >
           <div className={styles.modalBody}>
             {/* AI ID Card OCR Camera Banner for Booking */}
             <div
@@ -288,10 +299,17 @@ export default function BookingModal({
             </button>
             <button
               type="submit"
+              disabled={isViewer}
+              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการจองห้องพัก' : undefined}
               className={`${styles.btn} ${styles.btnPrimary}`}
-              style={{ backgroundColor: 'var(--status-warning)', color: 'var(--text-primary)', fontWeight: 'bold' }}
+              style={{
+                backgroundColor: 'var(--status-warning)',
+                color: 'var(--text-primary)',
+                fontWeight: 'bold',
+                ...(isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+              }}
             >
-              📅 ยืนยันบันทึกการจอง
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '📅 ยืนยันบันทึกการจอง'}
             </button>
           </div>
         </form>

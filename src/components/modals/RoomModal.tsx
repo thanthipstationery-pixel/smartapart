@@ -41,6 +41,7 @@ interface RoomModalProps {
   setModalElecType: (val: string) => void;
   styles: any;
   Icons: any;
+  isViewer?: boolean;
 }
 
 export default function RoomModal({
@@ -81,6 +82,7 @@ export default function RoomModal({
   setModalElecType,
   styles,
   Icons,
+  isViewer = false,
 }: RoomModalProps) {
   if (!showRoomModal || !selectedRoom) return null;
 
@@ -166,6 +168,9 @@ export default function RoomModal({
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button
                   className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถลงทะเบียนผู้เช่าได้' : undefined}
+                  style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                   onClick={() => {
                     const latestReading = selectedRoom.readings?.[0];
                     const waterVal = latestReading ? latestReading.waterValue : selectedRoom.currentWater ?? selectedRoom.prevWater ?? 0;
@@ -187,7 +192,9 @@ export default function RoomModal({
 
                 <button
                   className={`${styles.btn} ${styles.btnWarning}`}
-                  style={{ fontWeight: 600 }}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถจองห้องพักได้' : undefined}
+                  style={{ fontWeight: 600, opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                   onClick={() => {
                     setBookingName('');
                     setBookingPhone('');
@@ -208,7 +215,9 @@ export default function RoomModal({
 
                 <button
                   className={`${styles.btn} ${styles.btnSecondary}`}
-                  style={{ fontWeight: 600 }}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถปิดปรับปรุงห้องพักได้' : undefined}
+                  style={{ fontWeight: 600, opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                   onClick={async () => {
                     if (confirm('คุณต้องการปิดปรับปรุงห้องพักนี้ใช่หรือไม่?')) {
                       const res = await fetch(`/api/rooms/${selectedRoom.id}`, {
@@ -270,19 +279,27 @@ export default function RoomModal({
                       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                         <button
                           className={`${styles.btn} ${styles.btnPrimary}`}
+                          disabled={isViewer}
+                          title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถทำสัญญาได้' : undefined}
+                          style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                           onClick={() => handleBookingCheckInSubmit(activeB.id)}
                         >
                           📝 ทำสัญญาเข้าพัก (Check-in)
                         </button>
                         <button
                           className={`${styles.btn}`}
-                          style={{ backgroundColor: '#17a2b8', color: '#ffffff' }}
+                          disabled={isViewer}
+                          title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถยกเลิกการจองได้' : undefined}
+                          style={{ backgroundColor: '#17a2b8', color: '#ffffff', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                           onClick={() => handleBookingCancel(activeB.id, 'REFUND')}
                         >
                           ↩️ ยกเลิก (คืนมัดจำ)
                         </button>
                         <button
                           className={`${styles.btn} ${styles.btnDanger}`}
+                          disabled={isViewer}
+                          title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถยกเลิกการจองได้' : undefined}
+                          style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                           onClick={() => handleBookingCancel(activeB.id, 'FORFEIT')}
                         >
                           ❌ ยกเลิก (ริบมัดจำ)
@@ -408,14 +425,18 @@ export default function RoomModal({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '1rem' }}>
                 <button 
                   className={`${styles.btn} ${styles.btnPrimary}`} 
-                  style={{ gridColumn: '1 / -1', padding: '0.75rem', fontSize: '0.95rem' }}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถออกบิลได้' : undefined}
+                  style={{ gridColumn: '1 / -1', padding: '0.75rem', fontSize: '0.95rem', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                   onClick={() => handleOpenInvoiceModal(selectedRoom)}>
                   ออกบิลค่าเช่า/น้ำไฟ
                 </button>
                 {handleOpenRoomTransferModal && (
                   <button
                     className={`${styles.btn}`}
-                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--accent-purple)', border: '1px solid var(--accent-purple)', fontWeight: 'bold' }}
+                    disabled={isViewer}
+                    title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถย้ายห้องพักได้' : undefined}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--accent-purple)', border: '1px solid var(--accent-purple)', fontWeight: 'bold', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                     onClick={() => handleOpenRoomTransferModal(selectedRoom)}
                   >
                     🔄 ย้ายห้องพัก
@@ -424,7 +445,9 @@ export default function RoomModal({
                 {handleOpenReplaceMeterModal && (
                   <button
                     className={`${styles.btn}`}
-                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-info)', border: '1px solid var(--status-info)', fontWeight: 'bold' }}
+                    disabled={isViewer}
+                    title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถเปลี่ยนมิเตอร์ได้' : undefined}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-info)', border: '1px solid var(--status-info)', fontWeight: 'bold', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                     onClick={() => handleOpenReplaceMeterModal(selectedRoom)}
                   >
                     🔧 เปลี่ยนมิเตอร์
@@ -432,7 +455,9 @@ export default function RoomModal({
                 )}
                 <button 
                   className={`${styles.btn}`} 
-                  style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-warning-text)', border: '1px solid var(--status-warning-text)', fontWeight: 'bold' }} 
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถแจ้งย้ายออกได้' : undefined}
+                  style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-warning-text)', border: '1px solid var(--status-warning-text)', fontWeight: 'bold', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }} 
                   onClick={() => handleOpenCheckOutModal(selectedRoom.tenants[0])}
                 >
                   🚪 แจ้งย้ายออก
@@ -440,7 +465,9 @@ export default function RoomModal({
                 {handleCancelCheckIn && (
                   <button
                     className={`${styles.btn}`}
-                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-danger)', border: '1px solid var(--status-danger)', fontWeight: 'bold' }}
+                    disabled={isViewer}
+                    title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถยกเลิกการเช่าได้' : undefined}
+                    style={{ backgroundColor: 'var(--card-bg)', color: 'var(--status-danger)', border: '1px solid var(--status-danger)', fontWeight: 'bold', opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                     onClick={() => handleCancelCheckIn(selectedRoom.tenants[0].id)}
                   >
                     🗑️ ยกเลิกการเช่า
@@ -453,6 +480,9 @@ export default function RoomModal({
               <h4 style={{ marginBottom: '0.75rem', fontWeight: 600 }}>ห้องพักอยู่ระหว่างปิดปรับปรุง</h4>
               <button
                 className={`${styles.btn} ${styles.btnSuccess}`}
+                disabled={isViewer}
+                title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถเปิดใช้งานห้องพักได้' : undefined}
+                style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
                 onClick={async () => {
                   const res = await fetch(`/api/rooms/${selectedRoom.id}`, {
                     method: 'PUT',
@@ -476,6 +506,10 @@ export default function RoomModal({
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
+                if (isViewer) {
+                  alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลห้องพัก');
+                  return;
+                }
                 const form = e.currentTarget;
                 const rentPrice = (form.elements.namedItem('rentPrice') as HTMLInputElement).value;
                 const roomType = (form.elements.namedItem('roomType') as unknown as HTMLSelectElement).value;
@@ -523,6 +557,7 @@ export default function RoomModal({
                     className={styles.formInput}
                     style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                     required
+                    disabled={isViewer}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -534,6 +569,7 @@ export default function RoomModal({
                     defaultValue={selectedRoom.type}
                     className={styles.formInput}
                     style={{ padding: '0.4rem', fontSize: '0.9rem' }}
+                    disabled={isViewer}
                   >
                     <option value="FAN">ห้องธรรมดา (พัดลม)</option>
                     <option value="AC">ห้องปรับอากาศ (แอร์)</option>
@@ -551,6 +587,7 @@ export default function RoomModal({
                     className={styles.formInput}
                     style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                     onChange={(e) => setModalWaterType(e.target.value)}
+                    disabled={isViewer}
                   >
                     <option value="METER">ตามระบบ</option>
                     <option value="FLAT">เหมาจ่าย</option>
@@ -587,6 +624,7 @@ export default function RoomModal({
                         className={styles.formInput}
                         style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                         required
+                        disabled={isViewer}
                       />
                     </>
                   ) : (
@@ -602,6 +640,7 @@ export default function RoomModal({
                         className={styles.formInput}
                         style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                         required
+                        disabled={isViewer}
                       />
                     </>
                   )}
@@ -618,6 +657,7 @@ export default function RoomModal({
                     className={styles.formInput}
                     style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                     onChange={(e) => setModalElecType(e.target.value)}
+                    disabled={isViewer}
                   >
                     <option value="METER">ตามระบบ</option>
                     <option value="FLAT">เหมาจ่าย</option>
@@ -654,6 +694,7 @@ export default function RoomModal({
                         className={styles.formInput}
                         style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                         required
+                        disabled={isViewer}
                       />
                     </>
                   ) : (
@@ -669,6 +710,7 @@ export default function RoomModal({
                         className={styles.formInput}
                         style={{ padding: '0.4rem', fontSize: '0.9rem' }}
                         required
+                        disabled={isViewer}
                       />
                     </>
                   )}
@@ -695,6 +737,8 @@ export default function RoomModal({
                 <button
                   type="submit"
                   className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถแก้ไขข้อมูลได้' : undefined}
                   style={{
                     flex: '2 1 200px',
                     fontWeight: 'bold',
@@ -705,9 +749,11 @@ export default function RoomModal({
                     justifyContent: 'center',
                     alignItems: 'center',
                     textAlign: 'center',
+                    opacity: isViewer ? 0.6 : 1,
+                    cursor: isViewer ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  💾 บันทึกข้อมูลราคาและค่าห้องพัก
+                  {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '💾 บันทึกข้อมูลราคาและค่าห้องพัก'}
                 </button>
               </div>
             </form>

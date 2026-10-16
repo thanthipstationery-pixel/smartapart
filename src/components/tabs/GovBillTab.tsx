@@ -6,9 +6,10 @@ import { getShortBuildingName } from '@/lib/thaiDate';
 interface GovBillTabProps {
   buildings: any[];
   styles: any;
+  isViewer?: boolean;
 }
 
-export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
+export default function GovBillTab({ buildings, styles, isViewer = false }: GovBillTabProps) {
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('');
   const [period, setPeriod] = useState<string>(() => {
     const d = new Date();
@@ -73,6 +74,10 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
   }, [selectedBuildingId, period]);
 
   const handleSave = async () => {
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกหรือแก้ไขข้อมูล');
+      return;
+    }
     if (!selectedBuildingId || !period) return;
     setIsSaving(true);
     try {
@@ -158,6 +163,7 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
                     onChange={(e) => setWaterBillTotal(e.target.value)}
                     className={styles.formInput}
                     placeholder="0.00"
+                    disabled={isViewer}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -168,6 +174,7 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
                     onChange={(e) => setWaterUnitsTotal(e.target.value)}
                     className={styles.formInput}
                     placeholder="0"
+                    disabled={isViewer}
                   />
                 </div>
               </div>
@@ -190,6 +197,7 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
                     onChange={(e) => setElecBillTotal(e.target.value)}
                     className={styles.formInput}
                     placeholder="0.00"
+                    disabled={isViewer}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -200,6 +208,7 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
                     onChange={(e) => setElecUnitsTotal(e.target.value)}
                     className={styles.formInput}
                     placeholder="0"
+                    disabled={isViewer}
                   />
                 </div>
               </div>
@@ -213,10 +222,15 @@ export default function GovBillTab({ buildings, styles }: GovBillTabProps) {
                 type="button"
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={handleSave}
-                disabled={isSaving}
-                style={{ minWidth: '150px' }}
+                disabled={isSaving || isViewer}
+                title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถบันทึกข้อมูลได้' : undefined}
+                style={{
+                  minWidth: '150px',
+                  opacity: isViewer ? 0.6 : 1,
+                  cursor: isViewer ? 'not-allowed' : 'pointer'
+                }}
               >
-                {isSaving ? 'กำลังบันทึก...' : '💾 บันทึกข้อมูล'}
+                {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : isSaving ? 'กำลังบันทึก...' : '💾 บันทึกข้อมูล'}
               </button>
             </div>
           </div>

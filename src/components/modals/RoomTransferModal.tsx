@@ -11,6 +11,7 @@ interface RoomTransferModalProps {
   vacantRooms: any[];
   handleExecuteTransfer: (data: any) => Promise<void>;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function RoomTransferModal({
@@ -20,6 +21,7 @@ export default function RoomTransferModal({
   vacantRooms,
   handleExecuteTransfer,
   styles,
+  isViewer = false,
 }: RoomTransferModalProps) {
   const [targetRoomId, setTargetRoomId] = useState('');
   const [sourceWater, setSourceWater] = useState('');
@@ -130,6 +132,10 @@ export default function RoomTransferModal({
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำรายการย้ายห้องพัก');
+      return;
+    }
     if (!targetRoomId) return alert('กรุณาเลือกห้องพักปลายทาง');
     setSubmitting(true);
     try {
@@ -412,11 +418,15 @@ export default function RoomTransferModal({
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || isViewer}
+              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำรายการย้ายห้องพัก' : undefined}
               className={`${styles.btn} ${styles.btnPrimary}`}
-              style={{ backgroundColor: 'var(--accent-purple)' }}
+              style={{
+                backgroundColor: 'var(--accent-purple)',
+                ...(isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+              }}
             >
-              {submitting ? '⏳ กำลังย้ายห้อง...' : '🚀 ยืนยันการย้ายห้องพัก'}
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : (submitting ? '⏳ กำลังย้ายห้อง...' : '🚀 ยืนยันการย้ายห้องพัก')}
             </button>
           </div>
         </form>

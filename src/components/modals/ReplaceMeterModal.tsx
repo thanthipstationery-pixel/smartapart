@@ -9,6 +9,7 @@ interface ReplaceMeterModalProps {
   selectedRoom: any;
   onSuccess?: () => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function ReplaceMeterModal({
@@ -17,6 +18,7 @@ export default function ReplaceMeterModal({
   selectedRoom,
   onSuccess,
   styles,
+  isViewer = false,
 }: ReplaceMeterModalProps) {
   const [meterType, setMeterType] = useState<'WATER' | 'ELEC' | 'BOTH'>('WATER');
   
@@ -37,6 +39,10 @@ export default function ReplaceMeterModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isViewer) {
+      alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการเปลี่ยนมิเตอร์');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -176,6 +182,7 @@ export default function ReplaceMeterModal({
                       onChange={(e) => setOldWaterFinal(e.target.value)}
                       className={styles.formInput}
                       style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                      disabled={isViewer}
                     />
                     <span style={{ fontSize: '0.75rem', color: 'var(--status-info-text)' }}>
                       (ใช้ไปจากมิเตอร์เดิม: {oldWaterUnits} หน่วย)
@@ -197,6 +204,7 @@ export default function ReplaceMeterModal({
                       onChange={(e) => setNewWaterStart(e.target.value)}
                       className={styles.formInput}
                       style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                      disabled={isViewer}
                     />
                   </div>
                 </div>
@@ -232,6 +240,7 @@ export default function ReplaceMeterModal({
                       onChange={(e) => setOldElecFinal(e.target.value)}
                       className={styles.formInput}
                       style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                      disabled={isViewer}
                     />
                     <span style={{ fontSize: '0.75rem', color: '#854d0e' }}>
                       (ใช้ไปจากมิเตอร์เดิม: {oldElecUnits} หน่วย)
@@ -253,6 +262,7 @@ export default function ReplaceMeterModal({
                       onChange={(e) => setNewElecStart(e.target.value)}
                       className={styles.formInput}
                       style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                      disabled={isViewer}
                     />
                   </div>
                 </div>
@@ -272,6 +282,7 @@ export default function ReplaceMeterModal({
                   onChange={(e) => setReplacementDate(e.target.value)}
                   className={styles.formInput}
                   style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                  disabled={isViewer}
                 />
               </div>
 
@@ -286,6 +297,7 @@ export default function ReplaceMeterModal({
                   onChange={(e) => setNote(e.target.value)}
                   className={styles.formInput}
                   style={{ padding: '0.4rem', fontSize: '0.88rem' }}
+                  disabled={isViewer}
                 />
               </div>
             </div>
@@ -318,9 +330,14 @@ export default function ReplaceMeterModal({
             <button
               type="submit"
               className={`${styles.btn} ${styles.btnPrimary}`}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isViewer}
+              title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถเปลี่ยนมิเตอร์ได้' : undefined}
+              style={{
+                opacity: isViewer ? 0.6 : 1,
+                cursor: isViewer ? 'not-allowed' : 'pointer'
+              }}
             >
-              {isSubmitting ? '⏳ กำลังบันทึก...' : '💾 ยืนยันการบันทึกเปลี่ยนมิเตอร์'}
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : isSubmitting ? '⏳ กำลังบันทึก...' : '💾 ยืนยันการบันทึกเปลี่ยนมิเตอร์'}
             </button>
           </div>
         </form>

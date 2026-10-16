@@ -16,6 +16,7 @@ interface TenantTabProps {
   tenantsLoading: boolean;
   handleOpenEditTenantModal: (tenant: any) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function TenantTab({
@@ -31,6 +32,7 @@ export default function TenantTab({
   tenantsLoading,
   handleOpenEditTenantModal,
   styles,
+  isViewer = false,
 }: TenantTabProps) {
   return (
     <div className="fade-in">
@@ -244,10 +246,22 @@ export default function TenantTab({
                                 <button
                                   type="button"
                                   className={`${styles.btn} ${styles.btnSecondary}`}
-                                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
-                                  onClick={() => handleOpenEditTenantModal(t)}
+                                  disabled={isViewer}
+                                  title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
+                                  style={{
+                                    padding: '0.4rem 0.8rem',
+                                    fontSize: '0.85rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.3rem',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontWeight: 600,
+                                    opacity: isViewer ? 0.6 : 1,
+                                    cursor: isViewer ? 'not-allowed' : 'pointer',
+                                  }}
+                                  onClick={() => !isViewer && handleOpenEditTenantModal(t)}
                                 >
-                                  ✏️ แก้ไข
+                                  {isViewer ? '🔒 ตรวจการ' : '✏️ แก้ไข'}
                                 </button>
                               </td>
                             </>
@@ -351,10 +365,18 @@ export default function TenantTab({
                       <button
                         type="button"
                         className={`${styles.btn} ${styles.btnSecondary}`}
-                        style={{ flex: 1, padding: '0.5rem', fontSize: '0.85rem' }}
-                        onClick={() => handleOpenEditTenantModal(t)}
+                        disabled={isViewer}
+                        title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem',
+                          fontSize: '0.85rem',
+                          opacity: isViewer ? 0.6 : 1,
+                          cursor: isViewer ? 'not-allowed' : 'pointer',
+                        }}
+                        onClick={() => !isViewer && handleOpenEditTenantModal(t)}
                       >
-                        ✏️ แก้ไขข้อมูล
+                        {isViewer ? '🔒 ตรวจการ (อ่านอย่างเดียว)' : '✏️ แก้ไขข้อมูล'}
                       </button>
                     </div>
                   </div>

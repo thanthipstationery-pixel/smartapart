@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 // POST /api/invoices/bulk
 // Body: { billingPeriod, dueDate, rooms: [{ roomId, otherFeeItems?, customOtherNote? }] }
 export async function POST(request: Request) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ออกบิลรวม' },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as any;
     const { billingPeriod, dueDate, rooms } = body;
 

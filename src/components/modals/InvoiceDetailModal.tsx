@@ -73,6 +73,7 @@ interface InvoiceDetailModalProps {
   setEditOtherNote: (val: string) => void;
 
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function InvoiceDetailModal({
@@ -136,6 +137,7 @@ export default function InvoiceDetailModal({
   setEditOtherNote,
 
   styles,
+  isViewer = false,
 }: InvoiceDetailModalProps) {
   const formatRate = (rate: any) => {
     if (typeof rate === 'number') {
@@ -458,8 +460,14 @@ export default function InvoiceDetailModal({
                 >
                   ยกเลิก
                 </button>
-                <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-                  💾 ออกบิลใบแจ้งหนี้ A5
+                <button
+                  type="submit"
+                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถออกบิลได้' : undefined}
+                  style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
+                >
+                  {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '💾 ออกบิลใบแจ้งหนี้ A5'}
                 </button>
               </div>
             </form>
@@ -557,8 +565,18 @@ export default function InvoiceDetailModal({
                 <button
                   type="button"
                   className={`${styles.btn} ${styles.btnSecondary}`}
-                  style={{ fontSize: '0.85rem', backgroundColor: 'var(--status-warning)', color: 'var(--text-primary)', border: 'none', fontWeight: 'bold' }}
-                  onClick={() => handleOpenEditInvoiceModal(selectedInvoice)}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถแก้ไขใบแจ้งหนี้ได้' : undefined}
+                  style={{
+                    fontSize: '0.85rem',
+                    backgroundColor: 'var(--status-warning)',
+                    color: 'var(--text-primary)',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    opacity: isViewer ? 0.5 : 1,
+                    cursor: isViewer ? 'not-allowed' : 'pointer'
+                  }}
+                  onClick={() => !isViewer && handleOpenEditInvoiceModal(selectedInvoice)}
                 >
                   ✏️ แก้ไขใบแจ้งหนี้
                 </button>
@@ -1301,8 +1319,14 @@ export default function InvoiceDetailModal({
                 <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setShowEditInvoiceModal(false)}>
                   ❌ ยกเลิก
                 </button>
-                <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-                  💾 บันทึกการแก้ไขใบแจ้งหนี้
+                <button
+                  type="submit"
+                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  disabled={isViewer}
+                  title={isViewer ? 'โหมดตรวจการ (Read-Only) ไม่สามารถแก้ไขใบแจ้งหนี้ได้' : undefined}
+                  style={{ opacity: isViewer ? 0.6 : 1, cursor: isViewer ? 'not-allowed' : 'pointer' }}
+                >
+                  {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '💾 บันทึกการแก้ไขใบแจ้งหนี้'}
                 </button>
               </div>
             </form>

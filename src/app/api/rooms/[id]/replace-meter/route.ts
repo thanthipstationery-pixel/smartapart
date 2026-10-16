@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAuthSession } from '@/lib/auth';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getAuthSession(request);
+    if (session?.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการเปลี่ยนมิเตอร์' },
+        { status: 403 }
+      );
+    }
+
     const { id: roomId } = await params;
     const body = (await request.json()) as any;
     const {
@@ -76,7 +85,9 @@ export async function POST(
         readingDate: eventDate,
         waterValue: finalNewWater,
         electricityValue: finalNewElec,
-        recordedBy: `เปลี่ยนมิเตอร์ (${note || meterType})`,
+        recordedBy: session?.name || session?.username
+          ? `${session.name || session.username} (เปลี่ยนมิเตอร์)`
+          : `เปลี่ยนมิเตอร์ (${note || meterType})`,
       },
     });
 

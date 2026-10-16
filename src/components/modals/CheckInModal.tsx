@@ -49,6 +49,7 @@ interface CheckInModalProps {
   checkInNote: string;
   setCheckInNote: (val: string) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function CheckInModal({
@@ -96,6 +97,7 @@ export default function CheckInModal({
   checkInNote,
   setCheckInNote,
   styles,
+  isViewer = false,
 }: CheckInModalProps) {
   if (!showCheckInModal || !selectedRoom) return null;
 
@@ -115,7 +117,16 @@ export default function CheckInModal({
           </button>
         </div>
 
-        <form onSubmit={handleCheckInSubmit}>
+        <form
+          onSubmit={(e) => {
+            if (isViewer) {
+              e.preventDefault();
+              alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำสัญญาเข้าพัก');
+              return;
+            }
+            handleCheckInSubmit(e);
+          }}
+        >
           <div className={styles.modalBody}>
             {/* AI ID Card OCR Camera Banner */}
             <div
@@ -561,8 +572,14 @@ export default function CheckInModal({
             >
               ❌ ยกเลิก
             </button>
-            <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-              📝 ยืนยันสัญญาเช่า
+            <button
+              type="submit"
+              disabled={isViewer}
+              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำสัญญาเข้าพัก' : undefined}
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              style={isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+            >
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : '📝 ยืนยันสัญญาเช่า'}
             </button>
           </div>
         </form>

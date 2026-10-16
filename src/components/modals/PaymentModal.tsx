@@ -21,6 +21,7 @@ interface PaymentModalProps {
   paymentReceiverName: string;
   setPaymentReceiverName: (val: string) => void;
   styles: any;
+  isViewer?: boolean;
 }
 
 export default function PaymentModal({
@@ -41,6 +42,7 @@ export default function PaymentModal({
   paymentReceiverName,
   setPaymentReceiverName,
   styles,
+  isViewer = false,
 }: PaymentModalProps) {
   if (!showPaymentModal || !selectedInvoice) return null;
 
@@ -67,7 +69,14 @@ export default function PaymentModal({
           </button>
         </div>
 
-        <form onSubmit={handleRecordPayment}>
+        <form onSubmit={(e) => {
+          if (isViewer) {
+            e.preventDefault();
+            alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์รับชำระเงิน');
+            return;
+          }
+          handleRecordPayment(e);
+        }}>
           <div className={styles.modalBody}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {/* Summary Info Header */}
@@ -140,6 +149,7 @@ export default function PaymentModal({
                   type="number"
                   step="any"
                   required
+                  disabled={isViewer}
                   className={styles.formInput}
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
@@ -149,7 +159,7 @@ export default function PaymentModal({
               {/* Payment Method */}
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>ช่องทางการชำระเงิน *</label>
-                <select className={styles.formSelect} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+                <select className={styles.formSelect} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} disabled={isViewer}>
                   <option value="TRANSFER">โอนเงินผ่านธนาคาร (Bank Transfer)</option>
                   <option value="CASH">เงินสด (Cash)</option>
                 </select>
@@ -161,6 +171,7 @@ export default function PaymentModal({
                 <input
                   type="date"
                   required
+                  disabled={isViewer}
                   className={styles.formInput}
                   value={paymentDate}
                   onChange={(e) => setPaymentDate(e.target.value)}
@@ -173,6 +184,7 @@ export default function PaymentModal({
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={isViewer}
                   className={styles.formInput}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -201,6 +213,7 @@ export default function PaymentModal({
                 <label className={styles.formLabel}>ชื่อผู้รับเงินประจำใบเสร็จ</label>
                 <input
                   type="text"
+                  disabled={isViewer}
                   className={styles.formInput}
                   value={paymentReceiverName}
                   onChange={(e) => setPaymentReceiverName(e.target.value)}
@@ -213,8 +226,14 @@ export default function PaymentModal({
             <button type="button" className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setShowPaymentModal(false)}>
               ยกเลิก
             </button>
-            <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`}>
-              ยืนยันการรับชำระเงิน
+            <button
+              type="submit"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={isViewer}
+              title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์บันทึกการชำระเงิน' : undefined}
+              style={isViewer ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+            >
+              {isViewer ? '🔒 โหมดตรวจการ (อ่านอย่างเดียว)' : 'ยืนยันการรับชำระเงิน'}
             </button>
           </div>
         </form>
