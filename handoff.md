@@ -3,7 +3,7 @@ Last updated: 2026-10-15 — Complete User Management & Role-Based Access Contro
 
 ## Production URL
 https://smartapart.ai-pro.workers.dev
-Current Version ID: acc0e093-bd71-40d2-8b88-944d52d4891f
+Current Version ID: caf84b2c-dd9f-453a-a90b-da24d84be687
 
 ## Status: ALL APIs WORKING (verified 2026-10-15)
 
