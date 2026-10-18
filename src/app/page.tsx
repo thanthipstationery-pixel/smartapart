@@ -6,6 +6,7 @@ import Image from 'next/image';
 import styles from './dashboard.module.css';
 import { formatThaiDateNumeric, formatThaiDateLong, formatThaiBillingPeriod, formatThaiMonthOnly, getShortBuildingName, THAI_MONTHS } from '@/lib/thaiDate';
 import { calculateCheckInPayment, getPayInAdvanceBillingPeriod, validateCheckOutNotice } from '@/lib/billingRules';
+import { compressAndWatermarkIdCard } from '@/lib/idCardWatermark';
 import OverviewTab from '@/components/tabs/OverviewTab';
 import FloorMapTab from '@/components/tabs/FloorMapTab';
 import MeterTab from '@/components/tabs/MeterTab';
@@ -171,8 +172,11 @@ export default function Dashboard() {
 
   // Forms inputs state
   const [checkInName, setCheckInName] = useState('');
+  const [checkInNickname, setCheckInNickname] = useState('');
+  const [checkInAge, setCheckInAge] = useState('');
   const [checkInPhone, setCheckInPhone] = useState('');
   const [checkInIdCard, setCheckInIdCard] = useState('');
+  const [checkInIdCardImage, setCheckInIdCardImage] = useState('');
   const [checkInEmail, setCheckInEmail] = useState('');
   const [checkInLineId, setCheckInLineId] = useState('');
   const [checkInDate, setCheckInDate] = useState(new Date().toISOString().split('T')[0]);
@@ -183,6 +187,27 @@ export default function Dashboard() {
   const [checkInEmergencyName, setCheckInEmergencyName] = useState('');
   const [checkInEmergencyRel, setCheckInEmergencyRel] = useState('');
   const [checkInEmergencyPhone, setCheckInEmergencyPhone] = useState('');
+
+  // Check-In Co-Tenant (Tenant 2) state
+  const [checkInShowSecondTenant, setCheckInShowSecondTenant] = useState(false);
+  const [checkInSecondTenantName, setCheckInSecondTenantName] = useState('');
+  const [checkInSecondTenantNickname, setCheckInSecondTenantNickname] = useState('');
+  const [checkInSecondTenantAge, setCheckInSecondTenantAge] = useState('');
+  const [checkInSecondTenantIdCard, setCheckInSecondTenantIdCard] = useState('');
+  const [checkInSecondTenantAddress, setCheckInSecondTenantAddress] = useState('');
+  const [checkInSecondTenantPhone, setCheckInSecondTenantPhone] = useState('');
+  const [checkInSecondTenantWorkplace, setCheckInSecondTenantWorkplace] = useState('');
+  const [checkInSecondTenantEmergencyName, setCheckInSecondTenantEmergencyName] = useState('');
+  const [checkInSecondTenantEmergencyRel, setCheckInSecondTenantEmergencyRel] = useState('');
+  const [checkInSecondTenantEmergencyPhone, setCheckInSecondTenantEmergencyPhone] = useState('');
+  const [checkInSecondTenantIdCardImage, setCheckInSecondTenantIdCardImage] = useState('');
+
+  // Check-In Contract Configuration state
+  const [checkInContractNumber, setCheckInContractNumber] = useState('');
+  const [checkInContractDuration, setCheckInContractDuration] = useState('6');
+  const [checkInRoomRentShare, setCheckInRoomRentShare] = useState('1000');
+  const [checkInAssetRentShare, setCheckInAssetRentShare] = useState('');
+
   const [checkInSecurityDeposit, setCheckInSecurityDeposit] = useState('');
   const [checkInUseKeycard, setCheckInUseKeycard] = useState(false);
   const [checkInKeycardCount, setCheckInKeycardCount] = useState('1');
@@ -327,8 +352,11 @@ export default function Dashboard() {
   const [showEditTenantModal, setShowEditTenantModal] = useState(false);
   const [editingTenant, setEditingTenant] = useState<any>(null);
   const [editTenantName, setEditTenantName] = useState('');
+  const [editTenantNickname, setEditTenantNickname] = useState('');
+  const [editTenantAge, setEditTenantAge] = useState('');
   const [editTenantPhone, setEditTenantPhone] = useState('');
   const [editTenantIdCard, setEditTenantIdCard] = useState('');
+  const [editTenantIdCardImage, setEditTenantIdCardImage] = useState('');
   const [editTenantEmail, setEditTenantEmail] = useState('');
   const [editTenantLineId, setEditTenantLineId] = useState('');
   const [editTenantAddress, setEditTenantAddress] = useState('');
@@ -336,6 +364,27 @@ export default function Dashboard() {
   const [editTenantEmergencyName, setEditTenantEmergencyName] = useState('');
   const [editTenantEmergencyRel, setEditTenantEmergencyRel] = useState('');
   const [editTenantEmergencyPhone, setEditTenantEmergencyPhone] = useState('');
+
+  // Edit Tenant Co-Tenant (Tenant 2) state
+  const [editTenantShowSecondTenant, setEditTenantShowSecondTenant] = useState(false);
+  const [editTenantSecondTenantName, setEditTenantSecondTenantName] = useState('');
+  const [editTenantSecondTenantNickname, setEditTenantSecondTenantNickname] = useState('');
+  const [editTenantSecondTenantAge, setEditTenantSecondTenantAge] = useState('');
+  const [editTenantSecondTenantIdCard, setEditTenantSecondTenantIdCard] = useState('');
+  const [editTenantSecondTenantAddress, setEditTenantSecondTenantAddress] = useState('');
+  const [editTenantSecondTenantPhone, setEditTenantSecondTenantPhone] = useState('');
+  const [editTenantSecondTenantWorkplace, setEditTenantSecondTenantWorkplace] = useState('');
+  const [editTenantSecondTenantEmergencyName, setEditTenantSecondTenantEmergencyName] = useState('');
+  const [editTenantSecondTenantEmergencyRel, setEditTenantSecondTenantEmergencyRel] = useState('');
+  const [editTenantSecondTenantEmergencyPhone, setEditTenantSecondTenantEmergencyPhone] = useState('');
+  const [editTenantSecondTenantIdCardImage, setEditTenantSecondTenantIdCardImage] = useState('');
+
+  // Edit Tenant Contract Configuration state
+  const [editTenantContractNumber, setEditTenantContractNumber] = useState('');
+  const [editTenantContractDuration, setEditTenantContractDuration] = useState('6');
+  const [editTenantRoomRentShare, setEditTenantRoomRentShare] = useState('1000');
+  const [editTenantAssetRentShare, setEditTenantAssetRentShare] = useState('');
+
   const [editTenantNote, setEditTenantNote] = useState('');
   const [editTenantStartDate, setEditTenantStartDate] = useState('');
   const [editTenantSaving, setEditTenantSaving] = useState(false);
@@ -818,8 +867,11 @@ table { border-collapse: collapse; }
   const handleOpenEditTenantModal = (tenant: any) => {
     setEditingTenant(tenant);
     setEditTenantName(tenant.name || '');
+    setEditTenantNickname(tenant.nickname || '');
+    setEditTenantAge(tenant.age !== null && tenant.age !== undefined ? String(tenant.age) : '');
     setEditTenantPhone(tenant.phone || '');
     setEditTenantIdCard(tenant.idCard || '');
+    setEditTenantIdCardImage(tenant.idCardImage || '');
     setEditTenantEmail(tenant.email || '');
     setEditTenantLineId(tenant.lineId || '');
     setEditTenantAddress(tenant.address || '');
@@ -829,6 +881,40 @@ table { border-collapse: collapse; }
     setEditTenantEmergencyPhone(tenant.emergencyPhone || '');
     setEditTenantNote(tenant.note || '');
     setEditTenantStartDate(tenant.startDate ? new Date(tenant.startDate).toISOString().split('T')[0] : '');
+
+    // Co-tenant (Second Tenant)
+    const hasSecond = Boolean(
+      tenant.secondTenantName ||
+      tenant.secondTenantIdCard ||
+      tenant.secondTenantPhone ||
+      tenant.secondTenantIdCardImage
+    );
+    setEditTenantShowSecondTenant(hasSecond);
+    setEditTenantSecondTenantName(tenant.secondTenantName || '');
+    setEditTenantSecondTenantNickname(tenant.secondTenantNickname || '');
+    setEditTenantSecondTenantAge(tenant.secondTenantAge !== null && tenant.secondTenantAge !== undefined ? String(tenant.secondTenantAge) : '');
+    setEditTenantSecondTenantIdCard(tenant.secondTenantIdCard || '');
+    setEditTenantSecondTenantAddress(tenant.secondTenantAddress || '');
+    setEditTenantSecondTenantPhone(tenant.secondTenantPhone || '');
+    setEditTenantSecondTenantWorkplace(tenant.secondTenantWorkplace || '');
+    setEditTenantSecondTenantEmergencyName(tenant.secondTenantEmergencyName || '');
+    setEditTenantSecondTenantEmergencyRel(tenant.secondTenantEmergencyRel || '');
+    setEditTenantSecondTenantEmergencyPhone(tenant.secondTenantEmergencyPhone || '');
+    setEditTenantSecondTenantIdCardImage(tenant.secondTenantIdCardImage || '');
+
+    // Contract & Rent Share
+    const roomNum = tenant.room?.number || '';
+    const currentYearBE = new Date().getFullYear() + 543;
+    setEditTenantContractNumber(tenant.contractNumber || (roomNum ? `${roomNum}/${currentYearBE}` : ''));
+    setEditTenantContractDuration(String(tenant.contractDurationMonths || 6));
+    const rShare = tenant.roomRentShare !== null && tenant.roomRentShare !== undefined ? tenant.roomRentShare : 1000;
+    setEditTenantRoomRentShare(String(rShare));
+    const roomPrice = tenant.room?.basePrice || 0;
+    const aShare = tenant.assetRentShare !== null && tenant.assetRentShare !== undefined
+      ? tenant.assetRentShare
+      : Math.max(0, roomPrice - rShare);
+    setEditTenantAssetRentShare(String(aShare));
+
     setShowEditTenantModal(true);
   };
 
@@ -857,6 +943,28 @@ table { border-collapse: collapse; }
           emergencyPhone: editTenantEmergencyPhone,
           note: editTenantNote,
           startDate: editTenantStartDate,
+
+          // Lease Agreement & Co-Tenant Fields
+          nickname: editTenantNickname,
+          age: editTenantAge ? parseInt(editTenantAge, 10) : null,
+          idCardImage: editTenantIdCardImage || null,
+
+          secondTenantName: editTenantShowSecondTenant ? editTenantSecondTenantName : null,
+          secondTenantNickname: editTenantShowSecondTenant ? editTenantSecondTenantNickname : null,
+          secondTenantAge: editTenantShowSecondTenant && editTenantSecondTenantAge ? parseInt(editTenantSecondTenantAge, 10) : null,
+          secondTenantIdCard: editTenantShowSecondTenant ? editTenantSecondTenantIdCard : null,
+          secondTenantAddress: editTenantShowSecondTenant ? editTenantSecondTenantAddress : null,
+          secondTenantPhone: editTenantShowSecondTenant ? editTenantSecondTenantPhone : null,
+          secondTenantWorkplace: editTenantShowSecondTenant ? editTenantSecondTenantWorkplace : null,
+          secondTenantEmergencyName: editTenantShowSecondTenant ? editTenantSecondTenantEmergencyName : null,
+          secondTenantEmergencyRel: editTenantShowSecondTenant ? editTenantSecondTenantEmergencyRel : null,
+          secondTenantEmergencyPhone: editTenantShowSecondTenant ? editTenantSecondTenantEmergencyPhone : null,
+          secondTenantIdCardImage: editTenantShowSecondTenant ? editTenantSecondTenantIdCardImage : null,
+
+          contractNumber: editTenantContractNumber,
+          contractDurationMonths: editTenantContractDuration ? parseInt(editTenantContractDuration, 10) : 6,
+          roomRentShare: editTenantRoomRentShare ? parseFloat(editTenantRoomRentShare) : 1000,
+          assetRentShare: editTenantAssetRentShare ? parseFloat(editTenantAssetRentShare) : null,
         }),
       });
 
@@ -864,7 +972,7 @@ table { border-collapse: collapse; }
         setShowEditTenantModal(false);
         await refreshTenants();
         await refreshDashboardData();
-        alert('อัปเดตข้อมูลส่วนตัวผู้เช่าเรียบร้อยแล้ว');
+        alert('อัปเดตข้อมูลผู้เช่าและสัญญาเรียบร้อยแล้ว');
       } else {
         const err = (await res.json()) as any;
         alert(`เกิดข้อผิดพลาด: ${err.error || 'ไม่สามารถบันทึกได้'}`);
@@ -875,6 +983,8 @@ table { border-collapse: collapse; }
       setEditTenantSaving(false);
     }
   };
+
+  const handleEditTenantSubmit = handleSaveTenantInfo;
 
   const handleCancelCheckIn = async (tenantId: string) => {
     if (isViewer) {
@@ -1162,6 +1272,28 @@ table { border-collapse: collapse; }
           roomId: selectedRoom.id,
           startingWaterMeter: checkInWaterMeter ? parseFloat(checkInWaterMeter) : undefined,
           startingElecMeter: checkInElecMeter ? parseFloat(checkInElecMeter) : undefined,
+
+          // Lease Agreement & Co-Tenant Fields
+          nickname: checkInNickname || undefined,
+          age: checkInAge ? parseInt(checkInAge, 10) : undefined,
+          idCardImage: checkInIdCardImage || undefined,
+
+          secondTenantName: checkInShowSecondTenant ? checkInSecondTenantName : undefined,
+          secondTenantNickname: checkInShowSecondTenant ? checkInSecondTenantNickname : undefined,
+          secondTenantAge: checkInShowSecondTenant && checkInSecondTenantAge ? parseInt(checkInSecondTenantAge, 10) : undefined,
+          secondTenantIdCard: checkInShowSecondTenant ? checkInSecondTenantIdCard : undefined,
+          secondTenantAddress: checkInShowSecondTenant ? checkInSecondTenantAddress : undefined,
+          secondTenantPhone: checkInShowSecondTenant ? checkInSecondTenantPhone : undefined,
+          secondTenantWorkplace: checkInShowSecondTenant ? checkInSecondTenantWorkplace : undefined,
+          secondTenantEmergencyName: checkInShowSecondTenant ? checkInSecondTenantEmergencyName : undefined,
+          secondTenantEmergencyRel: checkInShowSecondTenant ? checkInSecondTenantEmergencyRel : undefined,
+          secondTenantEmergencyPhone: checkInShowSecondTenant ? checkInSecondTenantEmergencyPhone : undefined,
+          secondTenantIdCardImage: checkInShowSecondTenant ? checkInSecondTenantIdCardImage : undefined,
+
+          contractNumber: checkInContractNumber || undefined,
+          contractDurationMonths: checkInContractDuration ? parseInt(checkInContractDuration, 10) : 6,
+          roomRentShare: checkInRoomRentShare ? parseFloat(checkInRoomRentShare) : 1000,
+          assetRentShare: checkInAssetRentShare ? parseFloat(checkInAssetRentShare) : undefined,
         }),
       });
 
@@ -1170,8 +1302,11 @@ table { border-collapse: collapse; }
         setShowCheckInModal(false);
         // Clear inputs
         setCheckInName('');
+        setCheckInNickname('');
+        setCheckInAge('');
         setCheckInPhone('');
         setCheckInIdCard('');
+        setCheckInIdCardImage('');
         setCheckInAddress('');
         setCheckInEmail('');
         setCheckInLineId('');
@@ -1179,6 +1314,22 @@ table { border-collapse: collapse; }
         setCheckInEmergencyName('');
         setCheckInEmergencyRel('');
         setCheckInEmergencyPhone('');
+        setCheckInShowSecondTenant(false);
+        setCheckInSecondTenantName('');
+        setCheckInSecondTenantNickname('');
+        setCheckInSecondTenantAge('');
+        setCheckInSecondTenantIdCard('');
+        setCheckInSecondTenantAddress('');
+        setCheckInSecondTenantPhone('');
+        setCheckInSecondTenantWorkplace('');
+        setCheckInSecondTenantEmergencyName('');
+        setCheckInSecondTenantEmergencyRel('');
+        setCheckInSecondTenantEmergencyPhone('');
+        setCheckInSecondTenantIdCardImage('');
+        setCheckInContractNumber('');
+        setCheckInContractDuration('6');
+        setCheckInRoomRentShare('1000');
+        setCheckInAssetRentShare('');
         setCheckInSecurityDeposit('');
         setCheckInUseKeycard(false);
         setCheckInKeycardCount('0');
@@ -1496,38 +1647,77 @@ table { border-collapse: collapse; }
     }
   };
 
-  const handleScanIdCard = async (e: React.ChangeEvent<HTMLInputElement>, target: 'CHECK_IN' | 'BOOKING') => {
+  const handleScanIdCard = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    target: 'CHECK_IN' | 'BOOKING' | 'SECOND_TENANT' | 'EDIT_TENANT' | 'EDIT_SECOND_TENANT'
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsScanningIdCard(true);
 
     try {
+      // 1. Watermark & compress the ID card photo for PDPA security
+      const apartmentName = property?.name || 'SmartApart';
+      try {
+        const watermarkedDataUrl = await compressAndWatermarkIdCard(file, apartmentName);
+        if (target === 'CHECK_IN') {
+          setCheckInIdCardImage(watermarkedDataUrl);
+        } else if (target === 'SECOND_TENANT') {
+          setCheckInSecondTenantIdCardImage(watermarkedDataUrl);
+        } else if (target === 'EDIT_TENANT') {
+          setEditTenantIdCardImage(watermarkedDataUrl);
+        } else if (target === 'EDIT_SECOND_TENANT') {
+          setEditTenantSecondTenantIdCardImage(watermarkedDataUrl);
+        }
+      } catch (wmErr) {
+        console.warn('Watermark generation notice:', wmErr);
+      }
+
+      // 2. Read image for AI OCR
       const reader = new FileReader();
       reader.onload = async () => {
-        const base64Image = reader.result as string;
+        try {
+          const base64Image = reader.result as string;
 
-        const res = await fetch('/api/scan-id-card', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image }),
-        });
+          const res = await fetch('/api/scan-id-card', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image }),
+          });
 
-        const data = (await res.json()) as any;
-        setIsScanningIdCard(false);
+          const data = (await res.json()) as any;
+          setIsScanningIdCard(false);
 
-        if (res.ok && data.success && data.data) {
-          if (target === 'CHECK_IN') {
-            if (data.data.name) setCheckInName(data.data.name);
-            if (data.data.idCard) setCheckInIdCard(data.data.idCard);
-            if (data.data.address) setCheckInAddress(data.data.address);
-          } else if (target === 'BOOKING') {
-            if (data.data.name) setBookingName(data.data.name);
-            if (data.data.idCard) setBookingIdCard(data.data.idCard);
+          if (res.ok && data.success && data.data) {
+            if (target === 'CHECK_IN') {
+              if (data.data.name) setCheckInName(data.data.name);
+              if (data.data.idCard) setCheckInIdCard(data.data.idCard);
+              if (data.data.address) setCheckInAddress(data.data.address);
+            } else if (target === 'SECOND_TENANT') {
+              if (data.data.name) setCheckInSecondTenantName(data.data.name);
+              if (data.data.idCard) setCheckInSecondTenantIdCard(data.data.idCard);
+              if (data.data.address) setCheckInSecondTenantAddress(data.data.address);
+            } else if (target === 'EDIT_TENANT') {
+              if (data.data.name) setEditTenantName(data.data.name);
+              if (data.data.idCard) setEditTenantIdCard(data.data.idCard);
+              if (data.data.address) setEditTenantAddress(data.data.address);
+            } else if (target === 'EDIT_SECOND_TENANT') {
+              if (data.data.name) setEditTenantSecondTenantName(data.data.name);
+              if (data.data.idCard) setEditTenantSecondTenantIdCard(data.data.idCard);
+              if (data.data.address) setEditTenantSecondTenantAddress(data.data.address);
+            } else if (target === 'BOOKING') {
+              if (data.data.name) setBookingName(data.data.name);
+              if (data.data.idCard) setBookingIdCard(data.data.idCard);
+            }
+            alert('✨ สแกนบัตรประชาชนสำเร็จ! ระบบได้กรอกข้อมูลและฝังลายน้ำความปลอดภัยเรียบร้อยแล้ว');
+          } else {
+            alert(data.error || 'ไม่สามารถอ่านข้อมูลจากภาพบัตรประชาชนได้ กรุณาถ่ายใหม่');
           }
-          alert('✨ สแกนบัตรประชาชนสำเร็จ! ระบบได้กรอกชื่อ, เลขบัตร 13 หลัก และที่อยู่อัตโนมัติเรียบร้อยแล้ว');
-        } else {
-          alert(data.error || 'ไม่สามารถอ่านข้อมูลจากภาพบัตรประชาชนได้ กรุณาถ่ายใหม่');
+        } catch (ocrErr) {
+          console.error(ocrErr);
+          setIsScanningIdCard(false);
+          alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบสแกนบัตร');
         }
       };
       reader.readAsDataURL(file);
@@ -2705,10 +2895,16 @@ table { border-collapse: collapse; }
         handleScanIdCard={handleScanIdCard}
         checkInName={checkInName}
         setCheckInName={setCheckInName}
+        checkInNickname={checkInNickname}
+        setCheckInNickname={setCheckInNickname}
+        checkInAge={checkInAge}
+        setCheckInAge={setCheckInAge}
         checkInPhone={checkInPhone}
         setCheckInPhone={setCheckInPhone}
         checkInIdCard={checkInIdCard}
         setCheckInIdCard={setCheckInIdCard}
+        checkInIdCardImage={checkInIdCardImage}
+        setCheckInIdCardImage={setCheckInIdCardImage}
         checkInAddress={checkInAddress}
         setCheckInAddress={setCheckInAddress}
         checkInWorkplace={checkInWorkplace}
@@ -2721,6 +2917,43 @@ table { border-collapse: collapse; }
         setCheckInEmergencyRel={setCheckInEmergencyRel}
         checkInEmergencyPhone={checkInEmergencyPhone}
         setCheckInEmergencyPhone={setCheckInEmergencyPhone}
+
+        // Co-Tenant (Tenant 2)
+        checkInShowSecondTenant={checkInShowSecondTenant}
+        setCheckInShowSecondTenant={setCheckInShowSecondTenant}
+        checkInSecondTenantName={checkInSecondTenantName}
+        setCheckInSecondTenantName={setCheckInSecondTenantName}
+        checkInSecondTenantNickname={checkInSecondTenantNickname}
+        setCheckInSecondTenantNickname={setCheckInSecondTenantNickname}
+        checkInSecondTenantAge={checkInSecondTenantAge}
+        setCheckInSecondTenantAge={setCheckInSecondTenantAge}
+        checkInSecondTenantIdCard={checkInSecondTenantIdCard}
+        setCheckInSecondTenantIdCard={setCheckInSecondTenantIdCard}
+        checkInSecondTenantAddress={checkInSecondTenantAddress}
+        setCheckInSecondTenantAddress={setCheckInSecondTenantAddress}
+        checkInSecondTenantPhone={checkInSecondTenantPhone}
+        setCheckInSecondTenantPhone={setCheckInSecondTenantPhone}
+        checkInSecondTenantWorkplace={checkInSecondTenantWorkplace}
+        setCheckInSecondTenantWorkplace={setCheckInSecondTenantWorkplace}
+        checkInSecondTenantEmergencyName={checkInSecondTenantEmergencyName}
+        setCheckInSecondTenantEmergencyName={setCheckInSecondTenantEmergencyName}
+        checkInSecondTenantEmergencyRel={checkInSecondTenantEmergencyRel}
+        setCheckInSecondTenantEmergencyRel={setCheckInSecondTenantEmergencyRel}
+        checkInSecondTenantEmergencyPhone={checkInSecondTenantEmergencyPhone}
+        setCheckInSecondTenantEmergencyPhone={setCheckInSecondTenantEmergencyPhone}
+        checkInSecondTenantIdCardImage={checkInSecondTenantIdCardImage}
+        setCheckInSecondTenantIdCardImage={setCheckInSecondTenantIdCardImage}
+
+        // Contract Configuration
+        checkInContractNumber={checkInContractNumber}
+        setCheckInContractNumber={setCheckInContractNumber}
+        checkInContractDuration={checkInContractDuration}
+        setCheckInContractDuration={setCheckInContractDuration}
+        checkInRoomRentShare={checkInRoomRentShare}
+        setCheckInRoomRentShare={setCheckInRoomRentShare}
+        checkInAssetRentShare={checkInAssetRentShare}
+        setCheckInAssetRentShare={setCheckInAssetRentShare}
+
         checkInSecurityDeposit={checkInSecurityDeposit}
         setCheckInSecurityDeposit={setCheckInSecurityDeposit}
         checkInUseKeycard={checkInUseKeycard}
@@ -2909,12 +3142,21 @@ table { border-collapse: collapse; }
         setShowEditTenantModal={setShowEditTenantModal}
         editingTenant={editingTenant}
         handleSaveTenantInfo={handleSaveTenantInfo}
+        handleEditTenantSubmit={handleEditTenantSubmit}
+        isScanningIdCard={isScanningIdCard}
+        handleScanIdCard={handleScanIdCard}
         editTenantName={editTenantName}
         setEditTenantName={setEditTenantName}
+        editTenantNickname={editTenantNickname}
+        setEditTenantNickname={setEditTenantNickname}
+        editTenantAge={editTenantAge}
+        setEditTenantAge={setEditTenantAge}
         editTenantPhone={editTenantPhone}
         setEditTenantPhone={setEditTenantPhone}
         editTenantIdCard={editTenantIdCard}
         setEditTenantIdCard={setEditTenantIdCard}
+        editTenantIdCardImage={editTenantIdCardImage}
+        setEditTenantIdCardImage={setEditTenantIdCardImage}
         editTenantLineId={editTenantLineId}
         setEditTenantLineId={setEditTenantLineId}
         editTenantEmail={editTenantEmail}
@@ -2929,6 +3171,43 @@ table { border-collapse: collapse; }
         setEditTenantEmergencyRel={setEditTenantEmergencyRel}
         editTenantEmergencyPhone={editTenantEmergencyPhone}
         setEditTenantEmergencyPhone={setEditTenantEmergencyPhone}
+
+        // Co-Tenant (Tenant 2)
+        editTenantShowSecondTenant={editTenantShowSecondTenant}
+        setEditTenantShowSecondTenant={setEditTenantShowSecondTenant}
+        editTenantSecondTenantName={editTenantSecondTenantName}
+        setEditTenantSecondTenantName={setEditTenantSecondTenantName}
+        editTenantSecondTenantNickname={editTenantSecondTenantNickname}
+        setEditTenantSecondTenantNickname={setEditTenantSecondTenantNickname}
+        editTenantSecondTenantAge={editTenantSecondTenantAge}
+        setEditTenantSecondTenantAge={setEditTenantSecondTenantAge}
+        editTenantSecondTenantIdCard={editTenantSecondTenantIdCard}
+        setEditTenantSecondTenantIdCard={setEditTenantSecondTenantIdCard}
+        editTenantSecondTenantAddress={editTenantSecondTenantAddress}
+        setEditTenantSecondTenantAddress={setEditTenantSecondTenantAddress}
+        editTenantSecondTenantPhone={editTenantSecondTenantPhone}
+        setEditTenantSecondTenantPhone={setEditTenantSecondTenantPhone}
+        editTenantSecondTenantWorkplace={editTenantSecondTenantWorkplace}
+        setEditTenantSecondTenantWorkplace={setEditTenantSecondTenantWorkplace}
+        editTenantSecondTenantEmergencyName={editTenantSecondTenantEmergencyName}
+        setEditTenantSecondTenantEmergencyName={setEditTenantSecondTenantEmergencyName}
+        editTenantSecondTenantEmergencyRel={editTenantSecondTenantEmergencyRel}
+        setEditTenantSecondTenantEmergencyRel={setEditTenantSecondTenantEmergencyRel}
+        editTenantSecondTenantEmergencyPhone={editTenantSecondTenantEmergencyPhone}
+        setEditTenantSecondTenantEmergencyPhone={setEditTenantSecondTenantEmergencyPhone}
+        editTenantSecondTenantIdCardImage={editTenantSecondTenantIdCardImage}
+        setEditTenantSecondTenantIdCardImage={setEditTenantSecondTenantIdCardImage}
+
+        // Contract Configuration
+        editTenantContractNumber={editTenantContractNumber}
+        setEditTenantContractNumber={setEditTenantContractNumber}
+        editTenantContractDuration={editTenantContractDuration}
+        setEditTenantContractDuration={setEditTenantContractDuration}
+        editTenantRoomRentShare={editTenantRoomRentShare}
+        setEditTenantRoomRentShare={setEditTenantRoomRentShare}
+        editTenantAssetRentShare={editTenantAssetRentShare}
+        setEditTenantAssetRentShare={setEditTenantAssetRentShare}
+
         editTenantNote={editTenantNote}
         setEditTenantNote={setEditTenantNote}
         editTenantStartDate={editTenantStartDate}
