@@ -743,6 +743,8 @@ table { border-collapse: collapse; }
     initData();
   }, [router]);
 
+  const [govBills, setGovBills] = useState<any[]>([]);
+
   async function refreshDashboardData() {
     const res = await fetch(`/api/buildings?period=${meterPeriod}`);
     if (res.ok) {
@@ -753,6 +755,27 @@ table { border-collapse: collapse; }
         if (!selectedBuildingId) setSelectedBuildingId(data.buildings[0].id);
         if (!settingsBuildingId) setSettingsBuildingId(data.buildings[0].id);
       }
+    }
+    try {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const govRes = await fetch(`/api/buildings/monthly-utility?period=${meterPeriod}`);
+      let govData: any[] = [];
+      if (govRes.ok) {
+        const parsed = await govRes.json();
+        if (Array.isArray(parsed)) govData = parsed;
+      }
+      if (currentMonth !== meterPeriod) {
+        const curGovRes = await fetch(`/api/buildings/monthly-utility?period=${currentMonth}`);
+        if (curGovRes.ok) {
+          const curParsed = await curGovRes.json();
+          if (Array.isArray(curParsed)) {
+            govData = [...govData, ...curParsed];
+          }
+        }
+      }
+      setGovBills(govData);
+    } catch (err) {
+      console.error('Error fetching govBills for dashboard:', err);
     }
   }
 
@@ -932,50 +955,135 @@ table { border-collapse: collapse; }
   const getFilteredStats = () => {
     if (!stats || !buildings) return null;
 
-    if (overviewBuildingFilter === 'ALL') {
-      return stats;
-    }
-
-    const building = buildings.find(b => b.id === overviewBuildingFilter);
-    if (!building) return stats;
-
     const currentMonth = new Date().toISOString().slice(0, 7);
+    const targetBuildings = overviewBuildingFilter === 'ALL'
+      ? buildings
+      : buildings.filter(b => b.id === overviewBuildingFilter);
 
-    // Sum from building specific rooms
-    let totalRooms = building.stats.total;
-    let occupiedRooms = building.stats.occupied;
-    let vacantRooms = building.stats.vacant;
-    let maintenanceRooms = building.stats.maintenance;
+    if (targetBuildings.length === 0) return stats;
 
-    // Filter invoices related to this building
-    const buildingInvoices = invoices.filter(inv => inv.room.floor.buildingId === building.id);
+    let totalRooms = 0;
+    let occupiedRooms = 0;
+    let vacantRooms = 0;
+    let bookedRooms = 0;
+    let maintenanceRooms = 0;
 
-    const currentMonthRevenue = buildingInvoices
-      .filter((inv) => inv.status === 'PAID' && inv.billingPeriod === currentMonth)
-      .reduce((sum, inv) => sum + inv.totalAmount, 0);
+    targetBuildings.forEach((b) => {
+      totalRooms += b.stats?.total || 0;
+      occupiedRooms += b.stats?.occupied || 0;
+      vacantRooms += b.stats?.vacant || 0;
+      bookedRooms += b.stats?.booked || 0;
+      maintenanceRooms += b.stats?.maintenance || 0;
+    });
 
-    const totalUnpaidAmount = buildingInvoices
-      .filter((inv) => inv.status === 'UNPAID')
-      .reduce((sum, inv) => sum + inv.totalAmount, 0);
+    // Filter invoices related to selected building(s)
+    const filteredBuildingInvoices = overviewBuildingFilter === 'ALL'
+      ? invoices
+      : invoices.filter(inv => (inv.room?.floor?.buildingId || inv.room?.floor?.building?.id) === overviewBuildingFilter);
 
-    const unpaidRoomIds = new Set(
-      buildingInvoices.filter((inv) => inv.status === 'UNPAID').map((inv) => inv.roomId)
+    // Determine effective billing period for revenue card (prefer meterPeriod if it has invoices, else currentMonth if it has invoices, else latest period)
+    const hasMeterPeriodInvoices = filteredBuildingInvoices.some(inv => inv.billingPeriod === meterPeriod && inv.status !== 'CANCELLED');
+    const hasCurrentMonthInvoices = filteredBuildingInvoices.some(inv => inv.billingPeriod === currentMonth && inv.status !== 'CANCELLED');
+    const sortedPeriods = Array.from(new Set(filteredBuildingInvoices.filter(inv => inv.status !== 'CANCELLED').map(inv => inv.billingPeriod))).sort();
+    const effectivePeriod = hasMeterPeriodInvoices
+      ? meterPeriod
+      : hasCurrentMonthInvoices
+      ? currentMonth
+      : (sortedPeriods[sortedPeriods.length - 1] || currentMonth);
+
+    const periodInvoices = filteredBuildingInvoices.filter(
+      (inv) => inv.billingPeriod === effectivePeriod && inv.status !== 'CANCELLED'
     );
+
+    const currentMonthRevenue = periodInvoices
+      .filter((inv) => inv.status === 'PAID')
+      .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+
+    const currentPeriodTotalBilled = periodInvoices
+      .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+
+    const unpaidInvoicesAll = filteredBuildingInvoices.filter(
+      (inv) => inv.status === 'UNPAID' || inv.status === 'OVERDUE'
+    );
+
+    const totalUnpaidAmount = unpaidInvoicesAll
+      .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+
+    const currentPeriodUnpaidList = unpaidInvoicesAll.filter(
+      (inv) => inv.billingPeriod === effectivePeriod
+    );
+    const currentPeriodUnpaidAmount = currentPeriodUnpaidList
+      .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+
+    const overduePastPeriodsList = unpaidInvoicesAll.filter(
+      (inv) => inv.billingPeriod !== effectivePeriod
+    );
+    const overduePastPeriodsAmount = overduePastPeriodsList
+      .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+
+    const unpaidRoomIds = new Set(unpaidInvoicesAll.map((inv) => inv.roomId));
     const unpaidRoomsCount = unpaidRoomIds.size;
+
+    const occupancyRate = totalRooms > 0 ? Number(((occupiedRooms / totalRooms) * 100).toFixed(1)) : 0;
 
     return {
       totalRooms,
       occupiedRooms,
       vacantRooms,
+      bookedRooms,
+      bookedRoomsCount: bookedRooms,
       maintenanceRooms,
+      maintenanceRoomsCount: maintenanceRooms,
       unpaidRoomsCount,
       currentMonthRevenue,
+      currentPeriodTotalBilled,
+      effectivePeriod,
       totalUnpaidAmount,
-      occupancyRate: totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0,
+      currentPeriodUnpaidAmount,
+      currentPeriodUnpaidCount: currentPeriodUnpaidList.length,
+      overduePastPeriodsAmount,
+      overduePastPeriodsCount: overduePastPeriodsList.length,
+      occupancyRate,
     };
   };
 
   const activeStats = getFilteredStats();
+
+  // Derive active bookings & meter readings across buildings for OverviewTab
+  const overviewBookings = buildings.flatMap((b) =>
+    (b.floors || []).flatMap((f: any) =>
+      (f.rooms || [])
+        .filter((r: any) => r.activeBooking || r.status === 'BOOKED')
+        .map((r: any) => ({
+          id: r.activeBooking?.id || r.id,
+          roomId: r.id,
+          roomNumber: r.number,
+          buildingId: b.id,
+          buildingName: b.name,
+          customerName: r.activeBooking?.customerName || 'ลูกค้าจองห้อง',
+          customerPhone: r.activeBooking?.customerPhone || '',
+          expectedCheckInDate: r.activeBooking?.expectedCheckInDate || null,
+          depositAmount: r.activeBooking?.depositAmount || 0,
+          status: 'CONFIRMED',
+        }))
+    )
+  );
+
+  const overviewMeterReadings = buildings.flatMap((b) =>
+    (b.floors || []).flatMap((f: any) =>
+      (f.rooms || [])
+        .filter((r: any) => r.isMeterRecorded)
+        .map((r: any) => ({
+          roomId: r.id,
+          roomNumber: r.number,
+          buildingId: b.id,
+          billingPeriod: meterPeriod,
+          currentWater: r.currentWater,
+          currentElec: r.currentElec,
+          recordedBy: r.meterRecordedBy,
+        }))
+    )
+  );
 
 
   // Pre-calculate due date (usually 5th of next month)
@@ -2286,10 +2394,22 @@ table { border-collapse: collapse; }
             setOverviewBuildingFilter={setOverviewBuildingFilter}
             buildings={buildings}
             invoices={invoices}
+            billingPeriod={meterPeriod}
+            setBillingPeriod={setMeterPeriod}
+            meterReadings={overviewMeterReadings}
+            govBills={govBills}
+            bookings={overviewBookings}
             setSelectedBuildingId={setSelectedBuildingId}
             setActiveTab={setActiveTab}
             setOverdueBuildingFilter={setOverdueBuildingFilter}
             setShowOverdueModal={setShowOverdueModal}
+            setMapSearchQuery={setMapSearchQuery}
+            setRoomStatusFilter={setRoomsStatusFilter}
+            setInvoiceStatusFilter={setInvoiceStatusFilter}
+            setInvoiceFilterPeriod={setInvoiceFilterPeriod}
+            setInvoiceFilterBuildingId={setInvoiceFilterBuildingId}
+            setTenantBuildingFilter={setTenantBuildingFilter}
+            handleRoomClick={handleRoomClick}
             styles={styles}
             Icons={Icons}
           />

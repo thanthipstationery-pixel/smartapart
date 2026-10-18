@@ -45,9 +45,10 @@ prisma/dev.db
 next-env.d.ts
 
 # backups & scratch
+_backups/
 _backup*
 *.backup
 *.log
 *.err
-.superpowers/sdd/
-
+scratch/
+.superpowers/
