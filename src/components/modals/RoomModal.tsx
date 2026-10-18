@@ -35,6 +35,7 @@ interface RoomModalProps {
   handleCancelCheckIn?: (tenantId: string) => void;
   handleOpenRoomTransferModal?: (room: any) => void;
   handleOpenReplaceMeterModal?: (room: any) => void;
+  handleOpenLeaseAgreement?: (room: any, tenant: any) => void;
   modalWaterType: string;
   setModalWaterType: (val: string) => void;
   modalElecType: string;
@@ -76,6 +77,7 @@ export default function RoomModal({
   handleCancelCheckIn,
   handleOpenRoomTransferModal,
   handleOpenReplaceMeterModal,
+  handleOpenLeaseAgreement,
   modalWaterType,
   setModalWaterType,
   modalElecType,
@@ -358,15 +360,36 @@ export default function RoomModal({
                   <p style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', margin: 0, fontSize: '0.92rem', color: 'var(--text-secondary)' }}>
                     <Icons.Phone /> <strong style={{ color: 'var(--primary-color)' }}>{formatPhone(selectedRoom.tenants[0].phone)}</strong>
                   </p>
-                  {selectedRoom.tenants[0].phone && (
-                    <a
-                      href={`tel:${selectedRoom.tenants[0].phone}`}
-                      className={`${styles.btn} ${styles.btnPrimary}`}
-                      style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', textDecoration: 'none' }}
-                    >
-                      📞 โทรออก
-                    </a>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {handleOpenLeaseAgreement && (
+                      <button
+                        type="button"
+                        className={`${styles.btn}`}
+                        style={{
+                          padding: '0.25rem 0.65rem',
+                          fontSize: '0.78rem',
+                          backgroundColor: 'var(--card-bg)',
+                          color: 'var(--primary-color)',
+                          border: '1px solid var(--primary-color)',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                        title="เปิดดู/พิมพ์สัญญาเช่า"
+                        onClick={() => handleOpenLeaseAgreement(selectedRoom, selectedRoom.tenants[0])}
+                      >
+                        📄 พิมพ์สัญญาเช่า
+                      </button>
+                    )}
+                    {selectedRoom.tenants[0].phone && (
+                      <a
+                        href={`tel:${selectedRoom.tenants[0].phone}`}
+                        className={`${styles.btn} ${styles.btnPrimary}`}
+                        style={{ padding: '0.25rem 0.65rem', fontSize: '0.78rem', textDecoration: 'none' }}
+                      >
+                        📞 โทรออก
+                      </a>
+                    )}
+                  </div>
                 </div>
                 {selectedRoom.tenants[0].idCard && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.3rem', fontFamily: 'monospace' }}>
@@ -431,6 +454,32 @@ export default function RoomModal({
                   onClick={() => handleOpenInvoiceModal(selectedRoom)}>
                   ออกบิลค่าเช่า/น้ำไฟ
                 </button>
+                {handleOpenLeaseAgreement && (
+                  <button
+                    type="button"
+                    className={`${styles.btn}`}
+                    style={{
+                      gridColumn: '1 / -1',
+                      padding: '0.65rem',
+                      fontSize: '0.92rem',
+                      fontWeight: 600,
+                      backgroundColor: 'rgba(2, 132, 199, 0.08)',
+                      color: 'var(--primary-color)',
+                      border: '1.5px solid var(--primary-color)',
+                      borderRadius: 'var(--radius-md)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    title="เปิดดูและพิมพ์เอกสารสัญญาเช่า (7 หน้า A4)"
+                    onClick={() => handleOpenLeaseAgreement(selectedRoom, selectedRoom.tenants[0])}
+                  >
+                    📄 พิมพ์สัญญาเช่า (7 หน้า A4)
+                  </button>
+                )}
                 {handleOpenRoomTransferModal && (
                   <button
                     className={`${styles.btn}`}

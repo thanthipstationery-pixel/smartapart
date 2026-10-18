@@ -15,6 +15,7 @@ interface TenantTabProps {
   setTenantStatusTab: (val: 'ACTIVE' | 'MOVED_OUT') => void;
   tenantsLoading: boolean;
   handleOpenEditTenantModal: (tenant: any) => void;
+  handleOpenLeaseAgreement?: (room: any, tenant: any) => void;
   styles: any;
   isViewer?: boolean;
 }
@@ -31,6 +32,7 @@ export default function TenantTab({
   setTenantStatusTab,
   tenantsLoading,
   handleOpenEditTenantModal,
+  handleOpenLeaseAgreement,
   styles,
   isViewer = false,
 }: TenantTabProps) {
@@ -243,26 +245,51 @@ export default function TenantTab({
                                 </span>
                               </td>
                               <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                                <button
-                                  type="button"
-                                  className={`${styles.btn} ${styles.btnSecondary}`}
-                                  disabled={isViewer}
-                                  title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
-                                  style={{
-                                    padding: '0.4rem 0.8rem',
-                                    fontSize: '0.85rem',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '0.3rem',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontWeight: 600,
-                                    opacity: isViewer ? 0.6 : 1,
-                                    cursor: isViewer ? 'not-allowed' : 'pointer',
-                                  }}
-                                  onClick={() => !isViewer && handleOpenEditTenantModal(t)}
-                                >
-                                  {isViewer ? '🔒 ตรวจการ' : '✏️ แก้ไข'}
-                                </button>
+                                <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'center' }}>
+                                  {handleOpenLeaseAgreement && (
+                                    <button
+                                      type="button"
+                                      className={`${styles.btn}`}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        fontSize: '0.85rem',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.3rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        fontWeight: 600,
+                                        backgroundColor: 'var(--card-bg)',
+                                        color: 'var(--primary-color)',
+                                        border: '1px solid var(--primary-color)',
+                                        cursor: 'pointer',
+                                      }}
+                                      title="เปิดดูและพิมพ์เอกสารสัญญาเช่า (7 หน้า A4)"
+                                      onClick={() => handleOpenLeaseAgreement(t.room, t)}
+                                    >
+                                      📄 สัญญาเช่า
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className={`${styles.btn} ${styles.btnSecondary}`}
+                                    disabled={isViewer}
+                                    title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
+                                    style={{
+                                      padding: '0.4rem 0.8rem',
+                                      fontSize: '0.85rem',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.3rem',
+                                      borderRadius: 'var(--radius-md)',
+                                      fontWeight: 600,
+                                      opacity: isViewer ? 0.6 : 1,
+                                      cursor: isViewer ? 'not-allowed' : 'pointer',
+                                    }}
+                                    onClick={() => !isViewer && handleOpenEditTenantModal(t)}
+                                  >
+                                    {isViewer ? '🔒 ตรวจการ' : '✏️ แก้ไข'}
+                                  </button>
+                                </div>
                               </td>
                             </>
                           ) : (
@@ -357,6 +384,31 @@ export default function TenantTab({
                     </div>
 
                     <div className={styles.tenantCardActions}>
+                      {handleOpenLeaseAgreement && (
+                        <button
+                          type="button"
+                          className={`${styles.btn}`}
+                          style={{
+                            padding: '0.5rem',
+                            fontSize: '0.85rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.3rem',
+                            borderRadius: 'var(--radius-md)',
+                            fontWeight: 600,
+                            backgroundColor: 'var(--card-bg)',
+                            color: 'var(--primary-color)',
+                            border: '1px solid var(--primary-color)',
+                            cursor: 'pointer',
+                            flex: 1,
+                          }}
+                          title="เปิดดูและพิมพ์เอกสารสัญญาเช่า (7 หน้า A4)"
+                          onClick={() => handleOpenLeaseAgreement(t.room, t)}
+                        >
+                          📄 สัญญาเช่า
+                        </button>
+                      )}
                       {t.phone && (
                         <a href={`tel:${t.phone}`} className={styles.tenantCardCallBtn}>
                           📞 โทรออก
@@ -376,7 +428,7 @@ export default function TenantTab({
                         }}
                         onClick={() => !isViewer && handleOpenEditTenantModal(t)}
                       >
-                        {isViewer ? '🔒 ตรวจการ (อ่านอย่างเดียว)' : '✏️ แก้ไขข้อมูล'}
+                        {isViewer ? '🔒 ตรวจการ' : '✏️ แก้ไข'}
                       </button>
                     </div>
                   </div>

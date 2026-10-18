@@ -28,6 +28,7 @@ import OverdueModal from '@/components/modals/OverdueModal';
 import RoomTransferModal from '@/components/modals/RoomTransferModal';
 import ReplaceMeterModal from '@/components/modals/ReplaceMeterModal';
 import ChangePasswordModal from '@/components/modals/ChangePasswordModal';
+import LeaseAgreementModal from '@/components/modals/LeaseAgreementModal';
 
 // Inline SVGs for lightweight, zero-dependency modern icons
 const Icons = {
@@ -169,6 +170,9 @@ export default function Dashboard() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showBatchPrintModal, setShowBatchPrintModal] = useState(false);
   const [showReplaceMeterModal, setShowReplaceMeterModal] = useState(false);
+  const [showLeaseAgreementModal, setShowLeaseAgreementModal] = useState(false);
+  const [leaseAgreementRoom, setLeaseAgreementRoom] = useState<any>(null);
+  const [leaseAgreementTenant, setLeaseAgreementTenant] = useState<any>(null);
 
   // Forms inputs state
   const [checkInName, setCheckInName] = useState('');
@@ -1016,6 +1020,14 @@ table { border-collapse: collapse; }
     setShowTransferModal(true);
   };
 
+  const handleOpenLeaseAgreement = (room: any, tenant?: any) => {
+    const resolvedTenant = tenant || room?.tenants?.[0] || null;
+    setLeaseAgreementRoom(room);
+    setLeaseAgreementTenant(resolvedTenant);
+    setShowRoomModal(false);
+    setShowLeaseAgreementModal(true);
+  };
+
   const handleExecuteTransfer = async (data: any) => {
     if (isViewer) {
       alert('บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์ทำรายการย้ายห้องพัก');
@@ -1350,12 +1362,14 @@ table { border-collapse: collapse; }
         refreshInvoices();
         refreshDashboardData();
 
-        // Auto open newly generated first invoice modal so landlord can view/print bill!
-        if (data.firstInvoiceId) {
-          alert(`ลงทะเบียนผู้เช่าเรียบร้อยแล้ว! ระบบสร้างใบแจ้งหนี้ใบแรกประจำเดือน ${formatThaiBillingPeriod(data.firstInvoicePeriod || checkInDate.slice(0, 7))} ให้อัตโนมัติ`);
+        // Auto prompt or offer to open newly created Lease Agreement (7 pages A4) immediately!
+        const promptLease = window.confirm(
+          `ลงทะเบียนผู้เช่าเรียบร้อยแล้ว!\nระบบสร้างใบแจ้งหนี้ใบแรกประจำเดือน ${formatThaiBillingPeriod(data.firstInvoicePeriod || checkInDate.slice(0, 7))} ให้อัตโนมัติ\n\nต้องการเปิดพิมพ์เอกสาร "สัญญาเช่า (7 หน้า A4)" ตอนนี้เลยหรือไม่?`
+        );
+        if (promptLease) {
+          handleOpenLeaseAgreement(selectedRoom, data);
+        } else if (data.firstInvoiceId) {
           handleInvoiceClick(data.firstInvoiceId);
-        } else {
-          alert('ลงทะเบียนผู้เช่าเรียบร้อยแล้ว');
         }
       } else {
         alert(data.error || 'เกิดข้อผิดพลาดในการลงทะเบียน');
@@ -2708,6 +2722,7 @@ table { border-collapse: collapse; }
             setTenantStatusTab={setTenantStatusTab}
             tenantsLoading={tenantsLoading}
             handleOpenEditTenantModal={handleOpenEditTenantModal}
+            handleOpenLeaseAgreement={handleOpenLeaseAgreement}
             styles={styles}
           />
         )}
@@ -2875,6 +2890,7 @@ table { border-collapse: collapse; }
           setSelectedRoom(room);
           setShowReplaceMeterModal(true);
         }}
+        handleOpenLeaseAgreement={handleOpenLeaseAgreement}
         modalWaterType={modalWaterType}
         setModalWaterType={setModalWaterType}
         modalElecType={modalElecType}
@@ -3908,6 +3924,22 @@ table { border-collapse: collapse; }
           </div>
         </div>
       )}
+
+      {/* --- LEASE AGREEMENT MODAL (7 PAGES A4) --- */}
+      <LeaseAgreementModal
+        showModal={showLeaseAgreementModal}
+        setShowModal={setShowLeaseAgreementModal}
+        room={leaseAgreementRoom}
+        tenant={leaseAgreementTenant}
+        building={
+          buildings.find((b: any) =>
+            b.id === (leaseAgreementRoom?.floor?.buildingId || leaseAgreementRoom?.floor?.building?.id || leaseAgreementRoom?.buildingId || selectedBuildingId)
+          ) ||
+          leaseAgreementRoom?.floor?.building ||
+          buildings[0]
+        }
+        property={property}
+      />
 
       {/* --- CHANGE PASSWORD MODAL --- */}
       <ChangePasswordModal
