@@ -74,7 +74,28 @@ export async function POST(request: Request) {
       startDate,
       roomId,
       startingWaterMeter,
-      startingElecMeter
+      startingElecMeter,
+
+      // Lease Agreement & Co-Tenant Fields
+      nickname,
+      age,
+      idCardImage,
+      secondTenantName,
+      secondTenantNickname,
+      secondTenantAge,
+      secondTenantIdCard,
+      secondTenantAddress,
+      secondTenantPhone,
+      secondTenantWorkplace,
+      secondTenantEmergencyName,
+      secondTenantEmergencyRel,
+      secondTenantEmergencyPhone,
+      secondTenantIdCardImage,
+      contractNumber,
+      contractDurationMonths,
+      roomRentShare,
+      assetRentShare,
+      endDate,
     } = body || {};
 
     if (!name || !phone || !startDate || !roomId) {
@@ -100,6 +121,32 @@ export async function POST(request: Request) {
       );
     }
 
+    const parseAge = (val: any) => {
+      if (val === undefined || val === null || val === '') return null;
+      const num = parseInt(String(val), 10);
+      return isNaN(num) ? null : num;
+    };
+
+    const parsedDuration = contractDurationMonths ? parseInt(String(contractDurationMonths), 10) : 6;
+    const duration = !isNaN(parsedDuration) && parsedDuration > 0 ? parsedDuration : 6;
+
+    let calcEndDate: Date;
+    if (endDate) {
+      calcEndDate = new Date(endDate);
+    } else {
+      const endD = new Date(startDate);
+      endD.setMonth(endD.getMonth() + duration);
+      calcEndDate = endD;
+    }
+
+    const roomPrice = room.basePrice || 0;
+    const rShare = (roomRentShare !== undefined && roomRentShare !== '' && roomRentShare !== null && !isNaN(parseFloat(String(roomRentShare))))
+      ? parseFloat(String(roomRentShare))
+      : 1000;
+    const aShare = (assetRentShare !== undefined && assetRentShare !== '' && assetRentShare !== null && !isNaN(parseFloat(String(assetRentShare))))
+      ? parseFloat(String(assetRentShare))
+      : Math.max(0, roomPrice - rShare);
+
     // Create tenant and set room to occupied
     const tenant = await prisma.$transaction(async (tx) => {
       const newTenant = await tx.tenant.create({
@@ -120,8 +167,31 @@ export async function POST(request: Request) {
           keycardCode: keycardCode || null,
           note: note || null,
           startDate: new Date(startDate),
+          endDate: calcEndDate,
           roomId,
           status: 'ACTIVE',
+
+          // Lease Agreement & Co-Tenant Fields
+          nickname: nickname ? String(nickname).trim() : null,
+          age: parseAge(age),
+          idCardImage: idCardImage || null,
+
+          secondTenantName: secondTenantName ? String(secondTenantName).trim() : null,
+          secondTenantNickname: secondTenantNickname ? String(secondTenantNickname).trim() : null,
+          secondTenantAge: parseAge(secondTenantAge),
+          secondTenantIdCard: secondTenantIdCard ? String(secondTenantIdCard).trim() : null,
+          secondTenantAddress: secondTenantAddress ? String(secondTenantAddress).trim() : null,
+          secondTenantPhone: secondTenantPhone ? String(secondTenantPhone).trim() : null,
+          secondTenantWorkplace: secondTenantWorkplace ? String(secondTenantWorkplace).trim() : null,
+          secondTenantEmergencyName: secondTenantEmergencyName ? String(secondTenantEmergencyName).trim() : null,
+          secondTenantEmergencyRel: secondTenantEmergencyRel ? String(secondTenantEmergencyRel).trim() : null,
+          secondTenantEmergencyPhone: secondTenantEmergencyPhone ? String(secondTenantEmergencyPhone).trim() : null,
+          secondTenantIdCardImage: secondTenantIdCardImage || null,
+
+          contractNumber: contractNumber ? String(contractNumber).trim() : null,
+          contractDurationMonths: duration,
+          roomRentShare: rShare,
+          assetRentShare: aShare,
         },
       });
 
