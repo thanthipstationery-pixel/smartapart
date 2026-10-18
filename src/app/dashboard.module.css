@@ -145,20 +145,32 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.headerTitle {
+  flex: 1;
+  min-width: 0;
 }
 
 .headerTitle h1 {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.25;
 }
 
 .headerTitle p {
   font-size: 0.875rem;
   color: var(--text-secondary);
   margin-top: 0.25rem;
+  line-height: 1.45;
+}
+
+.mobileHeaderBrand {
+  display: none;
 }
 
 /* Stats Cards Grid */
@@ -1217,8 +1229,81 @@
   
   .mainContent {
     margin-left: 0;
-    padding: 1rem;
+    padding: 0.85rem 0.75rem;
     padding-bottom: calc(7rem + env(safe-area-inset-bottom)); /* Room for bottom navigation */
+  }
+
+  /* Mobile Header: Sleek top utility bar + Full-width page title below */
+  .header {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .headerTitle {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .headerTitle h1 {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .headerTitle p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-top: 0.2rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: nowrap;
+  }
+
+  .mobileHeaderBrand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-right: auto;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .themeToggleBtn,
+  .mobileLogoutBtn {
+    padding: 0.4rem 0.55rem;
+    min-width: 34px;
+    min-height: 34px;
+    flex-shrink: 0;
+  }
+
+  .profileTriggerBtn {
+    padding: 0.25rem 0.5rem 0.25rem 0.3rem;
+    gap: 0.35rem;
+  }
+
+  .profileAvatar {
+    width: 24px;
+    height: 24px;
+    font-size: 0.72rem;
+  }
+
+  .profileRoleBadge {
+    font-size: 0.64rem;
+    padding: 0.15rem 0.42rem;
   }
   
   .statsGrid {
@@ -1264,15 +1349,29 @@
 
   /* Legend wrapping on mobile to prevent overflow */
   .legend {
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    font-size: 0.75rem;
-    margin-bottom: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.5rem;
+    font-size: 0.73rem;
+    margin-bottom: 1rem;
+    background: var(--card-bg);
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
   }
 
   .legendItem {
-    flex: 0 0 calc(50% - 0.5rem);
-    min-width: 110px;
+    min-width: 0;
+    gap: 0.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .legendDot {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
   }
   
   /* Modal responsive optimizations */
@@ -2226,3 +2325,228 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ⚠️ Overdue Bills Modal — Desktop Table & Mobile Cards
+   ============================================================ */
+
+.overdueModalCard {
+  max-width: 880px !important;
+  width: 95vw !important;
+}
+
+.overdueSummaryStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.overdueSummaryBox {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.overdueSummaryBoxDanger {
+  background: linear-gradient(135deg, var(--status-unpaid-bg), color-mix(in srgb, var(--status-unpaid-bg) 35%, var(--card-bg)));
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+.overdueFilterBar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.overdueFilterPill {
+  white-space: nowrap !important;
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.82rem !important;
+  border-radius: 9999px !important;
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+}
+
+.overdueFilterCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.38rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.overdueDesktopTableWrap {
+  display: block;
+  overflow-x: auto;
+  max-height: 52vh;
+  padding: 0.15rem 0.25rem 0.5rem 0.15rem;
+}
+
+.overdueTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+.overdueTable thead th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.45rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.overdueTable tbody tr {
+  background-color: var(--bg-color);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.overdueTable tbody tr:hover {
+  background-color: color-mix(in srgb, var(--bg-color) 65%, var(--card-bg));
+  box-shadow: var(--shadow-sm);
+}
+
+.overdueTable tbody td {
+  padding: 0.75rem 0.75rem;
+  font-size: 0.86rem;
+  vertical-align: middle;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.overdueTable tbody td:first-child {
+  border-left: 3px solid var(--status-unpaid);
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  padding-left: 0.85rem;
+}
+
+.overdueTable tbody td:last-child {
+  border-right: 1px solid var(--border-color);
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  padding-right: 0.85rem;
+  text-align: right;
+}
+
+.overdueRoomBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--status-unpaid);
+  background-color: var(--status-unpaid-bg);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.overdueBuildingBadge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.overduePastDuePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--status-unpaid);
+  background-color: var(--status-unpaid-bg);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.overdueMobileList {
+  display: none;
+}
+
+.overdueMobileCard {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--status-unpaid);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .overdueModalCard {
+    width: 98vw !important;
+    max-height: calc(100vh - 1rem) !important;
+  }
+
+  .overdueSummaryStrip {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .overdueSummaryBox {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .overdueFilterBar {
+    gap: 0.35rem;
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .overdueFilterPill {
+    padding: 0.32rem 0.65rem !important;
+    font-size: 0.76rem !important;
+    min-height: 30px !important;
+  }
+
+  .overdueDesktopTableWrap {
+    display: none;
+  }
+
+  .overdueMobileList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    max-height: 58vh;
+    overflow-y: auto;
+    padding-right: 0.1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+

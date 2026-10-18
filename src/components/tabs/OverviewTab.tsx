@@ -521,10 +521,10 @@ export default function OverviewTab({
         {/* Active Billing Period Selector for Workflow & Metrics */}
         {setBillingPeriod && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
               🗓️ รอบบิลทำงาน:
             </span>
-            <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--bg-color)', padding: '0.2rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--bg-color)', padding: '0.2rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => setBillingPeriod(currentCalendarMonth)}
@@ -535,6 +535,7 @@ export default function OverviewTab({
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                   backgroundColor: activeWorkflowPeriod === currentCalendarMonth ? 'var(--primary-color)' : 'transparent',
                   color: activeWorkflowPeriod === currentCalendarMonth ? '#fff' : 'var(--text-secondary)',
                   transition: 'all 0.2s',
@@ -553,6 +554,7 @@ export default function OverviewTab({
                     fontSize: '0.75rem',
                     fontWeight: 600,
                     cursor: 'pointer',
+                    whiteSpace: 'nowrap',
                     backgroundColor: activeWorkflowPeriod === nextPayInAdvanceMonth ? 'var(--primary-color)' : 'transparent',
                     color: activeWorkflowPeriod === nextPayInAdvanceMonth ? '#fff' : 'var(--text-secondary)',
                     transition: 'all 0.2s',
@@ -818,8 +820,8 @@ export default function OverviewTab({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '1.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+          gap: '1.25rem',
           marginBottom: '1.75rem',
         }}
       >
@@ -2093,7 +2095,7 @@ export default function OverviewTab({
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
           {buildings.map((b) => {
             const bUnpaidInvoices = invoices.filter((inv) => {
               const bId = inv.room?.floor?.building?.id || inv.room?.floor?.buildingId;
@@ -2126,8 +2128,8 @@ export default function OverviewTab({
               >
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.65rem' }}>
-                    <h3 className={styles.buildingSummaryCardTitle} style={{ margin: 0 }}>
-                      🏢 {b.name}
+                    <h3 className={styles.buildingSummaryCardTitle} style={{ margin: 0 }} title={b.name}>
+                      🏢 อาคาร {getShortBuildingName(b.name)}
                     </h3>
                     <span
                       style={{

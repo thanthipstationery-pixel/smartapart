@@ -24,34 +24,92 @@ export default function FloorMapTab({
   handleRoomClick,
   styles,
 }: FloorMapTabProps) {
+  const normalizedQuery = mapSearchQuery.trim().toLowerCase();
+  const legendFilters = [
+    { label: 'ห้องว่าง (Vacant)', shortLabel: 'ห้องว่าง', keyword: 'ว่าง', border: 'var(--status-vacant)', bg: 'var(--status-vacant-bg)' },
+    { label: 'จองแล้ว (Booked)', shortLabel: 'จองแล้ว', keyword: 'จองแล้ว', border: 'var(--status-booked)', bg: 'var(--status-booked-bg)' },
+    { label: 'มีผู้เช่า (Occupied)', shortLabel: 'มีผู้เช่า', keyword: 'มีผู้เช่า', border: 'var(--status-occupied)', bg: 'var(--status-occupied-bg)' },
+    { label: 'ค้างชำระ (Overdue)', shortLabel: 'ค้างชำระ', keyword: 'ค้างชำระ', border: 'var(--status-unpaid)', bg: 'var(--status-unpaid-bg)' },
+    { label: '📌 แจ้งย้ายออก', shortLabel: '📌 แจ้งย้ายออก', keyword: 'แจ้งย้ายออก', border: 'var(--status-warning)', bg: 'var(--status-warning-bg)' },
+    { label: 'ปิดปรับปรุง (Maint.)', shortLabel: 'ปิดปรับปรุง', keyword: 'ปิดปรับปรุง', border: 'var(--status-maintenance)', bg: 'var(--status-maintenance-bg)' },
+  ];
+
+  const checkRoomMatch = (room: any) => {
+    if (!normalizedQuery) return true;
+    const roomNum = (room.number || '').toLowerCase();
+    const roomType = room.type === 'AC' ? 'แอร์' : 'พัดลม';
+    const tenantName = room.activeTenant ? (room.activeTenant.name || '').toLowerCase() : '';
+    const bookingName = room.activeBooking ? (room.activeBooking.customerName || '').toLowerCase() : '';
+    const hasNotice = Boolean(room.activeTenant && (room.activeTenant.noticeDate || room.activeTenant.expectedCheckOutDate));
+    const statusTokens: string[] = [];
+    if (room.status === 'OCCUPIED') {
+      statusTokens.push('มีผู้เช่า');
+      if (hasNotice) statusTokens.push('แจ้งย้ายออก', 'แจ้งออก');
+      if (room.hasUnpaidInvoice) statusTokens.push('ค้างชำระ');
+    } else if (room.status === 'BOOKED') {
+      statusTokens.push('จองแล้ว');
+    } else if (room.status === 'MAINTENANCE') {
+      statusTokens.push('ปิดปรับปรุง');
+    } else {
+      statusTokens.push('ว่าง', 'ห้องว่าง');
+    }
+
+    if (normalizedQuery === 'ว่าง' || normalizedQuery === 'ห้องว่าง') {
+      return room.status === 'VACANT';
+    }
+
+    return (
+      roomNum.includes(normalizedQuery) ||
+      roomType.includes(normalizedQuery) ||
+      tenantName.includes(normalizedQuery) ||
+      bookingName.includes(normalizedQuery) ||
+      statusTokens.some((t) => t.includes(normalizedQuery))
+    );
+  };
+
+  const allBuildingRooms = activeBuilding
+    ? (activeBuilding.floors || []).flatMap((f: any) => f.rooms || [])
+    : [];
+  const matchedRoomsCount = allBuildingRooms.filter(checkRoomMatch).length;
+
   return (
     <div className="fade-in">
-      {/* Legend */}
+      {/* Interactive Status Legend (Click to Quick-Filter) */}
       <div className={styles.legend}>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-vacant)', backgroundColor: 'var(--status-vacant-bg)' }}></div>
-          <span>ห้องว่าง (Vacant)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-booked)', backgroundColor: 'var(--status-booked-bg)' }}></div>
-          <span>จองแล้ว (Booked)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-occupied)', backgroundColor: 'var(--status-occupied-bg)' }}></div>
-          <span>มีผู้เช่า (Occupied)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-unpaid)', backgroundColor: 'var(--status-unpaid-bg)' }}></div>
-          <span>ค้างชำระ (Overdue)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-warning)', backgroundColor: 'var(--status-warning-bg)' }}></div>
-          <span>📌 แจ้งย้ายออก (Notice Out)</span>
-        </div>
-        <div className={styles.legendItem}>
-          <div className={styles.legendDot} style={{ borderColor: 'var(--status-maintenance)', backgroundColor: 'var(--status-maintenance-bg)' }}></div>
-          <span>ปิดปรับปรุง (Maintenance)</span>
-        </div>
+        {legendFilters.map((item) => {
+          const isActive = normalizedQuery === item.keyword.toLowerCase();
+          return (
+            <div
+              key={item.keyword}
+              className={styles.legendItem}
+              onClick={() => setMapSearchQuery(isActive ? '' : item.keyword)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setMapSearchQuery(isActive ? '' : item.keyword);
+                }
+              }}
+              title={isActive ? 'คลิกอีกครั้งเพื่อแสดงทุกห้อง' : `คลิกเพื่อกรองเฉพาะ "${item.shortLabel}"`}
+              style={{
+                cursor: 'pointer',
+                padding: '0.25rem 0.5rem',
+                borderRadius: 'var(--radius-sm)',
+                border: isActive ? `1.5px solid ${item.border}` : '1px solid transparent',
+                backgroundColor: isActive ? item.bg : 'transparent',
+                fontWeight: isActive ? 700 : 500,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <div
+                className={styles.legendDot}
+                style={{ borderColor: item.border, backgroundColor: item.bg }}
+              />
+              <span>{item.label}</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Building Selection (Responsive: Dropdown for Mobile, Tabs for Desktop) */}
@@ -65,7 +123,7 @@ export default function FloorMapTab({
         >
           {buildings.map((b) => (
             <option key={b.id} value={b.id}>
-              {b.name} (เช่า {b.stats.occupied} / จอง {b.stats.booked || 0} / รวม {b.stats.total} ห้อง)
+              {getShortBuildingName(b.name)} (เช่า {b.stats.occupied} / จอง {b.stats.booked || 0} / รวม {b.stats.total} ห้อง)
             </option>
           ))}
         </select>
@@ -85,18 +143,115 @@ export default function FloorMapTab({
         </div>
       </div>
 
-      {/* Room Search Query Field */}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <input
-            type="text"
-            placeholder="🔎 ค้นหาห้องพักในตึกนี้ (เช่น 101, แอร์, จองแล้ว, ชื่อผู้เช่า/ผู้จอง)..."
-            value={mapSearchQuery}
-            onChange={(e) => setMapSearchQuery(e.target.value)}
-            className={styles.formInput}
-            style={{ width: '100%', padding: '0.65rem 1rem', borderRadius: 'var(--radius-md)' }}
-          />
+      {/* Room Search Query Field + Clear Filter Button */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="🔎 ค้นหาห้องพักในตึกนี้ (เช่น 101, แอร์, ว่าง, จองแล้ว, ชื่อผู้เช่า)..."
+              value={mapSearchQuery}
+              onChange={(e) => setMapSearchQuery(e.target.value)}
+              className={styles.formInput}
+              style={{
+                width: '100%',
+                padding: mapSearchQuery ? '0.65rem 2.5rem 0.65rem 1rem' : '0.65rem 1rem',
+                borderRadius: 'var(--radius-md)',
+              }}
+            />
+            {mapSearchQuery && (
+              <button
+                type="button"
+                onClick={() => setMapSearchQuery('')}
+                aria-label="ล้างคำค้นหา"
+                title="ล้างตัวกรอง"
+                style={{
+                  position: 'absolute',
+                  right: '0.65rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  border: 'none',
+                  background: 'var(--border-color)',
+                  color: 'var(--text-primary)',
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {mapSearchQuery && (
+            <button
+              type="button"
+              onClick={() => setMapSearchQuery('')}
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              style={{
+                padding: '0.6rem 1rem',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                border: '1px solid var(--primary-color)',
+                color: 'var(--primary-color)',
+              }}
+            >
+              ✕ แสดงทุกห้อง ({allBuildingRooms.length})
+            </button>
+          )}
         </div>
+
+        {/* Active Filter Notice Banner */}
+        {normalizedQuery && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+              padding: '0.6rem 0.9rem',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'color-mix(in srgb, var(--primary-color) 10%, var(--card-bg))',
+              border: '1px solid color-mix(in srgb, var(--primary-color) 35%, var(--border-color))',
+              fontSize: '0.82rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', color: 'var(--text-primary)' }}>
+              <span>🔍 กำลังกรองเฉพาะ:</span>
+              <strong style={{ color: 'var(--primary-color)', background: 'var(--card-bg)', padding: '0.12rem 0.55rem', borderRadius: '999px', border: '1px solid var(--border-color)' }}>
+                &ldquo;{mapSearchQuery}&rdquo;
+              </strong>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                (ตรงเงื่อนไข {matchedRoomsCount} จาก {allBuildingRooms.length} ห้องในตึกนี้)
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setMapSearchQuery('')}
+              style={{
+                border: 'none',
+                background: 'var(--primary-color)',
+                color: '#ffffff',
+                padding: '0.3rem 0.75rem',
+                borderRadius: '999px',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ✕ ล้างตัวกรอง
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Building Rooms Display */}
@@ -109,22 +264,7 @@ export default function FloorMapTab({
                 <div className={styles.floorHeader}>ชั้นที่ {floor.number}</div>
                 <div className={styles.roomsGrid}>
                   {floor.rooms.map((room: any) => {
-                    const isMatch = (() => {
-                      if (!mapSearchQuery) return true;
-                      const query = mapSearchQuery.toLowerCase().trim();
-                      const roomNum = room.number.toLowerCase();
-                      const roomType = room.type === 'AC' ? 'แอร์' : 'พัดลม';
-                      const tenantName = room.activeTenant ? room.activeTenant.name.toLowerCase() : '';
-                      const bookingName = room.activeBooking ? room.activeBooking.customerName.toLowerCase() : '';
-                      const hasNotice = Boolean(room.activeTenant && (room.activeTenant.noticeDate || room.activeTenant.expectedCheckOutDate));
-                      const status = room.status === 'OCCUPIED' ? (hasNotice ? 'แจ้งย้ายออก แจ้งออก' : 'มีผู้เช่า') : (room.status === 'BOOKED' ? 'จองแล้ว' : (room.status === 'MAINTENANCE' ? 'ปิดปรับปรุง' : 'ว่าง'));
-                      
-                      return roomNum.includes(query) || 
-                             roomType.includes(query) || 
-                             tenantName.includes(query) || 
-                             bookingName.includes(query) || 
-                             status.includes(query);
-                    })();
+                    const isMatch = checkRoomMatch(room);
                     let roomStyle = '';
                     let statusText = 'ว่าง';
                     if (room.status === 'OCCUPIED') {

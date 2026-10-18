@@ -77,9 +77,11 @@ export function formatThaiMonthOnly(billingPeriodStr: string | null | undefined)
  * Strips common suffixes (อพาร์ทเม้นท์, อพาร์ทเม้น, ฯลฯ) for UI display e.g. "ธารทิพย์ อพาร์ทเม้นท์" -> "ธารทิพย์"
  */
 export function getShortBuildingName(name: string | null | undefined): string {
-  if (!name) return '';
-  return name.replace(/\s*(อพาร์ทเม้นท์|อพาร์ทเม้น|อพาร์ทเมนท์|อพาร์ทเมน|อพาร์ตเมนต์|เรสซิเดนซ์|คอนโด|แมนชั่น)\s*/gi, '').trim();
+  if (!name) return '-';
+  return name.replace(/\s*(อพาร์ทเม้นท์|อพาร์ทเม้น|อพาร์ทเมนท์|อพาร์ทเมน|อพาร์ตเมนต์|เรสซิเดนซ์|คอนโด|แมนชั่น|หอพัก)\s*/gi, '').trim() || name;
 }
+
+export const formatShortBuildingName = getShortBuildingName;
 
 /**
  * Formats phone number into "xxx-xxx-xxxx" e.g. "089-112-2222"

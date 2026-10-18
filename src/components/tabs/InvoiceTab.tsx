@@ -52,43 +52,35 @@ export default function InvoiceTab({
 }: InvoiceTabProps) {
   return (
     <div className="fade-in">
-      {/* Header Title Banner */}
-      <div style={{ marginBottom: '1.25rem' }}>
-        <h1 className={styles.title} style={{ marginBottom: '0.25rem' }}>📄 ใบแจ้งหนี้ / ใบเสร็จรับเงิน</h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          จัดการใบแจ้งหนี้ประจำเดือน, บันทึกรับชำระเงิน และพิมพ์ใบเสร็จรับเงิน A5
-        </p>
-      </div>
-
       {/* Rich Multi-Criteria Filter Toolbar */}
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem', alignItems: 'center', backgroundColor: 'var(--card-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: "2px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
         {/* Status buttons */}
-        <div style={{ display: 'flex', gap: '0.35rem' }}>
+        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => setInvoiceStatusFilter('ALL')}
             className={`${styles.btn} ${invoiceStatusFilter === 'ALL' ? styles.btnPrimary : styles.btnSecondary}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.42rem 0.75rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
           >
             ทั้งหมด
           </button>
           <button
             onClick={() => setInvoiceStatusFilter('UNPAID')}
             className={`${styles.btn} ${invoiceStatusFilter === 'UNPAID' ? styles.btnPrimary : styles.btnSecondary}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.42rem 0.75rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
           >
             ค้างชำระ
           </button>
           <button
             onClick={() => setInvoiceStatusFilter('PARTIAL')}
             className={`${styles.btn} ${invoiceStatusFilter === 'PARTIAL' ? styles.btnPrimary : styles.btnSecondary}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem', backgroundColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning)' : undefined, color: invoiceStatusFilter === 'PARTIAL' ? '#ffffff' : undefined, borderColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning-text)' : undefined }}
+            style={{ padding: '0.42rem 0.75rem', fontSize: '0.82rem', whiteSpace: 'nowrap', backgroundColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning)' : undefined, color: invoiceStatusFilter === 'PARTIAL' ? '#ffffff' : undefined, borderColor: invoiceStatusFilter === 'PARTIAL' ? 'var(--status-warning-text)' : undefined }}
           >
             ชำระบางส่วน
           </button>
           <button
             onClick={() => setInvoiceStatusFilter('PAID')}
             className={`${styles.btn} ${invoiceStatusFilter === 'PAID' ? styles.btnPrimary : styles.btnSecondary}`}
-            style={{ padding: '0.45rem 0.85rem', fontSize: '0.85rem' }}
+            style={{ padding: '0.42rem 0.75rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
           >
             ชำระแล้ว
           </button>
@@ -328,7 +320,7 @@ export default function InvoiceTab({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>🏠 {inv.room.number}</span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', opacity: 0.8 }}>{inv.room.floor.building.name}</span>
+                        <span style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--bg-color)', padding: '0.15rem 0.45rem', borderRadius: '9999px', border: '1px solid var(--border-color)' }}>{getShortBuildingName(inv.room.floor.building.name)}</span>
                       </div>
                       <span style={{
                         fontSize: '0.7rem',
