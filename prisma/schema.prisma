@@ -126,6 +126,30 @@ model Tenant {
   // Rental Contract Period
   startDate            DateTime   @default(now())
   endDate              DateTime?
+
+  // Lease Agreement & Co-Tenant Fields
+  nickname                   String?    // ชื่อเล่นผู้เช่า ๑
+  age                        Int?       // อายุผู้เช่า ๑
+  idCardImage                String?    // Base64 Data URL รูปถ่ายบัตรประชาชนผู้เช่า ๑ (ฝังลายน้ำแล้ว)
+
+  // ผู้เช่าคนที่ ๒ (ผู้ร่วมพักอาศัย)
+  secondTenantName           String?
+  secondTenantNickname       String?
+  secondTenantAge            Int?
+  secondTenantIdCard         String?
+  secondTenantAddress        String?
+  secondTenantPhone          String?
+  secondTenantWorkplace      String?
+  secondTenantEmergencyName  String?
+  secondTenantEmergencyRel   String?
+  secondTenantEmergencyPhone String?
+  secondTenantIdCardImage    String?    // Base64 Data URL รูปถ่ายบัตรประชาชนผู้เช่า ๒
+
+  // ข้อมูลสัญญาเช่า
+  contractNumber             String?    // เลขที่สัญญา เช่น 101/2569
+  contractDurationMonths     Int        @default(6) // ระยะเวลาสัญญา (เดือน) เช่น 1, 3, 6, 12
+  roomRentShare              Float      @default(1000) // ค่าเช่าห้องพัก (บาท)
+  assetRentShare             Float?     // ค่าเช่าทรัพย์สิน (บาท)
   
   // Check-out Status & Keycard Refund Ledger
   status               String     @default("ACTIVE") // "ACTIVE", "CHECKED_OUT"
