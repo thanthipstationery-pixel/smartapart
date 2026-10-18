@@ -13,73 +13,71 @@ export async function GET(request: Request) {
     // End of selected billing month (UTC)
     const endOfPeriod = new Date(Date.UTC(year, month, 0, 23, 59, 59));
 
-    const buildings = await prisma.building.findMany({
-      include: {
-        floors: {
-          orderBy: { number: 'asc' },
-          include: {
-            rooms: {
-              orderBy: { number: 'asc' },
-              include: {
-                tenants: {
-                  orderBy: { startDate: 'desc' },
+    const currentMonth = new Date().toISOString().slice(0, 7); // Format: "YYYY-MM"
+
+    const [buildings, periodReadings, relevantInvoices] = await Promise.all([
+      prisma.building.findMany({
+        include: {
+          floors: {
+            orderBy: { number: 'asc' },
+            include: {
+              rooms: {
+                orderBy: { number: 'asc' },
+                include: {
+                  tenants: {
+                    orderBy: { startDate: 'desc' },
+                  },
+                  bookings: {
+                    where: { status: 'ACTIVE' },
+                    orderBy: { createdAt: 'desc' },
+                  },
+                  invoices: {
+                    where: { status: 'UNPAID' },
+                    select: { id: true }
+                  }
                 },
-                bookings: {
-                  where: { status: 'ACTIVE' },
-                  orderBy: { createdAt: 'desc' },
-                },
-                invoices: {
-                  where: { status: 'UNPAID' },
-                  select: { id: true }
-                }
               },
             },
           },
         },
-      },
-    });
-
-    const currentMonth = new Date().toISOString().slice(0, 7); // Format: "YYYY-MM"
-
-    // Fetch meter readings scoped up to end of requested period
-    const periodReadings = await prisma.meterReading.findMany({
-      where: {
-        readingDate: {
-          lte: endOfPeriod,
+      }),
+      prisma.meterReading.findMany({
+        where: {
+          readingDate: {
+            lte: endOfPeriod,
+          },
         },
-      },
-      orderBy: { readingDate: 'desc' },
-      select: {
-        roomId: true,
-        readingDate: true,
-        waterValue: true,
-        electricityValue: true,
-        recordedBy: true,
-      },
-    });
-
-    // Fetch only invoices relevant to requested period, current month revenue, or unpaid tracking
-    const relevantInvoices = await prisma.invoice.findMany({
-      where: {
-        OR: [
-          { billingPeriod: period },
-          { billingPeriod: currentMonth, status: 'PAID' },
-          { status: 'UNPAID' },
-        ],
-      },
-      select: {
-        id: true,
-        status: true,
-        totalAmount: true,
-        billingPeriod: true,
-        roomId: true,
-        tenantId: true,
-        previousWater: true,
-        currentWater: true,
-        previousElec: true,
-        currentElec: true,
-      },
-    });
+        orderBy: { readingDate: 'desc' },
+        select: {
+          roomId: true,
+          readingDate: true,
+          waterValue: true,
+          electricityValue: true,
+          recordedBy: true,
+        },
+      }),
+      prisma.invoice.findMany({
+        where: {
+          OR: [
+            { billingPeriod: period },
+            { billingPeriod: currentMonth, status: 'PAID' },
+            { status: 'UNPAID' },
+          ],
+        },
+        select: {
+          id: true,
+          status: true,
+          totalAmount: true,
+          billingPeriod: true,
+          roomId: true,
+          tenantId: true,
+          previousWater: true,
+          currentWater: true,
+          previousElec: true,
+          currentElec: true,
+        },
+      }),
+    ]);
     
     // Revenue calculations
     const currentMonthRevenue = relevantInvoices

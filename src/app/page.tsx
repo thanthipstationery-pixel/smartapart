@@ -717,36 +717,31 @@ table { border-collapse: collapse; }
   };
 
 
-  useEffect(() => {
-    async function initData() {
-      try {
-        const meRes = await fetch('/api/auth/me');
-        if (!meRes.ok) {
-          router.push('/login');
-          return;
-        }
-        const meData = (await meRes.json()) as any;
-        setAdminUser(meData.user);
-
-        // Fetch buildings, global stats & settings
-        await refreshDashboardData();
-        await refreshInvoices();
-        await refreshTenants();
-        await refreshPropertyData();
-      } catch (err) {
-        console.error('Initialization error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    initData();
-  }, [router]);
-
   const [govBills, setGovBills] = useState<any[]>([]);
+  const isInitialMountRef = React.useRef(true);
+
+  async function refreshGovBills(period: string = meterPeriod) {
+    try {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const periodsToFetch = currentMonth !== period ? [period, currentMonth] : [period];
+      const responses = await Promise.all(
+        periodsToFetch.map((p) => fetch(`/api/buildings/monthly-utility?period=${p}`))
+      );
+      const results = await Promise.all(
+        responses.map(async (r) => (r.ok ? await r.json() : []))
+      );
+      const merged = results.flat().filter(Boolean);
+      setGovBills(merged);
+    } catch (err) {
+      console.error('Error fetching govBills for dashboard:', err);
+    }
+  }
 
   async function refreshDashboardData() {
-    const res = await fetch(`/api/buildings?period=${meterPeriod}`);
+    const [res] = await Promise.all([
+      fetch(`/api/buildings?period=${meterPeriod}`),
+      refreshGovBills(meterPeriod),
+    ]);
     if (res.ok) {
       const data = (await res.json()) as any;
       setBuildings(data.buildings);
@@ -756,30 +751,44 @@ table { border-collapse: collapse; }
         if (!settingsBuildingId) setSettingsBuildingId(data.buildings[0].id);
       }
     }
-    try {
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      const govRes = await fetch(`/api/buildings/monthly-utility?period=${meterPeriod}`);
-      let govData: any[] = [];
-      if (govRes.ok) {
-        const parsed = await govRes.json();
-        if (Array.isArray(parsed)) govData = parsed;
-      }
-      if (currentMonth !== meterPeriod) {
-        const curGovRes = await fetch(`/api/buildings/monthly-utility?period=${currentMonth}`);
-        if (curGovRes.ok) {
-          const curParsed = await curGovRes.json();
-          if (Array.isArray(curParsed)) {
-            govData = [...govData, ...curParsed];
-          }
-        }
-      }
-      setGovBills(govData);
-    } catch (err) {
-      console.error('Error fetching govBills for dashboard:', err);
-    }
   }
 
   useEffect(() => {
+    async function initData() {
+      try {
+        // Fire auth check and primary dashboard data in parallel (single round-trip)
+        const [meRes] = await Promise.all([
+          fetch('/api/auth/me'),
+          refreshDashboardData(),
+          refreshInvoices(),
+        ]);
+
+        if (!meRes.ok) {
+          router.push('/login');
+          return;
+        }
+        const meData = (await meRes.json()) as any;
+        setAdminUser(meData.user);
+      } catch (err) {
+        console.error('Initialization error:', err);
+      } finally {
+        setLoading(false);
+      }
+
+      // Load secondary tab data (Tenants & Property Settings) non-blockingly in the background
+      Promise.all([refreshPropertyData(), refreshTenants()]).catch((err) =>
+        console.error('Background data fetch error:', err)
+      );
+    }
+
+    initData();
+  }, [router]);
+
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
     refreshDashboardData();
   }, [meterPeriod]);
 
