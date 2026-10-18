@@ -1,0 +1,625 @@
+/* LeaseAgreementModal.module.css
+ * Styles for 7-Page A4 Thai Apartment Lease Agreement Modal & Print Engine
+ */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContainer {
+  background: var(--card-bg, #ffffff);
+  border-radius: var(--radius-lg, 1.25rem);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  width: 98vw;
+  max-width: 1150px;
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.5rem;
+  background: var(--card-bg, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  gap: 1rem;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roomBadge {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.contractBadge {
+  background: var(--accent-purple-bg, rgba(124, 58, 237, 0.08));
+  color: var(--accent-purple, #7c3aed);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.modalCloseBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: rgba(248, 250, 252, 0.9);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sectionToggles {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.sectionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.sectionPill:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.sectionPill.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+}
+
+.sectionPill input[type='checkbox'] {
+  accent-color: #3b82f6;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.zoomControls {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.zoomBtn {
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.zoomBtn:hover {
+  background: #f1f5f9;
+}
+
+.zoomBtn.activeZoom {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #ff8a00 0%, #e67c00 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 138, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.printBtn:hover {
+  background: linear-gradient(135deg, #ffa02e 0%, #ff8a00 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 138, 0, 0.45);
+}
+
+.printBtn:active {
+  transform: scale(0.98);
+}
+
+/* Scrollable Preview Area */
+.previewScrollArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #334155;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #64748b #1e293b;
+}
+
+/* A4 Sheet Container */
+.a4Sheet {
+  width: 210mm;
+  min-height: 297mm;
+  max-width: 100%;
+  background: #ffffff;
+  color: #000000;
+  padding: 18mm 20mm 15mm 20mm;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PSK', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.sheetContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  font-size: 13.5px;
+  color: #333333;
+}
+
+/* Document Components */
+.docHeaderRight {
+  text-align: right;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.docTitle {
+  text-align: center;
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0.5rem 0 1.25rem 0;
+  letter-spacing: 0.02em;
+}
+
+.docSubTitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.locationGrid {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  gap: 1.5rem;
+}
+
+.locationLeft {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.locationRight {
+  flex: 1.5;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.docParagraph {
+  text-indent: 2.5rem;
+  text-align: justify;
+  text-justify: inter-cluster;
+  margin-bottom: 0.85rem;
+  line-height: 1.6;
+}
+
+.tenantSectionTitle {
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.tenantDetailBlock {
+  margin-bottom: 0.85rem;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* Clauses List */
+.clauseHeader {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-size: 15.5px;
+}
+
+.clauseItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.55rem;
+  line-height: 1.55;
+  text-align: justify;
+  text-justify: inter-cluster;
+}
+
+.clauseNum {
+  min-width: 1.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.clauseText {
+  flex: 1;
+}
+
+.subClauseItem {
+  display: flex;
+  align-items: flex-start;
+  padding-left: 2rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+  line-height: 1.5;
+}
+
+.subClauseNum {
+  min-width: 2.2rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.subClauseText {
+  flex: 1;
+}
+
+/* Dotted placeholders and dynamic values */
+.dottedLine {
+  display: inline-block;
+  border-bottom: 1px dotted #333333;
+  min-width: 80px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.fillValue {
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 1px dotted #000000;
+  padding: 0 4px;
+}
+
+/* Signatures */
+.signatureSection {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  padding-left: 3rem;
+  padding-right: 1rem;
+}
+
+.signatureItem {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.signatureLabel {
+  min-width: 60px;
+  font-size: 15px;
+}
+
+.signatureLineBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 280px;
+}
+
+.signatureLine {
+  width: 100%;
+  border-bottom: 1px solid #000000;
+  height: 24px;
+  margin-bottom: 4px;
+}
+
+.signatureName {
+  font-size: 14.5px;
+  color: #222222;
+}
+
+.signatureRole {
+  margin-left: 0.5rem;
+  font-size: 15px;
+}
+
+/* Rules Page */
+.rulesTitle {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.45rem;
+  line-height: 1.5;
+  text-align: justify;
+  text-justify: inter-cluster;
+  font-size: 14.5px;
+}
+
+.ruleNum {
+  min-width: 1.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.ruleText {
+  flex: 1;
+}
+
+/* ID Card Page (Page 7) */
+.idCardTitle {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.idCardSubTitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.idCardSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.idCardTenantHeader {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  align-self: flex-start;
+  padding-left: 1.5rem;
+}
+
+.idCardFrame {
+  width: 115mm;
+  height: 72mm;
+  max-width: 440px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.idCardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.idCardPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #94a3b8;
+  font-size: 13.5px;
+  text-align: center;
+  padding: 1rem;
+}
+
+.certifyBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.certifySignLine {
+  font-size: 14.5px;
+  margin-bottom: 0.25rem;
+}
+
+.certifyText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 0.25rem;
+  letter-spacing: 0.05em;
+}
+
+/* Print CSS */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 20mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Sarabun', 'TH Sarabun New', sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .modalOverlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+  }
+
+  .modalContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  .modalHeader,
+  .toolbar,
+  .noPrint {
+    display: none !important;
+  }
+
+  .previewScrollArea {
+    background: transparent !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow: visible !important;
+  }
+
+  .a4Sheet {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 265mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    transform: none !important;
+  }
+
+  .a4Sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+}
