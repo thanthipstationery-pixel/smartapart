@@ -70,12 +70,12 @@ function parseThaiAddress(addressStr?: string | null): ParsedAddress {
   const firstPart = clean.split(
     /(?:หมู่ที่|หมู่|ม\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.)/
   )[0]?.trim();
-  if (firstPart) {
+  if (firstPart && (/[0-9\u0E50-\u0E59]/.test(firstPart) || /^(บ้านเลขที่|เลขที่)/.test(firstPart))) {
     houseNo = firstPart.replace(/^(บ้านเลขที่|เลขที่)\s*/, '');
   }
 
   return {
-    houseNo: houseNo || clean,
+    houseNo,
     moo: mooMatch ? mooMatch[1] : '',
     road: roadMatch ? roadMatch[1] : '',
     subdistrict: subMatch ? subMatch[1] : '',
@@ -252,18 +252,37 @@ export default function LeaseAgreementModal({
       sheetsHtml += sheet.outerHTML;
     });
 
+    // Re-use the exact CSS-module rules of the preview so the printed/PDF output matches it 1:1.
+    const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const classRe = new RegExp(
+      `\\.(?:${Object.values(styles)
+        .map((c) => escapeRe(String(c)))
+        .join('|')})(?![\\w-])`
+    );
+    let moduleCss = '';
+    Array.from(document.styleSheets).forEach((sheet) => {
+      let rules: CSSRuleList;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        return; // cross-origin stylesheet
+      }
+      Array.from(rules).forEach((rule) => {
+        if (rule.type === CSSRule.STYLE_RULE && classRe.test(rule.cssText)) {
+          moduleCss += rule.cssText + '\n';
+        }
+      });
+    });
+
     const printDocumentContent = `<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="utf-8">
   <title>สัญญาเช่าห้องพัก - ห้อง ${roomNumber} - ${buildingName}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     @page {
       size: A4 portrait;
-      margin: 15mm 20mm;
+      margin: 0;
     }
     *, *::before, *::after {
       box-sizing: border-box;
@@ -271,334 +290,31 @@ export default function LeaseAgreementModal({
     html, body {
       margin: 0;
       padding: 0;
-      background: #ffffff !important;
-      color: #000000 !important;
-      font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PSK', Arial, sans-serif !important;
-      font-size: 15px;
-      line-height: 1.85;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
+      background: #ffffff;
+      color: #000000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
+    ${moduleCss}
     .${styles.a4Sheet} {
-      width: 100% !important;
-      min-height: 265mm !important;
-      box-shadow: none !important;
-      border: none !important;
-      border-radius: 0 !important;
+      width: 210mm !important;
+      height: 296mm !important;
+      min-height: 0 !important;
       margin: 0 !important;
-      padding: 0 !important;
-      page-break-after: always !important;
-      break-after: page !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: space-between !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      transform: none !important;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
     }
     .${styles.a4Sheet}:last-child {
-      page-break-after: auto !important;
-      break-after: auto !important;
+      page-break-after: auto;
+      break-after: auto;
     }
-    .${styles.sheetContent} {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .${styles.sheetFooter} {
-      display: flex;
-      justify-content: flex-end;
-      padding-top: 1rem;
-      font-size: 13.5px;
-      color: #333333;
-    }
-    .${styles.docHeaderRight} {
-      text-align: right;
-      margin-bottom: 1rem;
-      line-height: 1.85;
-      font-size: 15px;
-    }
-    .${styles.docTitle} {
-      text-align: center;
-      font-size: 20px;
-      font-weight: 700;
-      margin: 0.6rem 0 1.35rem 0;
-      letter-spacing: 0.02em;
-    }
-    .${styles.docSubTitle} {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 0.85rem;
-    }
-    .${styles.locationGrid} {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.35rem;
-      gap: 1.5rem;
-    }
-    .${styles.locationLeft} {
-      flex: 1;
-      font-size: 15px;
-      line-height: 2.0;
-    }
-    .${styles.locationRight} {
-      flex: 1.5;
-      font-size: 15px;
-      line-height: 1.85;
-    }
-    .${styles.docParagraph} {
-      text-indent: 2.5rem;
-      text-align: justify;
-      text-justify: inter-cluster;
-      margin-bottom: 1.35rem;
-      line-height: 2.15;
-    }
-    .${styles.tenantDetailBlock} {
-      margin-bottom: 1.35rem;
-      line-height: 2.25;
-      text-align: justify;
-      font-size: 15px;
-    }
-    .${styles.clauseHeader} {
-      font-weight: 700;
-      margin-bottom: 0.95rem;
-      font-size: 15.5px;
-    }
-    .${styles.clauseItem} {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 0.75rem;
-      line-height: 1.85;
-      text-align: justify;
-      text-justify: inter-cluster;
-    }
-    .${styles.clauseNum} {
-      min-width: 1.8rem;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-    .${styles.clauseText} {
-      flex: 1;
-    }
-    .${styles.subClauseItem} {
-      display: flex;
-      align-items: flex-start;
-      padding-left: 2rem;
-      margin-top: 0.4rem;
-      margin-bottom: 0.4rem;
-      line-height: 1.85;
-    }
-    .${styles.subClauseNum} {
-      min-width: 2.2rem;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-    .${styles.subClauseText} {
-      flex: 1;
-    }
-    .${styles.dottedBlankContainer} {
-      display: inline-flex !important;
-      position: relative !important;
-      align-items: center !important;
-      justify-content: center !important;
-      vertical-align: baseline !important;
-      padding: 0 2px !important;
-      margin: 0 1px !important;
-    }
-    .${styles.dottedBackgroundLine} {
-      position: absolute !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: 4px !important;
-      border-bottom: 1.5px dotted #000000 !important;
-      pointer-events: none !important;
-      z-index: 1 !important;
-    }
-    .${styles.dottedValueText} {
-      position: relative !important;
-      z-index: 2 !important;
-      font-weight: 600 !important;
-      color: #000000 !important;
-      background-color: #ffffff !important;
-      padding: 0 4px !important;
-      text-align: center !important;
-      white-space: nowrap !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .${styles.emptyDottedPlaceholder} {
-      display: inline-block !important;
-      width: 100% !important;
-      visibility: hidden !important;
-    }
-    .${styles.prefixGroup} {
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 0.2rem !important;
-      margin-right: 0.25rem !important;
-    }
-    .${styles.strikethroughPrefix} {
-      text-decoration: line-through !important;
-      text-decoration-thickness: 1.5px !important;
-      text-decoration-color: #000000 !important;
-      color: #555555 !important;
-      padding: 0 2px !important;
-    }
-    .${styles.activePrefix} {
-      font-weight: 700 !important;
-      color: #000000 !important;
-      padding: 0 2px !important;
-    }
-    .${styles.normalPrefix} {
-      color: #000000 !important;
-      padding: 0 2px !important;
-    }
-    .${styles.signatureSection} {
-      margin-top: 3.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 3.25rem;
-      padding-left: 2.5rem;
-      padding-right: 1rem;
-    }
-    .${styles.signatureBlock} {
-      display: flex;
-      flex-direction: column;
-    }
-    .${styles.signatureRow} {
-      display: flex;
-      align-items: flex-end;
-      gap: 0.5rem;
-      height: 38px;
-    }
-    .${styles.signatureLabel} {
-      width: 50px;
-      font-size: 15px;
-      padding-bottom: 1px;
-      flex-shrink: 0;
-    }
-    .${styles.signatureLine} {
-      width: 320px;
-      flex-shrink: 0;
-      border-bottom: 1px solid #000000;
-      margin-bottom: 5px;
-    }
-    .${styles.signatureRole} {
-      font-size: 15px;
-      padding-bottom: 1px;
-      white-space: nowrap;
-      flex: 1;
-    }
-    .${styles.signatureNameRow} {
-      display: flex;
-      justify-content: center;
-      width: 320px;
-      margin-left: calc(50px + 0.5rem);
-      margin-top: 6px;
-    }
-    .${styles.signatureName} {
-      font-size: 14.5px;
-      color: #222222;
-      text-align: center;
-    }
-    .${styles.ruleItem} {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 0.45rem;
-      line-height: 1.5;
-      text-align: justify;
-      text-justify: inter-cluster;
-      font-size: 14.5px;
-    }
-    .${styles.ruleNum} {
-      min-width: 1.7rem;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-    .${styles.ruleText} {
-      flex: 1;
-    }
-    .${styles.idCardTitle} {
-      text-align: center;
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-    .${styles.idCardSubTitle} {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-    }
-    .${styles.idCardSection} {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 1.75rem;
-    }
-    .${styles.idCardTenantHeader} {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      align-self: flex-start;
-      padding-left: 1.5rem;
-    }
-    .${styles.idCardFrame} {
-      width: 115mm;
-      height: 72mm;
-      max-width: 440px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      background: #f8fafc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-bottom: 0.75rem;
-      position: relative;
-    }
-    .${styles.idCardImg} {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-    .${styles.idCardPlaceholder} {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      color: #94a3b8;
-      font-size: 13.5px;
-      text-align: center;
-      padding: 1rem;
-    }
-    .${styles.certifyBlock} {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 0.5rem;
-      text-align: center;
-    }
-    .${styles.certifySignLine} {
-      font-size: 14.5px;
-      margin-bottom: 0.25rem;
-    }
-    .${styles.certifyText} {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1e293b;
-      margin-top: 0.25rem;
-      letter-spacing: 0.05em;
-    }
-    .dotted {
-      border-bottom: 1px dotted #000;
-      display: inline-block;
-      padding: 0 4px;
-    }
-    .bold-val {
-      font-weight: 600;
-      padding: 0 3px;
+    @media screen {
+      body { background: #64748b; padding: 16px 0; }
+      .${styles.a4Sheet} { margin: 0 auto 16px auto !important; box-shadow: 0 6px 24px rgba(0,0,0,0.35) !important; }
     }
   </style>
 </head>
@@ -675,34 +391,119 @@ export default function LeaseAgreementModal({
     );
   };
 
-  // Blank filler component with centered text sitting over fixed dotted line
+  // Fillable field: real dot leaders (same as the blank paper form) with the value floating above them.
+  // Width is fixed by the dot count of the original form and only grows if the value is wider.
   const BlankFill = ({
     value,
-    minDots = 15,
-    minWidth,
+    dots = 15,
+    block = false,
   }: {
     value?: string | number | null;
-    minDots?: number;
-    minWidth?: string;
+    dots?: number;
+    block?: boolean;
   }) => {
     const strVal =
       value !== undefined && value !== null ? String(value).trim() : '';
-    const calculatedMinWidth = minWidth || `${Math.max(30, minDots * 6)}px`;
 
     return (
-      <span
-        className={styles.dottedBlankContainer}
-        style={{ minWidth: calculatedMinWidth }}
-      >
-        <span className={styles.dottedBackgroundLine} aria-hidden="true" />
-        {strVal ? (
-          <span className={styles.dottedValueText}>{strVal}</span>
-        ) : (
-          <span className={styles.emptyDottedPlaceholder}>&nbsp;</span>
-        )}
+      <span className={`${styles.blank} ${block ? styles.blankBlock : ''}`}>
+        <span className={styles.blankSpacer} aria-hidden="true">
+          {'.'.repeat(dots)}
+        </span>
+        {strVal && <span className={styles.blankText}>{strVal}</span>}
+        <span className={styles.blankDots} aria-hidden="true">
+          {'.'.repeat(Math.max(dots, 160))}
+        </span>
       </span>
     );
   };
+
+  // Split a long address across the two dotted address lines of the form
+  const addressCombined = [addressLine1, addressLine2].filter(Boolean).join(' ').trim();
+  const splitAddress = (s: string): [string, string] => {
+    const MAX = 40;
+    if (s.length <= MAX) return [s, ''];
+    const cut = s.lastIndexOf(' ', MAX);
+    if (cut <= 0) return [s.slice(0, MAX), s.slice(MAX)];
+    return [s.slice(0, cut), s.slice(cut + 1)];
+  };
+  const [addrLineA, addrLineB] = splitAddress(addressCombined);
+
+  // Header shared by the lease (page 1) and asset (page 4) contracts
+  const renderContractHeader = (title: string) => (
+    <>
+      <div className={styles.docHeaderRight}>
+        <div>
+          สัญญาลงวันที่ <BlankFill value={num(contractDay)} dots={12} /> / <BlankFill value={contractMonth} dots={15} /> / <BlankFill value={num(contractYearBE)} dots={12} />
+        </div>
+        <div>
+          เลขที่ <BlankFill value={num(contractNumber)} dots={36} />
+        </div>
+      </div>
+
+      <div className={styles.docTitle}>{title}</div>
+
+      <div className={styles.locationGrid}>
+        <div className={styles.locationLeft}>
+          ห้องพักเลขที่ <BlankFill value={num(roomNumber)} dots={15} />
+        </div>
+        <div className={styles.locationRight}>
+          <div>สัญญานี้ทำขึ้นที่ <BlankFill value={buildingName} dots={44} /></div>
+          <div><BlankFill block value={addrLineA} dots={71} /></div>
+          <div><BlankFill block value={addrLineB} dots={71} /></div>
+          <div className={styles.locationTel}>โทร. <BlankFill value={num(buildingPhone)} dots={62} /></div>
+        </div>
+      </div>
+    </>
+  );
+
+  interface TenantBlockData {
+    first: string;
+    last: string;
+    nick: string;
+    age: string;
+    idCard: string;
+    addr: ParsedAddress;
+    phone: string;
+    emName: string;
+    emPhone: string;
+    work: ParsedAddress;
+  }
+
+  // One tenant block of page 1 (rows mirror the original Word form line by line)
+  const renderTenantBlock = (
+    no: string,
+    prefixNode: React.ReactNode,
+    d: TenantBlockData
+  ) => (
+    <div className={styles.tenantDetailBlock}>
+      <div className={styles.formRow}>
+        <strong>ผู้เช่า {no}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
+      </div>
+      <div className={styles.formRow}>
+        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={35} /> อยู่บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
+      </div>
+      <div className={styles.formRow}>
+        หมู่ <BlankFill value={num(d.addr.moo)} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
+      </div>
+      <div className={styles.formRow}>
+        โทรศัพท์มือถือ <BlankFill value={num(d.phone)} dots={35} /> บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ
+      </div>
+      <div className={styles.formRowLeft}>
+        โปรดระบุ <BlankFill value={d.emName} dots={33} /> เบอร์ติดต่อ <BlankFill value={num(d.emPhone)} dots={35} />
+      </div>
+      <div className={styles.formGap} />
+      <div className={styles.formRow}>
+        ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา <BlankFill value={d.work.raw} dots={101} />
+      </div>
+      <div className={styles.formRow}>
+        เลขที่ <BlankFill value={num(d.work.houseNo)} dots={16} /> ถนน <BlankFill value={d.work.road} dots={45} /> หมู่ <BlankFill value={num(d.work.moo)} dots={12} /> ตำบล/แขวง <BlankFill value={d.work.subdistrict} dots={42} />
+      </div>
+      <div className={styles.formRow}>
+        อำเภอ/เขต <BlankFill value={d.work.district} dots={43} /> จังหวัด <BlankFill value={d.work.province} dots={36} /> โทรศัพท์ <BlankFill value={num(d.phone)} dots={36} />
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -860,244 +661,51 @@ export default function LeaseAgreementModal({
             {printLease && (
               <div className={styles.a4Sheet}>
                 <div className={styles.sheetContent}>
-                  {/* Top Right Header */}
-                  <div className={styles.docHeaderRight}>
-                    <div>
-                      สัญญาลงวันที่ <BlankFill value={num(contractDay)} minDots={8} /> /{' '}
-                      <BlankFill value={contractMonth} minDots={12} /> /{' '}
-                      <BlankFill value={num(contractYearBE)} minDots={8} />
-                    </div>
-                    <div>
-                      เลขที่ <BlankFill value={num(contractNumber)} minDots={20} />
-                    </div>
-                  </div>
-
-                  {/* Document Title */}
-                  <div className={styles.docTitle}>สัญญาเช่าห้องพัก</div>
-
-                  {/* Location and Building Details */}
-                  <div className={styles.locationGrid}>
-                    <div className={styles.locationLeft}>
-                      ห้องพักเลขที่ <BlankFill value={num(roomNumber)} minDots={12} />
-                    </div>
-                    <div className={styles.locationRight}>
-                      <div>
-                        สัญญานี้ทำขึ้นที่ <BlankFill value={buildingName} minDots={24} />
-                      </div>
-                      {addressLine1 && <div>{addressLine1}</div>}
-                      {addressLine2 && <div>{addressLine2}</div>}
-                      <div>
-                        โทร.{' '}
-                        <BlankFill
-                          value={num(buildingPhone)}
-                          minDots={25}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  {renderContractHeader('สัญญาเช่าห้องพัก')}
 
                   {/* Opening Paragraph */}
-                  <div className={styles.docParagraph}>
-                    สัญญานี้ทำขึ้นระหว่าง{' '}
-                    <BlankFill value={buildingName} minDots={35} />{' '}
-                    ซึ่งต่อไปในสัญญานี้ จะเรียกว่า “ผู้ให้เช่า” ฝ่ายหนึ่ง กับ “ผู้เช่า”
-                    อีกฝ่ายหนึ่ง ซึ่ง ผู้เช่า ในสัญญาฉบับนี้ลงนามผูกพันสัญญา จำนวน{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(2) : num(1)}
-                      minDots={4}
-                    />{' '}
-                    คน เพื่อพักอาศัยในห้องเช่าตามเลขที่ข้างต้น
-                    ปรากฏตามรายละเอียดดังนี้
+                  <div className={styles.docParagraph} style={{ marginBottom: '18pt' }}>
+                    สัญญานี้ทำขึ้นระหว่าง <BlankFill value={buildingName} dots={79} /> ซึ่งต่อไปในสัญญานี้ จะเรียกว่า “<strong>ผู้ให้เช่า</strong>” ฝ่ายหนึ่ง กับ “<strong>ผู้เช่า</strong>” อีกฝ่ายหนึ่ง ซึ่ง ผู้เช่า ในสัญญาฉบับนี้ลงนามผูกพันสัญญา จำนวน <BlankFill value={hasSecondTenant ? num(2) : num(1)} dots={11} /> คน เพื่อพักอาศัยในห้องเช่าตามเลขที่ข้างต้น ปรากฏตามรายละเอียดดังนี้
                   </div>
 
-                  {/* Tenant 1 Information */}
-                  <div className={styles.tenantDetailBlock}>
-                    <strong>ผู้เช่า ๑.</strong>{' '}
-                    {renderTitlePrefix(activeT1Prefix, setT1PrefixOverride)}
-                    <BlankFill
-                      value={t1Parsed.firstName || t1Parsed.fullName}
-                      minDots={22}
-                    />{' '}
-                    นามสกุล <BlankFill value={t1Parsed.lastName} minDots={22} />{' '}
-                    ชื่อเล่น <BlankFill value={t1Nickname} minDots={12} />
-                    <br />
-                    อายุ <BlankFill value={num(t1Age)} minDots={6} /> ปี
-                    บัตรประชาชนเลขที่ <BlankFill value={num(t1IdCard)} minDots={22} />{' '}
-                    อยู่บ้านเลขที่ <BlankFill value={num(t1Address.houseNo)} minDots={10} />{' '}
-                    ถนน <BlankFill value={t1Address.road} minDots={16} />
-                    <br />
-                    หมู่ <BlankFill value={num(t1Address.moo)} minDots={6} />{' '}
-                    ตำบล/แขวง <BlankFill value={t1Address.subdistrict} minDots={18} />{' '}
-                    อำเภอ/เขต <BlankFill value={t1Address.district} minDots={18} />{' '}
-                    จังหวัด <BlankFill value={t1Address.province} minDots={18} />
-                    <br />
-                    โทรศัพท์มือถือ <BlankFill value={num(t1Phone)} minDots={20} />{' '}
-                    บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ
-                    <br />
-                    โปรดระบุ{' '}
-                    <BlankFill
-                      value={
-                        t1EmergencyName
-                          ? `${t1EmergencyName}${t1EmergencyRel ? ` (${t1EmergencyRel})` : ''}`
-                          : ''
-                      }
-                      minDots={25}
-                    />{' '}
-                    เบอร์ติดต่อ <BlankFill value={num(t1EmergencyPhone)} minDots={22} />
-                    <br />
-                    ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา{' '}
-                    <BlankFill
-                      value={
-                        t1WorkAddress.raw ||
-                        (t1WorkAddress.houseNo ? t1WorkAddress.houseNo : '')
-                      }
-                      minDots={50}
-                    />
-                    <br />
-                    เลขที่ <BlankFill value={num(t1WorkAddress.houseNo)} minDots={12} />{' '}
-                    ถนน <BlankFill value={t1WorkAddress.road} minDots={20} />{' '}
-                    หมู่ <BlankFill value={num(t1WorkAddress.moo)} minDots={8} />{' '}
-                    ตำบล/แขวง <BlankFill value={t1WorkAddress.subdistrict} minDots={20} />
-                    <br />
-                    อำเภอ/เขต <BlankFill value={t1WorkAddress.district} minDots={20} />{' '}
-                    จังหวัด <BlankFill value={t1WorkAddress.province} minDots={20} />{' '}
-                    โทรศัพท์ <BlankFill value={num(t1Phone)} minDots={20} />
-                  </div>
+                  {renderTenantBlock(
+                    '๑',
+                    renderTitlePrefix(activeT1Prefix, setT1PrefixOverride),
+                    {
+                      first: t1Parsed.firstName || t1Parsed.fullName,
+                      last: t1Parsed.lastName,
+                      nick: t1Nickname,
+                      age: t1Age,
+                      idCard: t1IdCard,
+                      addr: t1Address,
+                      phone: t1Phone,
+                      emName: t1EmergencyName
+                        ? `${t1EmergencyName}${t1EmergencyRel ? ` (${t1EmergencyRel})` : ''}`
+                        : '',
+                      emPhone: t1EmergencyPhone,
+                      work: t1WorkAddress,
+                    }
+                  )}
 
-                  {/* Tenant 2 Information */}
-                  <div className={styles.tenantDetailBlock}>
-                    <strong>ผู้เช่า ๒.</strong>{' '}
-                    {renderTitlePrefix(activeT2Prefix, setT2PrefixOverride)}
-                    <BlankFill
-                      value={
-                        hasSecondTenant
-                          ? t2Parsed.firstName || t2Parsed.fullName
-                          : ''
-                      }
-                      minDots={22}
-                    />{' '}
-                    นามสกุล{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Parsed.lastName : ''}
-                      minDots={22}
-                    />{' '}
-                    ชื่อเล่น{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Nickname : ''}
-                      minDots={12}
-                    />
-                    <br />
-                    อายุ{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2Age) : ''}
-                      minDots={6}
-                    />{' '}
-                    ปี บัตรประชาชนเลขที่{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2IdCard) : ''}
-                      minDots={22}
-                    />{' '}
-                    อยู่บ้านเลขที่{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2Address.houseNo) : ''}
-                      minDots={10}
-                    />{' '}
-                    ถนน{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Address.road : ''}
-                      minDots={16}
-                    />
-                    <br />
-                    หมู่{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2Address.moo) : ''}
-                      minDots={6}
-                    />{' '}
-                    ตำบล/แขวง{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Address.subdistrict : ''}
-                      minDots={18}
-                    />{' '}
-                    อำเภอ/เขต{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Address.district : ''}
-                      minDots={18}
-                    />{' '}
-                    จังหวัด{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2Address.province : ''}
-                      minDots={18}
-                    />
-                    <br />
-                    โทรศัพท์มือถือ{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2Phone) : ''}
-                      minDots={20}
-                    />{' '}
-                    บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ
-                    <br />
-                    โปรดระบุ{' '}
-                    <BlankFill
-                      value={
+                  {renderTenantBlock(
+                    '๒',
+                    renderTitlePrefix(activeT2Prefix, setT2PrefixOverride),
+                    {
+                      first: hasSecondTenant ? t2Parsed.firstName || t2Parsed.fullName : '',
+                      last: hasSecondTenant ? t2Parsed.lastName : '',
+                      nick: hasSecondTenant ? t2Nickname : '',
+                      age: hasSecondTenant ? t2Age : '',
+                      idCard: hasSecondTenant ? t2IdCard : '',
+                      addr: hasSecondTenant ? t2Address : parseThaiAddress(''),
+                      phone: hasSecondTenant ? t2Phone : '',
+                      emName:
                         hasSecondTenant && t2EmergencyName
                           ? `${t2EmergencyName}${t2EmergencyRel ? ` (${t2EmergencyRel})` : ''}`
-                          : ''
-                      }
-                      minDots={25}
-                    />{' '}
-                    เบอร์ติดต่อ{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2EmergencyPhone) : ''}
-                      minDots={22}
-                    />
-                    <br />
-                    ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา{' '}
-                    <BlankFill
-                      value={
-                        hasSecondTenant
-                          ? t2WorkAddress.raw || t2WorkAddress.houseNo
-                          : ''
-                      }
-                      minDots={50}
-                    />
-                    <br />
-                    เลขที่{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2WorkAddress.houseNo) : ''}
-                      minDots={12}
-                    />{' '}
-                    ถนน{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2WorkAddress.road : ''}
-                      minDots={20}
-                    />{' '}
-                    หมู่{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2WorkAddress.moo) : ''}
-                      minDots={8}
-                    />{' '}
-                    ตำบล/แขวง{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2WorkAddress.subdistrict : ''}
-                      minDots={20}
-                    />
-                    <br />
-                    อำเภอ/เขต{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2WorkAddress.district : ''}
-                      minDots={20}
-                    />{' '}
-                    จังหวัด{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? t2WorkAddress.province : ''}
-                      minDots={20}
-                    />{' '}
-                    โทรศัพท์{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(t2Phone) : ''}
-                      minDots={20}
-                    />
-                  </div>
+                          : '',
+                      emPhone: hasSecondTenant ? t2EmergencyPhone : '',
+                      work: hasSecondTenant ? t2WorkAddress : parseThaiAddress(''),
+                    }
+                  )}
                 </div>
                 <div className={styles.sheetFooter}>หน้า {num(1)}</div>
               </div>
@@ -1120,10 +728,7 @@ export default function LeaseAgreementModal({
                       เพื่อใช้เป็นที่อยู่อาศัย ภายใต้กฎระเบียบและข้อบังคับ
                       ที่แนบท้ายสัญญา ซึ่งผู้ให้เช่ากำหนดไว้
                       โดยมีระยะเวลาการเช่าห้องพัก ไม่น้อยกว่า{' '}
-                      <BlankFill
-                        value={num(contractDurationMonths)}
-                        minDots={8}
-                      />{' '}
+                      <strong>{num(contractDurationMonths)}</strong>{' '}
                       เดือน
                     </div>
                   </div>
@@ -1132,7 +737,7 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseNum}>{num(2)}.</div>
                     <div className={styles.clauseText}>
                       ผู้ให้เช่าและผู้เช่า ตกลงค่าเช่าห้องพัก ในอัตราเดือนละ{' '}
-                      <BlankFill value={curr(totalRent)} minDots={16} /> บาท
+                      <BlankFill value={curr(totalRent)} dots={21} /> บาท
                     </div>
                   </div>
 
@@ -1146,7 +751,7 @@ export default function LeaseAgreementModal({
                         </div>
                         <div className={styles.subClauseText}>
                           เงินประกัน จำนวนเงิน{' '}
-                          <BlankFill value={curr(securityDeposit)} minDots={18} />{' '}
+                          <BlankFill value={curr(securityDeposit)} dots={30} />{' '}
                           บาท
                         </div>
                       </div>
@@ -1156,13 +761,13 @@ export default function LeaseAgreementModal({
                         </div>
                         <div className={styles.subClauseText}>
                           ค่าเช่าห้องในเดือนที่พัก เป็นจำนวนเงิน{' '}
-                          <BlankFill value={curr(firstMonthRent)} minDots={18} />{' '}
+                          <BlankFill value={curr(firstMonthRent)} dots={30} />{' '}
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '2rem', marginTop: '0.3rem' }}>
+                      <div style={{ paddingLeft: '25mm', marginBottom: '8pt' }}>
                         รวมจำนวนเงินที่ผู้เช่าได้ชำระในวันทำสัญญา เป็นจำนวนเงิน{' '}
-                        <BlankFill value={curr(totalInitialPay)} minDots={20} />{' '}
+                        <BlankFill value={curr(totalInitialPay)} dots={30} />{' '}
                         บาท
                       </div>
                     </div>
@@ -1270,7 +875,7 @@ export default function LeaseAgreementModal({
                 <div className={styles.sheetContent}>
                   <div
                     className={styles.docParagraph}
-                    style={{ marginTop: '2rem', marginBottom: '3.5rem' }}
+                    style={{ marginTop: '4mm' }}
                   >
                     คู่สัญญาได้อ่านและเข้าใจข้อความในสัญญานี้โดยตลอดแล้วเห็นว่าถูกต้อง
                     จึงได้ลงลายมือชื่อไว้เป็นสำคัญต่อหน้าพยาน
@@ -1288,7 +893,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={t1Parsed.fullName} minDots={30} /> )
+                          ( <BlankFill value={t1Parsed.fullName} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1304,7 +909,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} minDots={30} /> )
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1320,7 +925,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={buildingName} minDots={30} /> )
+                          ( <BlankFill value={buildingName} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1334,7 +939,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value="" minDots={30} /> )
+                          ( <BlankFill value="" dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1350,60 +955,14 @@ export default function LeaseAgreementModal({
             {printAsset && (
               <div className={styles.a4Sheet}>
                 <div className={styles.sheetContent}>
-                  {/* Top Right Header */}
-                  <div className={styles.docHeaderRight}>
-                    <div>
-                      สัญญาลงวันที่ <BlankFill value={num(contractDay)} minDots={8} /> /{' '}
-                      <BlankFill value={contractMonth} minDots={12} /> /{' '}
-                      <BlankFill value={num(contractYearBE)} minDots={8} />
-                    </div>
-                    <div>
-                      เลขที่ <BlankFill value={num(contractNumber)} minDots={20} />
-                    </div>
-                  </div>
-
-                  {/* Document Title */}
-                  <div className={styles.docTitle}>สัญญาเช่าทรัพย์สิน</div>
-
-                  {/* Location and Building Details */}
-                  <div className={styles.locationGrid}>
-                    <div className={styles.locationLeft}>
-                      ห้องพักเลขที่ <BlankFill value={num(roomNumber)} minDots={12} />
-                    </div>
-                    <div className={styles.locationRight}>
-                      <div>
-                        สัญญานี้ทำขึ้นที่ <BlankFill value={buildingName} minDots={24} />
-                      </div>
-                      {addressLine1 && <div>{addressLine1}</div>}
-                      {addressLine2 && <div>{addressLine2}</div>}
-                      <div>
-                        โทร.{' '}
-                        <BlankFill
-                          value={num(buildingPhone)}
-                          minDots={25}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  {renderContractHeader('สัญญาเช่าทรัพย์สิน')}
 
                   {/* Opening Paragraph */}
                   <div className={styles.docParagraph}>
-                    สัญญานี้ทำขึ้นระหว่าง{' '}
-                    <BlankFill value={buildingName} minDots={35} />{' '}
-                    ซึ่งต่อไปในสัญญานี้ จะเรียกว่า “ผู้ให้เช่า” ฝ่ายหนึ่ง กับ “ผู้เช่า”
-                    อีกฝ่ายหนึ่ง ซึ่ง ผู้เช่าในสัญญาฉบับนี้ลงนามผูกพันสัญญา จำนวน{' '}
-                    <BlankFill
-                      value={hasSecondTenant ? num(2) : num(1)}
-                      minDots={4}
-                    />{' '}
-                    คน เพื่อที่จะเช่าทรัพย์สิน อันได้แก่ โทรทัศน์, ตู้เย็น,
-                    ตู้เสื้อผ้า, เตียงนอน, ฟูก รวมทั้งเครื่องใช้ไฟฟ้า
-                    ที่มีอยู่ในห้องพักอาศัย โดยไม่รวมห้องเช่า ซึ่ง ผู้ให้เช่า
-                    ได้นำทรัพย์สินมาให้ผู้เช่า เช่าไว้{' '}
-                    <BlankFill value={curr(totalRent)} minDots={16} /> บาท
+                    สัญญานี้ทำขึ้นระหว่าง <BlankFill value={buildingName} dots={74} /> ซึ่งต่อไปในสัญญานี้ จะเรียกว่า “<strong>ผู้ให้เช่า</strong>” ฝ่ายหนึ่ง กับ “<strong>ผู้เช่า</strong>” อีกฝ่ายหนึ่ง ซึ่ง ผู้เช่าในสัญญาฉบับนี้ลงนามผูกพันสัญญา จำนวน <BlankFill value={hasSecondTenant ? num(2) : num(1)} dots={11} /> คน เพื่อที่จะเช่าทรัพย์สิน อันได้แก่ โทรทัศน์, ตู้เย็น, ตู้เสื้อผ้า, เตียงนอน, ฟูก รวมทั้งเครื่องใช้ไฟฟ้า ที่มีอยู่ในห้องพักอาศัย โดยไม่รวมห้องเช่า ซึ่ง ผู้ให้เช่า ได้นำทรัพย์สินมาให้ ผู้เช่า เช่าไว้ <BlankFill value={curr(totalRent)} dots={18} /> บาท
                   </div>
 
-                  <div className={styles.clauseHeader}>
+                  <div className={styles.clauseHeader} style={{ textAlign: 'left', marginTop: '25pt' }}>
                     คู่สัญญาตกลงทำสัญญาเช่า โดยมีรายละเอียดดังนี้
                   </div>
 
@@ -1426,7 +985,7 @@ export default function LeaseAgreementModal({
                         </div>
                         <div className={styles.subClauseText}>
                           อัตราการเช่าห้องพัก{' '}
-                          <BlankFill value={curr(roomRentShare)} minDots={18} />{' '}
+                          <BlankFill value={curr(roomRentShare)} dots={34} />{' '}
                           บาท
                         </div>
                       </div>
@@ -1436,13 +995,13 @@ export default function LeaseAgreementModal({
                         </div>
                         <div className={styles.subClauseText}>
                           อัตราการเช่าทรัพย์สินภายในห้องพัก{' '}
-                          <BlankFill value={curr(assetRentShare)} minDots={18} />{' '}
+                          <BlankFill value={curr(assetRentShare)} dots={34} />{' '}
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '2rem', marginTop: '0.3rem' }}>
+                      <div style={{ paddingLeft: '25mm', marginBottom: '8pt' }}>
                         รวมค่าเช่าห้องต่อรายเดือน{' '}
-                        <BlankFill value={curr(totalRent)} minDots={18} /> บาท
+                        <BlankFill value={curr(totalRent)} dots={34} /> บาท
                       </div>
                     </div>
                   </div>
@@ -1502,7 +1061,7 @@ export default function LeaseAgreementModal({
                 <div className={styles.sheetContent}>
                   <div
                     className={styles.docParagraph}
-                    style={{ marginTop: '2rem', marginBottom: '3.5rem' }}
+                    style={{ marginTop: '4mm' }}
                   >
                     คู่สัญญาได้อ่านและเข้าใจข้อความในสัญญานี้โดยตลอดแล้วเห็นว่าถูกต้อง
                     จึงได้ลงลายมือชื่อไว้เป็นสำคัญต่อหน้าพยาน
@@ -1520,7 +1079,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={t1Parsed.fullName} minDots={30} /> )
+                          ( <BlankFill value={t1Parsed.fullName} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1536,7 +1095,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} minDots={30} /> )
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1552,7 +1111,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={buildingName} minDots={30} /> )
+                          ( <BlankFill value={buildingName} dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1566,7 +1125,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value="" minDots={30} /> )
+                          ( <BlankFill value="" dots={23} /> )
                         </span>
                       </div>
                     </div>
@@ -1593,7 +1152,7 @@ export default function LeaseAgreementModal({
                       {num(5)} ของเดือนถัดไป หากเกินกำหนด ผู้เช่าจะต้องเสียค่าปรับวันละ{' '}
                       <BlankFill
                         value={lateFeeVal ? num(lateFeeVal) : ''}
-                        minDots={10}
+                        dots={10}
                       />{' '}
                       บาท
                     </div>
@@ -1742,7 +1301,7 @@ export default function LeaseAgreementModal({
                       ผู้เช่า ๑:{' '}
                       <BlankFill
                         value={t1Parsed.fullName}
-                        minDots={30}
+                        dots={30}
                       />
                     </div>
                     <div className={styles.idCardFrame}>
@@ -1767,11 +1326,11 @@ export default function LeaseAgreementModal({
                       <div className={styles.certifySignLine}>
                         (ลงชื่อ) ............................................................................ ผู้เช่า ๑
                       </div>
-                      <div style={{ fontSize: '14.5px', marginBottom: '0.25rem' }}>
+                      <div style={{ marginBottom: '0.25rem' }}>
                         (&nbsp;
                         <BlankFill
                           value={t1Parsed.fullName}
-                          minDots={28}
+                          dots={28}
                         />
                         &nbsp;)
                       </div>
@@ -1788,7 +1347,7 @@ export default function LeaseAgreementModal({
                         ผู้เช่า ๒:{' '}
                         <BlankFill
                           value={t2Parsed.fullName}
-                          minDots={30}
+                          dots={30}
                         />
                       </div>
                       <div className={styles.idCardFrame}>
@@ -1813,11 +1372,11 @@ export default function LeaseAgreementModal({
                         <div className={styles.certifySignLine}>
                           (ลงชื่อ) ............................................................................ ผู้เช่า ๒
                         </div>
-                        <div style={{ fontSize: '14.5px', marginBottom: '0.25rem' }}>
+                        <div style={{ marginBottom: '0.25rem' }}>
                           (&nbsp;
                           <BlankFill
                             value={t2Parsed.fullName}
-                            minDots={28}
+                            dots={28}
                           />
                           &nbsp;)
                         </div>
