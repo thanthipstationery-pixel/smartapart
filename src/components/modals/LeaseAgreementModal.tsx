@@ -686,7 +686,7 @@ export default function LeaseAgreementModal({
                       เพื่อใช้เป็นที่อยู่อาศัย ภายใต้กฎระเบียบและข้อบังคับ
                       ที่แนบท้ายสัญญา ซึ่งผู้ให้เช่ากำหนดไว้
                       โดยมีระยะเวลาการเช่าห้องพัก ไม่น้อยกว่า{' '}
-                      <strong>{num(contractDurationMonths)}</strong>{' '}
+                      <BlankFill value={num(contractDurationMonths)} dots={12} />{' '}
                       เดือน
                     </div>
                   </div>
@@ -723,7 +723,7 @@ export default function LeaseAgreementModal({
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '25mm', marginBottom: '8pt' }}>
+                      <div style={{ paddingLeft: '11mm', marginBottom: '8pt', whiteSpace: 'nowrap' }}>
                         รวมจำนวนเงินที่ผู้เช่าได้ชำระในวันทำสัญญา เป็นจำนวนเงิน{' '}
                         <BlankFill value={curr(totalInitialPay)} dots={30} />{' '}
                         บาท
@@ -959,7 +959,7 @@ export default function LeaseAgreementModal({
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '25mm', marginBottom: '8pt' }}>
+                      <div style={{ paddingLeft: '11mm', marginBottom: '8pt', whiteSpace: 'nowrap' }}>
                         รวมค่าเช่าห้องต่อรายเดือน{' '}
                         <BlankFill value={curr(totalRent)} dots={34} /> บาท
                       </div>

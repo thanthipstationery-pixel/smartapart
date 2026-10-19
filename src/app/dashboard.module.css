@@ -1201,6 +1201,25 @@
 
 .tenantDesktopTable {
   display: block;
+  margin: 0 -0.75rem;
+}
+
+.sectionCard .tenantDesktopTable table th {
+  padding: 0.45rem 0.35rem !important;
+}
+
+.sectionCard .tenantDesktopTable table td {
+  padding: 0.7rem 0.35rem !important;
+}
+
+.sectionCard .tenantDesktopTable table th:first-child,
+.sectionCard .tenantDesktopTable table td:first-child {
+  padding-left: 0.75rem !important;
+}
+
+.sectionCard .tenantDesktopTable table th:last-child,
+.sectionCard .tenantDesktopTable table td:last-child {
+  padding-right: 0.75rem !important;
 }
 
 .tenantMobileList {

@@ -46,7 +46,7 @@ async function captureLeaseScreenshots() {
     console.log('3️⃣ Clicking "📄 สัญญาเช่า" on first tenant...');
     const clicked = await page.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
-      const leaseBtn = btns.find(b => b.textContent && b.textContent.includes('สัญญาเช่า'));
+      const leaseBtn = btns.find(b => b.textContent && b.textContent.includes('📄 สัญญา') && b.offsetParent !== null);
       if (leaseBtn) {
         leaseBtn.click();
         return true;

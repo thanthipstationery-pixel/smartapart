@@ -388,7 +388,7 @@
 .subClauseItem {
   display: flex;
   align-items: flex-start;
-  padding-left: 14mm;
+  padding-left: 0;
   margin: 0 0 8pt 0;
 }
 
@@ -399,6 +399,7 @@
 
 .subClauseText {
   flex: 1;
+  white-space: nowrap;
 }
 
 /* Fillable field: real dot leaders (identical to the printed blank form)

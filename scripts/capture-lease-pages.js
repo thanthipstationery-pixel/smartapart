@@ -28,7 +28,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     });
     await sleep(1500);
     await page.evaluate(() => {
-      const b = Array.from(document.querySelectorAll('button')).find((x) => x.textContent && x.textContent.includes('สัญญาเช่า'));
+      const b = Array.from(document.querySelectorAll('button')).find((x) => x.textContent && x.textContent.includes('📄 สัญญา') && x.offsetParent !== null);
       if (b) b.click();
     });
     await sleep(2000);

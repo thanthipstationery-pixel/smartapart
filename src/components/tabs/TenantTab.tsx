@@ -177,24 +177,24 @@ export default function TenantTab({
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ backgroundColor: 'var(--bg-color)', borderBottom: '2px solid var(--border-color)' }}>
-                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ห้องพัก</th>
-                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>อาคาร / ตึก</th>
-                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ชื่อ-นามสกุล</th>
-                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เบอร์โทรศัพท์</th>
-                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เลขบัตรประชาชน</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ห้องพัก</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>อาคาร</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>ชื่อ-นามสกุล</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เบอร์โทรศัพท์</th>
+                        <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เลขบัตรประชาชน</th>
                         {tenantStatusTab === 'ACTIVE' ? (
                           <>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่เข้าพัก</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินมัดจำประกัน</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>สถานะ</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>จัดการ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันเข้าพัก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินประกัน</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>สถานะ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap', textAlign: 'center' }}>จัดการ</th>
                           </>
                         ) : (
                           <>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่เข้าพัก</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันที่ย้ายออก</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินมัดจำประกัน</th>
-                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>หมายเหตุ</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันเข้าพัก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>วันย้ายออก</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>เงินประกัน</th>
+                            <th style={{ padding: '0.75rem 0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap' }}>หมายเหตุ</th>
                           </>
                         )}
                       </tr>
@@ -210,52 +210,52 @@ export default function TenantTab({
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-color)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         >
-                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold', color: 'var(--primary-color)', whiteSpace: 'nowrap', fontSize: '0.95rem' }}>
+                          <td style={{ fontWeight: 'bold', color: 'var(--primary-color)', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
                             🏠 {t.room?.number || '-'}
                           </td>
-                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
+                          <td style={{ fontWeight: 600, fontSize: '0.88rem', whiteSpace: 'nowrap', maxWidth: '95px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={t.room?.floor?.building?.name}>
                             {getShortBuildingName(t.room?.floor?.building?.name) || '-'}
                           </td>
-                          <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', minWidth: '140px' }}>
+                          <td style={{ fontWeight: 600, fontSize: '0.9rem', minWidth: '100px' }}>
                             {t.name}
                           </td>
-                          <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap' }}>
+                          <td style={{ whiteSpace: 'nowrap' }}>
                             {t.phone ? (
-                              <a href={`tel:${t.phone}`} style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500, fontSize: '0.95rem' }}>
-                                📞 {formatPhone(t.phone)}
+                              <a href={`tel:${t.phone}`} style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: 500, fontSize: '0.88rem' }}>
+                                {formatPhone(t.phone)}
                               </a>
                             ) : (
                               '-'
                             )}
                           </td>
-                          <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
+                          <td style={{ fontSize: '0.82rem', fontFamily: 'monospace', letterSpacing: '-0.02em', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                             {formatIdCard(t.idCard)}
                           </td>
                           {tenantStatusTab === 'ACTIVE' ? (
                             <>
-                              <td style={{ padding: '0.75rem 0.5rem', fontSize: '0.9rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
+                              <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                                 {t.startDate ? formatThaiDateNumeric(t.startDate) : '-'}
                               </td>
-                              <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}>
-                                {(t.securityDeposit || 0).toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>บาท</span>
+                              <td style={{ fontWeight: 600, fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
+                                {(t.securityDeposit || 0).toLocaleString()} <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>บ.</span>
                               </td>
-                              <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap' }}>
-                                <span className={`${styles.invoiceBadge} ${styles.badgePaid}`} style={{ fontSize: '0.75rem', padding: '0.35rem 0.65rem' }}>
-                                  พักอาศัยอยู่
+                              <td style={{ whiteSpace: 'nowrap' }}>
+                                <span className={`${styles.invoiceBadge} ${styles.badgePaid}`} style={{ fontSize: '0.72rem', padding: '0.25rem 0.5rem' }}>
+                                  เข้าพัก
                                 </span>
                               </td>
-                              <td style={{ padding: '0.75rem 0.5rem', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                                <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', justifyContent: 'center' }}>
+                              <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
+                                <div style={{ display: 'inline-flex', gap: '0.3rem', alignItems: 'center', justifyContent: 'center' }}>
                                   {handleOpenLeaseAgreement && (
                                     <button
                                       type="button"
                                       className={`${styles.btn}`}
                                       style={{
-                                        padding: '0.4rem 0.75rem',
-                                        fontSize: '0.85rem',
+                                        padding: '0.32rem 0.6rem',
+                                        fontSize: '0.8rem',
                                         display: 'inline-flex',
                                         alignItems: 'center',
-                                        gap: '0.3rem',
+                                        gap: '0.2rem',
                                         borderRadius: 'var(--radius-md)',
                                         fontWeight: 600,
                                         backgroundColor: 'var(--card-bg)',
@@ -266,7 +266,7 @@ export default function TenantTab({
                                       title="เปิดดูและพิมพ์เอกสารสัญญาเช่า (7 หน้า A4)"
                                       onClick={() => handleOpenLeaseAgreement(t.room, t)}
                                     >
-                                      📄 สัญญาเช่า
+                                      📄 สัญญา
                                     </button>
                                   )}
                                   <button
@@ -275,11 +275,11 @@ export default function TenantTab({
                                     disabled={isViewer}
                                     title={isViewer ? 'บัญชีโหมดตรวจการ (Read-Only) ไม่มีสิทธิ์แก้ไขข้อมูลผู้เช่า' : undefined}
                                     style={{
-                                      padding: '0.4rem 0.8rem',
-                                      fontSize: '0.85rem',
+                                      padding: '0.32rem 0.6rem',
+                                      fontSize: '0.8rem',
                                       display: 'inline-flex',
                                       alignItems: 'center',
-                                      gap: '0.3rem',
+                                      gap: '0.2rem',
                                       borderRadius: 'var(--radius-md)',
                                       fontWeight: 600,
                                       opacity: isViewer ? 0.6 : 1,
