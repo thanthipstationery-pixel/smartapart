@@ -398,49 +398,127 @@
   padding: 0 4px;
 }
 
+/* Dotted Fillable Fields (Text on dotted line) */
+.dottedBlankContainer {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  vertical-align: baseline;
+  padding: 0 2px;
+  margin: 0 1px;
+}
+
+.dottedBackgroundLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  border-bottom: 1.5px dotted #666666;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dottedValueText {
+  position: relative;
+  z-index: 2;
+  font-weight: 600;
+  color: #000000;
+  background-color: #ffffff;
+  padding: 0 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.emptyDottedPlaceholder {
+  display: inline-block;
+  width: 100%;
+  visibility: hidden;
+}
+
+/* Prefix / Gender Title Strikethrough */
+.prefixGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-right: 0.25rem;
+}
+
+.strikethroughPrefix {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: #000000;
+  color: #666666;
+  padding: 0 2px;
+  transition: all 0.15s ease;
+}
+
+.activePrefix {
+  font-weight: 700;
+  color: #000000;
+  padding: 0 2px;
+}
+
+.normalPrefix {
+  color: #333333;
+  padding: 0 2px;
+}
+
 /* Signatures */
 .signatureSection {
   margin-top: 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
-  padding-left: 3rem;
+  gap: 1.75rem;
+  padding-left: 2.5rem;
   padding-right: 1rem;
 }
 
-.signatureItem {
+.signatureBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.signatureRow {
   display: flex;
   align-items: flex-end;
   gap: 0.5rem;
+  height: 38px;
 }
 
 .signatureLabel {
-  min-width: 60px;
+  width: 50px;
   font-size: 15px;
-}
-
-.signatureLineBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 280px;
+  padding-bottom: 1px;
+  flex-shrink: 0;
 }
 
 .signatureLine {
-  width: 100%;
+  width: 320px;
+  flex-shrink: 0;
   border-bottom: 1px solid #000000;
-  height: 24px;
-  margin-bottom: 4px;
+  margin-bottom: 5px; /* Elevated slightly higher than baseline of ลงชื่อ */
+}
+
+.signatureRole {
+  font-size: 15px;
+  padding-bottom: 1px;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.signatureNameRow {
+  display: flex;
+  justify-content: center;
+  width: 320px;
+  margin-left: calc(50px + 0.5rem);
+  margin-top: 6px;
 }
 
 .signatureName {
   font-size: 14.5px;
   color: #222222;
-}
-
-.signatureRole {
-  margin-left: 0.5rem;
-  font-size: 15px;
+  text-align: center;
 }
 
 /* Rules Page */

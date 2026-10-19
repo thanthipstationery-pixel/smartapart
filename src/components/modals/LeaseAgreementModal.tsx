@@ -129,6 +129,10 @@ export default function LeaseAgreementModal({
   const [useThaiNumerals, setUseThaiNumerals] = useState(true);
   const [zoomScale, setZoomScale] = useState<number>(0.9);
 
+  // Gender / Title prefix states (allows clicking in preview to toggle if needed)
+  const [t1PrefixOverride, setT1PrefixOverride] = useState<string | null>(null);
+  const [t2PrefixOverride, setT2PrefixOverride] = useState<string | null>(null);
+
   const printableContainerRef = useRef<HTMLDivElement>(null);
 
   if (!showModal) return null;
@@ -385,42 +389,110 @@ export default function LeaseAgreementModal({
     .${styles.subClauseText} {
       flex: 1;
     }
+    .${styles.dottedBlankContainer} {
+      display: inline-flex !important;
+      position: relative !important;
+      align-items: center !important;
+      justify-content: center !important;
+      vertical-align: baseline !important;
+      padding: 0 2px !important;
+      margin: 0 1px !important;
+    }
+    .${styles.dottedBackgroundLine} {
+      position: absolute !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 3px !important;
+      border-bottom: 1.5px dotted #000000 !important;
+      pointer-events: none !important;
+      z-index: 1 !important;
+    }
+    .${styles.dottedValueText} {
+      position: relative !important;
+      z-index: 2 !important;
+      font-weight: 600 !important;
+      color: #000000 !important;
+      background-color: #ffffff !important;
+      padding: 0 4px !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .${styles.emptyDottedPlaceholder} {
+      display: inline-block !important;
+      width: 100% !important;
+      visibility: hidden !important;
+    }
+    .${styles.prefixGroup} {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.2rem !important;
+      margin-right: 0.25rem !important;
+    }
+    .${styles.strikethroughPrefix} {
+      text-decoration: line-through !important;
+      text-decoration-thickness: 1.5px !important;
+      text-decoration-color: #000000 !important;
+      color: #555555 !important;
+      padding: 0 2px !important;
+    }
+    .${styles.activePrefix} {
+      font-weight: 700 !important;
+      color: #000000 !important;
+      padding: 0 2px !important;
+    }
+    .${styles.normalPrefix} {
+      color: #000000 !important;
+      padding: 0 2px !important;
+    }
     .${styles.signatureSection} {
       margin-top: 2rem;
       display: flex;
       flex-direction: column;
-      gap: 2.25rem;
-      padding-left: 3rem;
+      gap: 1.75rem;
+      padding-left: 2.5rem;
       padding-right: 1rem;
     }
-    .${styles.signatureItem} {
+    .${styles.signatureBlock} {
+      display: flex;
+      flex-direction: column;
+    }
+    .${styles.signatureRow} {
       display: flex;
       align-items: flex-end;
       gap: 0.5rem;
+      height: 38px;
     }
     .${styles.signatureLabel} {
-      min-width: 60px;
+      width: 50px;
       font-size: 15px;
-    }
-    .${styles.signatureLineBox} {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 280px;
+      padding-bottom: 1px;
+      flex-shrink: 0;
     }
     .${styles.signatureLine} {
-      width: 100%;
+      width: 320px;
+      flex-shrink: 0;
       border-bottom: 1px solid #000000;
-      height: 24px;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
+    }
+    .${styles.signatureRole} {
+      font-size: 15px;
+      padding-bottom: 1px;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .${styles.signatureNameRow} {
+      display: flex;
+      justify-content: center;
+      width: 320px;
+      margin-left: calc(50px + 0.5rem);
+      margin-top: 6px;
     }
     .${styles.signatureName} {
       font-size: 14.5px;
       color: #222222;
-    }
-    .${styles.signatureRole} {
-      margin-left: 0.5rem;
-      font-size: 15px;
+      text-align: center;
     }
     .${styles.ruleItem} {
       display: flex;
@@ -537,24 +609,91 @@ export default function LeaseAgreementModal({
     };
   };
 
-  // Blank filler component
+  const activeT1Prefix = t1PrefixOverride !== null ? t1PrefixOverride : t1Parsed.prefix;
+  const activeT2Prefix = t2PrefixOverride !== null ? t2PrefixOverride : t2Parsed.prefix;
+
+  // Render prefix titles with automatic strikethrough for unused titles
+  const renderTitlePrefix = (
+    prefix: string | undefined,
+    onSelect: (p: string) => void
+  ) => {
+    const norm = (prefix || '').trim();
+    const isMr = norm === 'นาย';
+    const isMiss = norm === 'นางสาว' || norm === 'น.ส.' || norm === 'น.ส';
+    const isMrs = norm === 'นาง';
+
+    return (
+      <span className={styles.prefixGroup} title="คลิกเพื่อเลือก/เปลี่ยนคำนำหน้าชื่อ">
+        <span
+          className={
+            isMr
+              ? styles.activePrefix
+              : isMiss || isMrs
+              ? styles.strikethroughPrefix
+              : styles.normalPrefix
+          }
+          onClick={() => onSelect('นาย')}
+          style={{ cursor: 'pointer' }}
+        >
+          นาย
+        </span>
+        {' / '}
+        <span
+          className={
+            isMrs
+              ? styles.activePrefix
+              : isMr || isMiss
+              ? styles.strikethroughPrefix
+              : styles.normalPrefix
+          }
+          onClick={() => onSelect('นาง')}
+          style={{ cursor: 'pointer' }}
+        >
+          นาง
+        </span>
+        {' / '}
+        <span
+          className={
+            isMiss
+              ? styles.activePrefix
+              : isMr || isMrs
+              ? styles.strikethroughPrefix
+              : styles.normalPrefix
+          }
+          onClick={() => onSelect('นางสาว')}
+          style={{ cursor: 'pointer' }}
+        >
+          นางสาว
+        </span>
+      </span>
+    );
+  };
+
+  // Blank filler component with centered text sitting over fixed dotted line
   const BlankFill = ({
     value,
     minDots = 15,
+    minWidth,
   }: {
     value?: string | number | null;
     minDots?: number;
+    minWidth?: string;
   }) => {
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      return (
-        <span style={{ fontWeight: 600, padding: '0 3px' }}>
-          {String(value).trim()}
-        </span>
-      );
-    }
+    const strVal =
+      value !== undefined && value !== null ? String(value).trim() : '';
+    const calculatedMinWidth = minWidth || `${Math.max(30, minDots * 6)}px`;
+
     return (
-      <span style={{ letterSpacing: '2px', color: '#666' }}>
-        {'.'.repeat(minDots)}
+      <span
+        className={styles.dottedBlankContainer}
+        style={{ minWidth: calculatedMinWidth }}
+      >
+        <span className={styles.dottedBackgroundLine} aria-hidden="true" />
+        {strVal ? (
+          <span className={styles.dottedValueText}>{strVal}</span>
+        ) : (
+          <span className={styles.emptyDottedPlaceholder}>&nbsp;</span>
+        )}
       </span>
     );
   };
@@ -767,7 +906,8 @@ export default function LeaseAgreementModal({
 
                   {/* Tenant 1 Information */}
                   <div className={styles.tenantDetailBlock}>
-                    <strong>ผู้เช่า ๑.</strong> นาย / นาง / นางสาว{' '}
+                    <strong>ผู้เช่า ๑.</strong>{' '}
+                    {renderTitlePrefix(activeT1Prefix, setT1PrefixOverride)}
                     <BlankFill
                       value={t1Parsed.firstName || t1Parsed.fullName}
                       minDots={22}
@@ -820,7 +960,8 @@ export default function LeaseAgreementModal({
 
                   {/* Tenant 2 Information */}
                   <div className={styles.tenantDetailBlock}>
-                    <strong>ผู้เช่า ๒.</strong> นาย / นาง / นางสาว{' '}
+                    <strong>ผู้เช่า ๒.</strong>{' '}
+                    {renderTitlePrefix(activeT2Prefix, setT2PrefixOverride)}
                     <BlankFill
                       value={
                         hasSecondTenant
@@ -1131,73 +1272,65 @@ export default function LeaseAgreementModal({
 
                   <div className={styles.signatureSection}>
                     {/* Tenant 1 Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill
-                            value={t1Parsed.fullName}
-                            minDots={32}
-                          />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้เช่า ๑ และเช่าทรัพย์สิน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้เช่า ๑ และเช่าทรัพย์สิน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={t1Parsed.fullName} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Tenant 2 Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill
-                            value={
-                              hasSecondTenant ? t2Parsed.fullName : ''
-                            }
-                            minDots={32}
-                          />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้เช่า ๒ และเช่าทรัพย์สิน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้เช่า ๒ และเช่าทรัพย์สิน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Lessor / Agent Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill value={buildingName} minDots={32} />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้ให้เช่า / ตัวแทน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้ให้เช่า / ตัวแทน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={buildingName} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Witness Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>พยาน</span>
+                      </div>
+                      <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill value="" minDots={32} />{' '}
-                          )
+                          ( <BlankFill value="" minDots={30} /> )
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>พยาน</span>
                     </div>
                   </div>
                 </div>
@@ -1371,73 +1504,65 @@ export default function LeaseAgreementModal({
 
                   <div className={styles.signatureSection}>
                     {/* Tenant 1 Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill
-                            value={t1Parsed.fullName}
-                            minDots={32}
-                          />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้เช่า ๑ และเช่าทรัพย์สิน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้เช่า ๑ และเช่าทรัพย์สิน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={t1Parsed.fullName} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Tenant 2 Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill
-                            value={
-                              hasSecondTenant ? t2Parsed.fullName : ''
-                            }
-                            minDots={32}
-                          />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้เช่า ๒ และเช่าทรัพย์สิน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้เช่า ๒ และเช่าทรัพย์สิน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Lessor / Agent Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
-                        <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill value={buildingName} minDots={32} />{' '}
-                          )
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>
+                          ผู้ให้เช่า / ตัวแทน
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>
-                        ผู้ให้เช่า / ตัวแทน
-                      </span>
+                      <div className={styles.signatureNameRow}>
+                        <span className={styles.signatureName}>
+                          ( <BlankFill value={buildingName} minDots={30} /> )
+                        </span>
+                      </div>
                     </div>
 
                     {/* Witness Signature */}
-                    <div className={styles.signatureItem}>
-                      <span className={styles.signatureLabel}>ลงชื่อ</span>
-                      <div className={styles.signatureLineBox}>
-                        <div className={styles.signatureLine}></div>
+                    <div className={styles.signatureBlock}>
+                      <div className={styles.signatureRow}>
+                        <span className={styles.signatureLabel}>ลงชื่อ</span>
+                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureRole}>พยาน</span>
+                      </div>
+                      <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ({' '}
-                          <BlankFill value="" minDots={32} />{' '}
-                          )
+                          ( <BlankFill value="" minDots={30} /> )
                         </span>
                       </div>
-                      <span className={styles.signatureRole}>พยาน</span>
                     </div>
                   </div>
                 </div>

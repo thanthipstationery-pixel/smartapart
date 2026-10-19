@@ -63,16 +63,25 @@ async function captureLeaseScreenshots() {
     // 5. Scroll down to Page 2 (Clauses 1-13)
     await page.evaluate(() => {
       const scrollEl = document.querySelector('[class*="previewScroll"]');
-      if (scrollEl) scrollEl.scrollTop = 1100;
+      if (scrollEl) scrollEl.scrollTop = 1150;
     });
     await new Promise(r => setTimeout(r, 800));
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03-lease-modal-page2.png') });
     console.log('   📸 Captured: 03-lease-modal-page2.png (Page 2: ข้อตกลง ๑๓ ข้อ)');
 
+    // 5.1 Scroll down to Page 3 (Signatures with elevated line and centered name)
+    await page.evaluate(() => {
+      const scrollEl = document.querySelector('[class*="previewScroll"]');
+      if (scrollEl) scrollEl.scrollTop = 2250;
+    });
+    await new Promise(r => setTimeout(r, 800));
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03b-lease-modal-page3-signatures.png') });
+    console.log('   📸 Captured: 03b-lease-modal-page3-signatures.png (Page 3: ลายมือชื่อคู่สัญญา)');
+
     // 6. Scroll down to Page 4 (Asset agreement: clause 2.1 1,000 THB + clause 2.2 asset share)
     await page.evaluate(() => {
       const scrollEl = document.querySelector('[class*="previewScroll"]');
-      if (scrollEl) scrollEl.scrollTop = 3200;
+      if (scrollEl) scrollEl.scrollTop = 3400;
     });
     await new Promise(r => setTimeout(r, 800));
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '04-lease-modal-page4.png') });
@@ -96,21 +105,37 @@ async function captureLeaseScreenshots() {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06-lease-modal-page7-idcard.png') });
     console.log('   📸 Captured: 06-lease-modal-page7-idcard.png (Page 7: สำเนาบัตรประชาชนผู้เช่า)');
 
-    // 9. Mobile Viewport (iPhone 14 / 390x844)
+    // 9. Switch to Mobile Viewport (iPhone 14 / 390x844)
     console.log('9️⃣ Testing Mobile Viewport (390x844)...');
     await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-    await new Promise(r => setTimeout(r, 1500));
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07-mobile-lease-agreement-modal.png') });
-    console.log('   📸 Captured: 07-mobile-lease-agreement-modal.png (Mobile responsiveness)');
+    await new Promise(r => setTimeout(r, 1000));
 
-    // 10. Close Modal on Mobile and check Mobile Tenant Tab
+    // Close any open desktop modal if present
     await page.evaluate(() => {
       const closeBtn = document.querySelector('button[title*="ปิด"], [class*="modalClose"], button[aria-label="close"]');
       if (closeBtn) closeBtn.click();
     });
     await new Promise(r => setTimeout(r, 1000));
+
+    // Click "ผู้เช่า" tab on mobile bottom navigation
+    await page.evaluate(() => {
+      const allButtons = Array.from(document.querySelectorAll('button'));
+      const tenantBtn = allButtons.find(b => b.textContent && b.textContent.includes('ผู้เช่า'));
+      if (tenantBtn) tenantBtn.click();
+    });
+    await new Promise(r => setTimeout(r, 1500));
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '08-mobile-tenant-list-cards.png') });
     console.log('   📸 Captured: 08-mobile-tenant-list-cards.png (Mobile tenant cards with contract buttons)');
+
+    // Open Lease Agreement Modal from Mobile Tenant Tab
+    await page.evaluate(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      const leaseBtn = btns.find(b => b.textContent && b.textContent.includes('สัญญาเช่า'));
+      if (leaseBtn) leaseBtn.click();
+    });
+    await new Promise(r => setTimeout(r, 1500));
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07-mobile-lease-agreement-modal.png') });
+    console.log('   📸 Captured: 07-mobile-lease-agreement-modal.png (Mobile responsiveness)');
 
     console.log('✅ ALL SCREENSHOTS SUCCESSFULLY CAPTURED!');
   } catch (err) {
