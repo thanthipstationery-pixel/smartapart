@@ -277,16 +277,16 @@
 /* Document Components */
 .docHeaderRight {
   text-align: right;
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
+  margin-bottom: 1rem;
+  line-height: 1.85;
   font-size: 15px;
 }
 
 .docTitle {
   text-align: center;
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
-  margin: 0.5rem 0 1.25rem 0;
+  margin: 0.6rem 0 1.35rem 0;
   letter-spacing: 0.02em;
 }
 
@@ -294,61 +294,62 @@
   text-align: center;
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .locationGrid {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.35rem;
   gap: 1.5rem;
 }
 
 .locationLeft {
   flex: 1;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 2.0;
 }
 
 .locationRight {
   flex: 1.5;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.85;
 }
 
 .docParagraph {
   text-indent: 2.5rem;
   text-align: justify;
   text-justify: inter-cluster;
-  margin-bottom: 0.85rem;
-  line-height: 1.6;
+  margin-bottom: 1.35rem;
+  line-height: 2.15;
 }
 
 .tenantSectionTitle {
   font-weight: 700;
-  margin-top: 0.75rem;
-  margin-bottom: 0.35rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .tenantDetailBlock {
-  margin-bottom: 0.85rem;
-  line-height: 1.6;
+  margin-bottom: 1.35rem;
+  line-height: 2.25;
   text-align: justify;
+  font-size: 15px;
 }
 
 /* Clauses List */
 .clauseHeader {
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.95rem;
   font-size: 15.5px;
 }
 
 .clauseItem {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 0.55rem;
-  line-height: 1.55;
+  margin-bottom: 0.75rem;
+  line-height: 1.85;
   text-align: justify;
   text-justify: inter-cluster;
 }
@@ -367,9 +368,9 @@
   display: flex;
   align-items: flex-start;
   padding-left: 2rem;
-  margin-top: 0.3rem;
-  margin-bottom: 0.3rem;
-  line-height: 1.5;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.85;
 }
 
 .subClauseNum {
@@ -413,7 +414,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 3px;
+  bottom: 4px;
   border-bottom: 1.5px dotted #666666;
   pointer-events: none;
   z-index: 1;
@@ -466,10 +467,10 @@
 
 /* Signatures */
 .signatureSection {
-  margin-top: 2rem;
+  margin-top: 3.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 3.25rem;
   padding-left: 2.5rem;
   padding-right: 1rem;
 }

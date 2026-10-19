@@ -275,7 +275,7 @@ export default function LeaseAgreementModal({
       color: #000000 !important;
       font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PSK', Arial, sans-serif !important;
       font-size: 15px;
-      line-height: 1.55;
+      line-height: 1.85;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -311,57 +311,63 @@ export default function LeaseAgreementModal({
     }
     .${styles.docHeaderRight} {
       text-align: right;
-      margin-bottom: 0.75rem;
-      line-height: 1.5;
+      margin-bottom: 1rem;
+      line-height: 1.85;
       font-size: 15px;
     }
     .${styles.docTitle} {
       text-align: center;
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 700;
-      margin: 0.5rem 0 1.25rem 0;
+      margin: 0.6rem 0 1.35rem 0;
       letter-spacing: 0.02em;
     }
     .${styles.docSubTitle} {
       text-align: center;
       font-size: 16px;
       font-weight: 700;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.85rem;
     }
     .${styles.locationGrid} {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.35rem;
       gap: 1.5rem;
     }
     .${styles.locationLeft} {
       flex: 1;
       font-size: 15px;
-      line-height: 1.6;
+      line-height: 2.0;
     }
     .${styles.locationRight} {
       flex: 1.5;
       font-size: 15px;
-      line-height: 1.5;
+      line-height: 1.85;
     }
     .${styles.docParagraph} {
       text-indent: 2.5rem;
       text-align: justify;
       text-justify: inter-cluster;
-      margin-bottom: 0.85rem;
-      line-height: 1.6;
+      margin-bottom: 1.35rem;
+      line-height: 2.15;
+    }
+    .${styles.tenantDetailBlock} {
+      margin-bottom: 1.35rem;
+      line-height: 2.25;
+      text-align: justify;
+      font-size: 15px;
     }
     .${styles.clauseHeader} {
       font-weight: 700;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.95rem;
       font-size: 15.5px;
     }
     .${styles.clauseItem} {
       display: flex;
       align-items: flex-start;
-      margin-bottom: 0.55rem;
-      line-height: 1.55;
+      margin-bottom: 0.75rem;
+      line-height: 1.85;
       text-align: justify;
       text-justify: inter-cluster;
     }
@@ -377,9 +383,9 @@ export default function LeaseAgreementModal({
       display: flex;
       align-items: flex-start;
       padding-left: 2rem;
-      margin-top: 0.3rem;
-      margin-bottom: 0.3rem;
-      line-height: 1.5;
+      margin-top: 0.4rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.85;
     }
     .${styles.subClauseNum} {
       min-width: 2.2rem;
@@ -402,7 +408,7 @@ export default function LeaseAgreementModal({
       position: absolute !important;
       left: 0 !important;
       right: 0 !important;
-      bottom: 3px !important;
+      bottom: 4px !important;
       border-bottom: 1.5px dotted #000000 !important;
       pointer-events: none !important;
       z-index: 1 !important;
@@ -447,10 +453,10 @@ export default function LeaseAgreementModal({
       padding: 0 2px !important;
     }
     .${styles.signatureSection} {
-      margin-top: 2rem;
+      margin-top: 3.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.75rem;
+      gap: 3.25rem;
       padding-left: 2.5rem;
       padding-right: 1rem;
     }
