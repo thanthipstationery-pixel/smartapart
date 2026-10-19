@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { formatThaiDateNumeric, autoFormatPhoneInput, autoFormatIdCardInput } from '@/lib/thaiDate';
+import WorkplaceAddressFields from './WorkplaceAddressFields';
 
 interface EditTenantModalProps {
   showEditTenantModal: boolean;
@@ -435,32 +436,25 @@ export default function EditTenantModal({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                  <div className={styles.formGroup} style={{ margin: 0 }}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
-                      ที่อยู่เดิม / ตามทะเบียนบ้าน
-                    </label>
-                    <input
-                      type="text"
-                      value={editTenantAddress}
-                      onChange={(e) => setEditTenantAddress(e.target.value)}
-                      className={styles.formInput}
-                      placeholder="เลขที่ หมู่ ตำบล อำเภอ จังหวัด"
-                    />
-                  </div>
-                  <div className={styles.formGroup} style={{ margin: 0 }}>
-                    <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
-                      สถานที่ทำงาน / สถานศึกษา
-                    </label>
-                    <input
-                      type="text"
-                      value={editTenantWorkplace}
-                      onChange={(e) => setEditTenantWorkplace(e.target.value)}
-                      className={styles.formInput}
-                      placeholder="บริษัท/โรงเรียน/มหาลัย..."
-                    />
-                  </div>
+                <div className={styles.formGroup} style={{ margin: 0 }}>
+                  <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
+                    ที่อยู่เดิม / ตามบัตรประชาชน
+                  </label>
+                  <input
+                    type="text"
+                    value={editTenantAddress}
+                    onChange={(e) => setEditTenantAddress(e.target.value)}
+                    className={styles.formInput}
+                    placeholder="เลขที่ หมู่ ตำบล อำเภอ จังหวัด"
+                  />
                 </div>
+
+                <WorkplaceAddressFields
+                  value={editTenantWorkplace}
+                  onChange={(val) => setEditTenantWorkplace(val)}
+                  idCardAddress={editTenantAddress}
+                  styles={styles}
+                />
               </div>
             </div>
 
@@ -699,18 +693,6 @@ export default function EditTenantModal({
                         placeholder="1 2345 67890 12 3"
                       />
                     </div>
-                    <div className={styles.formGroup} style={{ margin: 0 }}>
-                      <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
-                        สถานที่ทำงาน / สถานศึกษา
-                      </label>
-                      <input
-                        type="text"
-                        value={editTenantSecondTenantWorkplace}
-                        onChange={(e) => setEditTenantSecondTenantWorkplace && setEditTenantSecondTenantWorkplace(e.target.value)}
-                        className={styles.formInput}
-                        placeholder="ที่ทำงาน / สถาบันศึกษา"
-                      />
-                    </div>
                     <div className={styles.formGroup} style={{ margin: 0, gridColumn: '1 / -1' }}>
                       <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
                         ที่อยู่ตามบัตรประชาชน
@@ -723,6 +705,13 @@ export default function EditTenantModal({
                         placeholder="บ้านเลขที่/หมู่/ตำบล/อำเภอ/จังหวัด"
                       />
                     </div>
+                    <WorkplaceAddressFields
+                      value={editTenantSecondTenantWorkplace}
+                      onChange={(val) => setEditTenantSecondTenantWorkplace && setEditTenantSecondTenantWorkplace(val)}
+                      idCardAddress={editTenantSecondTenantAddress}
+                      styles={styles}
+                      label="ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา (ผู้เช่าคนที่ ๒)"
+                    />
                     <div className={styles.formGroup} style={{ margin: 0 }}>
                       <label className={styles.formLabel} style={{ fontSize: '0.85rem' }}>
                         ชื่อผู้ติดต่อฉุกเฉิน (คนที่ ๒)

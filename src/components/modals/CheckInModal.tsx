@@ -8,6 +8,7 @@ import {
   autoFormatPhoneInput,
   autoFormatIdCardInput,
 } from '@/lib/thaiDate';
+import WorkplaceAddressFields from './WorkplaceAddressFields';
 
 interface CheckInModalProps {
   showCheckInModal: boolean;
@@ -480,16 +481,12 @@ export default function CheckInModal({
                   placeholder="กรอกบ้านเลขที่/หมู่/ตำบล/อำเภอ/จังหวัด"
                 />
               </div>
-              <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
-                <label className={styles.formLabel}>สถานที่ทำงาน / สถานศึกษา</label>
-                <input
-                  type="text"
-                  className={styles.formInput}
-                  value={checkInWorkplace}
-                  onChange={(e) => setCheckInWorkplace(e.target.value)}
-                  placeholder="ระบุสถานที่ทำงานหรือโรงเรียน/มหาลัย"
-                />
-              </div>
+              <WorkplaceAddressFields
+                value={checkInWorkplace}
+                onChange={(val) => setCheckInWorkplace(val)}
+                idCardAddress={checkInAddress}
+                styles={styles}
+              />
             </div>
 
             {/* SECTION 2: ผู้ติดต่อกรณีฉุกเฉิน (ผู้เช่าหลัก) */}
@@ -767,16 +764,6 @@ export default function CheckInModal({
                         placeholder="1 2345 67890 12 3"
                       />
                     </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>สถานที่ทำงาน / สถานศึกษา</label>
-                      <input
-                        type="text"
-                        className={styles.formInput}
-                        value={checkInSecondTenantWorkplace}
-                        onChange={(e) => setCheckInSecondTenantWorkplace && setCheckInSecondTenantWorkplace(e.target.value)}
-                        placeholder="ระบุที่ทำงานหรือสถานศึกษา"
-                      />
-                    </div>
                     <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                       <label className={styles.formLabel}>ที่อยู่ตามบัตรประชาชน</label>
                       <input
@@ -787,6 +774,13 @@ export default function CheckInModal({
                         placeholder="บ้านเลขที่/หมู่/ตำบล/อำเภอ/จังหวัด"
                       />
                     </div>
+                    <WorkplaceAddressFields
+                      value={checkInSecondTenantWorkplace}
+                      onChange={(val) => setCheckInSecondTenantWorkplace && setCheckInSecondTenantWorkplace(val)}
+                      idCardAddress={checkInSecondTenantAddress}
+                      styles={styles}
+                      label="ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา (ผู้เช่าคนที่ ๒)"
+                    />
                     <div className={styles.formGroup}>
                       <label className={styles.formLabel}>ชื่อผู้ติดต่อฉุกเฉิน (คนที่ ๒)</label>
                       <input

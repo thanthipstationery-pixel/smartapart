@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import styles from './LeaseAgreementModal.module.css';
 import { THAI_MONTHS } from '@/lib/thaiDate';
+import { parseThaiAddress, ParsedThaiAddress as ParsedAddress } from '@/lib/thaiAddress';
 
 export interface LeaseAgreementModalProps {
   showModal: boolean;
@@ -40,79 +41,6 @@ function formatCurrency(
     maximumFractionDigits: 2,
   });
   return useThai ? toThaiDigits(formatted) : toArabicDigits(formatted);
-}
-
-// Smart Thai address parser to populate official form fields
-interface ParsedAddress {
-  placeName: string;
-  houseNo: string;
-  moo: string;
-  road: string;
-  subdistrict: string;
-  district: string;
-  province: string;
-  phone: string;
-  raw: string;
-}
-
-function parseThaiAddress(addressStr?: string | null): ParsedAddress {
-  if (!addressStr || !addressStr.trim()) {
-    return {
-      placeName: '',
-      houseNo: '',
-      moo: '',
-      road: '',
-      subdistrict: '',
-      district: '',
-      province: '',
-      phone: '',
-      raw: '',
-    };
-  }
-
-  const clean = addressStr.trim();
-  const mooMatch = clean.match(/(?:หมู่ที่|หมู่|ม\.)\s*([0-9\u0E50-\u0E59]+)/);
-  const roadMatch = clean.match(/(?:ถนน|ถ\.)\s*([^\s,]+)/);
-  const subMatch = clean.match(/(?:ตำบล|แขวง|ต\.)\s*([^\s,]+)/);
-  const distMatch = clean.match(/(?:อำเภอ|เขต|อ\.)\s*([^\s,]+)/);
-  const provMatch = clean.match(/(?:จังหวัด|จ\.)\s*([^\s,]+)/);
-  const phoneMatch = clean.match(/(?:โทรศัพท์|โทร\.?|เบอร์)\s*([0-9\u0E50-\u0E59-]+)/);
-
-  let placeName = '';
-  let houseNo = '';
-  const firstPart = clean.split(
-    /(?:หมู่ที่|หมู่|ม\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.|โทรศัพท์|โทร\.?)/
-  )[0]?.trim();
-
-  if (firstPart) {
-    const houseMatch = firstPart.match(/^(.*?)\s*(?:บ้านเลขที่|เลขที่)\s*([0-9\u0E50-\u0E59][0-9\u0E50-\u0E59/.-]*)$/);
-    if (houseMatch) {
-      placeName = houseMatch[1].trim();
-      houseNo = houseMatch[2].trim();
-    } else {
-      const trailingNum = firstPart.match(/^(.*?)\s+([0-9\u0E50-\u0E59][0-9\u0E50-\u0E59/.-]*)$/);
-      if (trailingNum && trailingNum[1].trim()) {
-        placeName = trailingNum[1].trim();
-        houseNo = trailingNum[2].trim();
-      } else if (/^[0-9\u0E50-\u0E59]/.test(firstPart)) {
-        houseNo = firstPart;
-      } else {
-        placeName = firstPart;
-      }
-    }
-  }
-
-  return {
-    placeName: placeName || (!houseNo && !mooMatch && !roadMatch && !subMatch && !distMatch && !provMatch ? clean : ''),
-    houseNo,
-    moo: mooMatch ? mooMatch[1] : '',
-    road: roadMatch ? roadMatch[1] : '',
-    subdistrict: subMatch ? subMatch[1] : '',
-    district: distMatch ? distMatch[1] : '',
-    province: provMatch ? provMatch[1] : '',
-    phone: phoneMatch ? phoneMatch[1] : '',
-    raw: clean,
-  };
 }
 
 // Parse Name into Prefix, First Name, Last Name
