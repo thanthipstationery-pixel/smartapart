@@ -497,10 +497,22 @@
 }
 
 .signatureLine {
+  position: relative;
   width: 81mm;
   flex-shrink: 0;
   border-bottom: 1px solid #000000;
   margin-bottom: 9px; /* sits slightly above the baseline of "ลงชื่อ" */
+}
+
+.signatureLineText {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1px;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .signatureRole {

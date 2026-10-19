@@ -20,6 +20,13 @@ function toThaiDigits(val: number | string | null | undefined): string {
   return String(val).replace(/[0-9]/g, (d) => thaiMap[parseInt(d, 10)]);
 }
 
+// Convert Thai digits (๐-๙) to Western digits (0-9)
+function toArabicDigits(val: number | string | null | undefined): string {
+  if (val === null || val === undefined) return '';
+  const thaiDigits = '๐๑๒๓๔๕๖๗๘๙';
+  return String(val).replace(/[๐-๙]/g, (d) => String(thaiDigits.indexOf(d)));
+}
+
 // Format numbers as currency with optional Thai digits
 function formatCurrency(
   val: number | string | null | undefined,
@@ -32,29 +39,33 @@ function formatCurrency(
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-  return useThai ? toThaiDigits(formatted) : formatted;
+  return useThai ? toThaiDigits(formatted) : toArabicDigits(formatted);
 }
 
 // Smart Thai address parser to populate official form fields
 interface ParsedAddress {
+  placeName: string;
   houseNo: string;
   moo: string;
   road: string;
   subdistrict: string;
   district: string;
   province: string;
+  phone: string;
   raw: string;
 }
 
 function parseThaiAddress(addressStr?: string | null): ParsedAddress {
   if (!addressStr || !addressStr.trim()) {
     return {
+      placeName: '',
       houseNo: '',
       moo: '',
       road: '',
       subdistrict: '',
       district: '',
       province: '',
+      phone: '',
       raw: '',
     };
   }
@@ -65,22 +76,41 @@ function parseThaiAddress(addressStr?: string | null): ParsedAddress {
   const subMatch = clean.match(/(?:ตำบล|แขวง|ต\.)\s*([^\s,]+)/);
   const distMatch = clean.match(/(?:อำเภอ|เขต|อ\.)\s*([^\s,]+)/);
   const provMatch = clean.match(/(?:จังหวัด|จ\.)\s*([^\s,]+)/);
+  const phoneMatch = clean.match(/(?:โทรศัพท์|โทร\.?|เบอร์)\s*([0-9\u0E50-\u0E59-]+)/);
 
+  let placeName = '';
   let houseNo = '';
   const firstPart = clean.split(
-    /(?:หมู่ที่|หมู่|ม\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.)/
+    /(?:หมู่ที่|หมู่|ม\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.|โทรศัพท์|โทร\.?)/
   )[0]?.trim();
-  if (firstPart && (/[0-9\u0E50-\u0E59]/.test(firstPart) || /^(บ้านเลขที่|เลขที่)/.test(firstPart))) {
-    houseNo = firstPart.replace(/^(บ้านเลขที่|เลขที่)\s*/, '');
+
+  if (firstPart) {
+    const houseMatch = firstPart.match(/^(.*?)\s*(?:บ้านเลขที่|เลขที่)\s*([0-9\u0E50-\u0E59][0-9\u0E50-\u0E59/.-]*)$/);
+    if (houseMatch) {
+      placeName = houseMatch[1].trim();
+      houseNo = houseMatch[2].trim();
+    } else {
+      const trailingNum = firstPart.match(/^(.*?)\s+([0-9\u0E50-\u0E59][0-9\u0E50-\u0E59/.-]*)$/);
+      if (trailingNum && trailingNum[1].trim()) {
+        placeName = trailingNum[1].trim();
+        houseNo = trailingNum[2].trim();
+      } else if (/^[0-9\u0E50-\u0E59]/.test(firstPart)) {
+        houseNo = firstPart;
+      } else {
+        placeName = firstPart;
+      }
+    }
   }
 
   return {
+    placeName: placeName || (!houseNo && !mooMatch && !roadMatch && !subMatch && !distMatch && !provMatch ? clean : ''),
     houseNo,
     moo: mooMatch ? mooMatch[1] : '',
     road: roadMatch ? roadMatch[1] : '',
     subdistrict: subMatch ? subMatch[1] : '',
     district: distMatch ? distMatch[1] : '',
     province: provMatch ? provMatch[1] : '',
+    phone: phoneMatch ? phoneMatch[1] : '',
     raw: clean,
   };
 }
@@ -205,7 +235,7 @@ export default function LeaseAgreementModal({
   // Number helper for current numeral setting
   const num = (v: number | string | null | undefined): string => {
     if (v === null || v === undefined || v === '') return '';
-    return useThaiNumerals ? toThaiDigits(v) : String(v);
+    return useThaiNumerals ? toThaiDigits(v) : toArabicDigits(v);
   };
 
   const curr = (v: number | string | null | undefined): string => {
@@ -403,7 +433,7 @@ export default function LeaseAgreementModal({
     block?: boolean;
   }) => {
     const strVal =
-      value !== undefined && value !== null ? String(value).trim() : '';
+      value !== undefined && value !== null ? num(String(value).trim()) : '';
 
     return (
       <span className={`${styles.blank} ${block ? styles.blankBlock : ''}`}>
@@ -478,7 +508,7 @@ export default function LeaseAgreementModal({
   ) => (
     <div className={styles.tenantDetailBlock}>
       <div className={styles.formRow}>
-        <strong>ผู้เช่า {no}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
+        <strong>ผู้เช่า {num(no)}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
       </div>
       <div className={styles.formRow}>
         อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={35} /> อยู่บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
@@ -487,20 +517,20 @@ export default function LeaseAgreementModal({
         หมู่ <BlankFill value={num(d.addr.moo)} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
       </div>
       <div className={styles.formRow}>
-        โทรศัพท์มือถือ <BlankFill value={num(d.phone)} dots={35} /> บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ
+        โทรศัพท์มือถือ <BlankFill value={num(d.phone)} dots={35} /> บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ / เพื่อน
       </div>
-      <div className={styles.formRowLeft}>
-        โปรดระบุ <BlankFill value={d.emName} dots={33} /> เบอร์ติดต่อ <BlankFill value={num(d.emPhone)} dots={35} />
+      <div className={styles.formRow}>
+        โปรดระบุ <BlankFill value={d.emName} dots={90} /> เบอร์ติดต่อ <BlankFill value={num(d.emPhone)} dots={35} />
       </div>
       <div className={styles.formGap} />
       <div className={styles.formRow}>
-        ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา <BlankFill value={d.work.raw} dots={101} />
+        ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา <BlankFill value={d.work.placeName} dots={101} />
       </div>
       <div className={styles.formRow}>
         เลขที่ <BlankFill value={num(d.work.houseNo)} dots={16} /> ถนน <BlankFill value={d.work.road} dots={45} /> หมู่ <BlankFill value={num(d.work.moo)} dots={12} /> ตำบล/แขวง <BlankFill value={d.work.subdistrict} dots={42} />
       </div>
       <div className={styles.formRow}>
-        อำเภอ/เขต <BlankFill value={d.work.district} dots={43} /> จังหวัด <BlankFill value={d.work.province} dots={36} /> โทรศัพท์ <BlankFill value={num(d.phone)} dots={36} />
+        อำเภอ/เขต <BlankFill value={d.work.district} dots={43} /> จังหวัด <BlankFill value={d.work.province} dots={36} /> โทรศัพท์ <BlankFill value={num(d.work.phone || d.phone)} dots={36} />
       </div>
     </div>
   );
@@ -888,7 +918,7 @@ export default function LeaseAgreementModal({
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
                         <span className={styles.signatureLine}></span>
                         <span className={styles.signatureRole}>
-                          ผู้เช่า ๑ และเช่าทรัพย์สิน
+                          ผู้เช่า {num(1)} และเช่าทรัพย์สิน
                         </span>
                       </div>
                       <div className={styles.signatureNameRow}>
@@ -904,7 +934,7 @@ export default function LeaseAgreementModal({
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
                         <span className={styles.signatureLine}></span>
                         <span className={styles.signatureRole}>
-                          ผู้เช่า ๒ และเช่าทรัพย์สิน
+                          ผู้เช่า {num(2)} และเช่าทรัพย์สิน
                         </span>
                       </div>
                       <div className={styles.signatureNameRow}>
@@ -918,7 +948,9 @@ export default function LeaseAgreementModal({
                     <div className={styles.signatureBlock}>
                       <div className={styles.signatureRow}>
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
-                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureLine}>
+                          <span className={styles.signatureLineText}>{num(buildingName)}</span>
+                        </span>
                         <span className={styles.signatureRole}>
                           ผู้ให้เช่า / ตัวแทน
                         </span>
@@ -1074,7 +1106,7 @@ export default function LeaseAgreementModal({
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
                         <span className={styles.signatureLine}></span>
                         <span className={styles.signatureRole}>
-                          ผู้เช่า ๑ และเช่าทรัพย์สิน
+                          ผู้เช่า {num(1)} และเช่าทรัพย์สิน
                         </span>
                       </div>
                       <div className={styles.signatureNameRow}>
@@ -1090,7 +1122,7 @@ export default function LeaseAgreementModal({
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
                         <span className={styles.signatureLine}></span>
                         <span className={styles.signatureRole}>
-                          ผู้เช่า ๒ และเช่าทรัพย์สิน
+                          ผู้เช่า {num(2)} และเช่าทรัพย์สิน
                         </span>
                       </div>
                       <div className={styles.signatureNameRow}>
@@ -1104,7 +1136,9 @@ export default function LeaseAgreementModal({
                     <div className={styles.signatureBlock}>
                       <div className={styles.signatureRow}>
                         <span className={styles.signatureLabel}>ลงชื่อ</span>
-                        <span className={styles.signatureLine}></span>
+                        <span className={styles.signatureLine}>
+                          <span className={styles.signatureLineText}>{num(buildingName)}</span>
+                        </span>
                         <span className={styles.signatureRole}>
                           ผู้ให้เช่า / ตัวแทน
                         </span>
@@ -1298,7 +1332,7 @@ export default function LeaseAgreementModal({
                   {/* Primary Tenant ID Card */}
                   <div className={styles.idCardSection}>
                     <div className={styles.idCardTenantHeader}>
-                      ผู้เช่า ๑:{' '}
+                      ผู้เช่า {num(1)}:{' '}
                       <BlankFill
                         value={t1Parsed.fullName}
                         dots={30}
@@ -1324,7 +1358,7 @@ export default function LeaseAgreementModal({
 
                     <div className={styles.certifyBlock}>
                       <div className={styles.certifySignLine}>
-                        (ลงชื่อ) ............................................................................ ผู้เช่า ๑
+                        (ลงชื่อ) ............................................................................ ผู้เช่า {num(1)}
                       </div>
                       <div style={{ marginBottom: '0.25rem' }}>
                         (&nbsp;
@@ -1344,7 +1378,7 @@ export default function LeaseAgreementModal({
                   {(hasSecondTenant || tenant?.secondTenantIdCardImage) && (
                     <div className={styles.idCardSection}>
                       <div className={styles.idCardTenantHeader}>
-                        ผู้เช่า ๒:{' '}
+                        ผู้เช่า {num(2)}:{' '}
                         <BlankFill
                           value={t2Parsed.fullName}
                           dots={30}
@@ -1360,7 +1394,7 @@ export default function LeaseAgreementModal({
                         ) : (
                           <div className={styles.idCardPlaceholder}>
                             <span style={{ fontSize: '2rem' }}>🪪</span>
-                            <span>(ไม่มีไฟล์รูปภาพบัตรประจำตัวประชาชนผู้เช่า ๒)</span>
+                            <span>(ไม่มีไฟล์รูปภาพบัตรประจำตัวประชาชนผู้เช่า {num(2)})</span>
                             <span style={{ fontSize: '12px' }}>
                               กรุณาแนบสำเนาบัตรประจำตัวประชาชนตัวจริง
                             </span>
@@ -1370,7 +1404,7 @@ export default function LeaseAgreementModal({
 
                       <div className={styles.certifyBlock}>
                         <div className={styles.certifySignLine}>
-                          (ลงชื่อ) ............................................................................ ผู้เช่า ๒
+                          (ลงชื่อ) ............................................................................ ผู้เช่า {num(2)}
                         </div>
                         <div style={{ marginBottom: '0.25rem' }}>
                           (&nbsp;
