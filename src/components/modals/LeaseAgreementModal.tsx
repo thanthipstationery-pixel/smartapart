@@ -893,7 +893,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={t1Parsed.fullName} dots={23} /> )
+                          ( <BlankFill value={t1Parsed.fullName} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -909,7 +909,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={23} /> )
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -925,7 +925,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={buildingName} dots={23} /> )
+                          ( <BlankFill value={buildingName} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -939,7 +939,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value="" dots={23} /> )
+                          ( <BlankFill value="" dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -1079,7 +1079,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={t1Parsed.fullName} dots={23} /> )
+                          ( <BlankFill value={t1Parsed.fullName} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -1095,7 +1095,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={23} /> )
+                          ( <BlankFill value={hasSecondTenant ? t2Parsed.fullName : ''} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -1111,7 +1111,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value={buildingName} dots={23} /> )
+                          ( <BlankFill value={buildingName} dots={72} /> )
                         </span>
                       </div>
                     </div>
@@ -1125,7 +1125,7 @@ export default function LeaseAgreementModal({
                       </div>
                       <div className={styles.signatureNameRow}>
                         <span className={styles.signatureName}>
-                          ( <BlankFill value="" dots={23} /> )
+                          ( <BlankFill value="" dots={72} /> )
                         </span>
                       </div>
                     </div>

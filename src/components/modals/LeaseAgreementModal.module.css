@@ -474,10 +474,10 @@
 
 /* Signatures */
 .signatureSection {
-  margin-top: 24mm;
+  margin-top: 18mm;
   display: flex;
   flex-direction: column;
-  gap: 8mm;
+  gap: 9mm;
   padding-left: 25mm;
 }
 
@@ -489,16 +489,15 @@
 .signatureRow {
   display: flex;
   align-items: flex-end;
-  height: 13mm;
 }
 
 .signatureLabel {
-  width: 12mm;
+  width: 12.3mm;
   flex-shrink: 0;
 }
 
 .signatureLine {
-  width: 90mm;
+  width: 81mm;
   flex-shrink: 0;
   border-bottom: 1px solid #000000;
   margin-bottom: 9px; /* sits slightly above the baseline of "ลงชื่อ" */
@@ -513,9 +512,9 @@
 .signatureNameRow {
   display: flex;
   justify-content: center;
-  width: 90mm;
-  margin-left: 12mm;
-  margin-top: 1mm;
+  width: 81mm;
+  margin-left: 12.3mm;
+  margin-top: 9mm;
 }
 
 .signatureName {
@@ -625,7 +624,7 @@
 
 .certifySignLine {
   font-size: 18pt;
-  margin-bottom: 0.25rem;
+  margin-bottom: 6mm;
 }
 
 .certifyText {
