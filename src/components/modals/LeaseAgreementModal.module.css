@@ -339,6 +339,8 @@
   text-align-last: justify;
   text-justify: inter-character;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .formRowLeft {
@@ -371,25 +373,29 @@
 .clauseItem {
   display: flex;
   align-items: flex-start;
-  margin: 0 0 8pt 0;
+  margin: 0 0 3.5pt 0;
   text-align: justify;
   text-justify: inter-character;
+  line-height: 1.24;
 }
 
 .clauseNum {
   min-width: 9mm;
   flex-shrink: 0;
+  font-weight: 700;
 }
 
 .clauseText {
   flex: 1;
+  line-height: 1.24;
 }
 
 .subClauseItem {
   display: flex;
   align-items: flex-start;
   padding-left: 0;
-  margin: 0 0 8pt 0;
+  margin: 0 0 2pt 0;
+  line-height: 1.24;
 }
 
 .subClauseNum {
@@ -400,13 +406,14 @@
 .subClauseText {
   flex: 1;
   white-space: nowrap;
+  line-height: 1.24;
 }
 
 /* Fillable field: real dot leaders (identical to the printed blank form)
    with the filled-in value floating just above the dots. Width is fixed by the dot count,
-   and only grows when the value itself is wider, so surrounding text never reflows. */
+   and never forces surrounding text to reflow or push off the paper. */
 .blank {
-  display: inline-grid;
+  display: inline-flex;
   position: relative;
   vertical-align: baseline;
   white-space: nowrap;
@@ -414,13 +421,14 @@
 }
 
 .blankBlock {
-  display: grid;
+  display: flex;
   width: 100%;
 }
 
 .blankSpacer {
-  grid-area: 1 / 1;
   visibility: hidden;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .blankDots {
@@ -434,15 +442,23 @@
 }
 
 .blankText {
-  grid-area: 1 / 1;
-  justify-self: center;
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
   top: -0.3em;
+  text-align: center;
+  text-align-last: center;
+  text-justify: none;
   z-index: 2;
   padding: 0 0.12em;
   font-weight: 700;
   color: #000000;
   white-space: nowrap;
+}
+
+.idCardBlankText {
+  letter-spacing: -0.025em;
+  font-size: 0.95em;
 }
 
 /* Prefix / Gender Title Strikethrough */

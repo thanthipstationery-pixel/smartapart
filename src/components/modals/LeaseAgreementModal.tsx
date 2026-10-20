@@ -350,15 +350,17 @@ export default function LeaseAgreementModal({
   };
 
   // Fillable field: real dot leaders (same as the blank paper form) with the value floating above them.
-  // Width is fixed by the dot count of the original form and only grows if the value is wider.
+  // Width is fixed by the dot count of the original form and never forces surrounding text to reflow.
   const BlankFill = ({
     value,
     dots = 15,
     block = false,
+    textClassName = '',
   }: {
     value?: string | number | null;
     dots?: number;
     block?: boolean;
+    textClassName?: string;
   }) => {
     const strVal =
       value !== undefined && value !== null ? num(String(value).trim()) : '';
@@ -368,7 +370,9 @@ export default function LeaseAgreementModal({
         <span className={styles.blankSpacer} aria-hidden="true">
           {'.'.repeat(dots)}
         </span>
-        {strVal && <span className={styles.blankText}>{strVal}</span>}
+        {strVal && (
+          <span className={`${styles.blankText} ${textClassName}`}>{strVal}</span>
+        )}
         <span className={styles.blankDots} aria-hidden="true">
           {'.'.repeat(Math.max(dots, 160))}
         </span>
@@ -439,7 +443,7 @@ export default function LeaseAgreementModal({
         <strong>ผู้เช่า {num(no)}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
       </div>
       <div className={styles.formRow}>
-        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={35} /> อยู่บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
+        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={35} textClassName={styles.idCardBlankText} /> อยู่บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
       </div>
       <div className={styles.formRow}>
         หมู่ <BlankFill value={num(d.addr.moo)} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
@@ -723,7 +727,7 @@ export default function LeaseAgreementModal({
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '11mm', marginBottom: '8pt', whiteSpace: 'nowrap' }}>
+                      <div style={{ paddingLeft: '11mm', marginBottom: '3pt', whiteSpace: 'nowrap', lineHeight: 1.24 }}>
                         รวมจำนวนเงินที่ผู้เช่าได้ชำระในวันทำสัญญา เป็นจำนวนเงิน{' '}
                         <BlankFill value={curr(totalInitialPay)} dots={30} />{' '}
                         บาท
@@ -959,7 +963,7 @@ export default function LeaseAgreementModal({
                           บาท
                         </div>
                       </div>
-                      <div style={{ paddingLeft: '11mm', marginBottom: '8pt', whiteSpace: 'nowrap' }}>
+                      <div style={{ paddingLeft: '11mm', marginBottom: '3pt', whiteSpace: 'nowrap', lineHeight: 1.24 }}>
                         รวมค่าเช่าห้องต่อรายเดือน{' '}
                         <BlankFill value={curr(totalRent)} dots={34} /> บาท
                       </div>

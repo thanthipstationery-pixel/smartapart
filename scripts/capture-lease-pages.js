@@ -28,6 +28,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     });
     await sleep(1500);
     await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('tbody tr'));
+      const a5Row = rows.find((r) => r.textContent && r.textContent.includes('A5'));
+      if (a5Row) {
+        const btns = Array.from(a5Row.querySelectorAll('button'));
+        const leaseBtn = btns.find((b) => b.textContent && b.textContent.includes('📄 สัญญา'));
+        if (leaseBtn) {
+          leaseBtn.click();
+          return;
+        }
+      }
       const b = Array.from(document.querySelectorAll('button')).find((x) => x.textContent && x.textContent.includes('📄 สัญญา') && x.offsetParent !== null);
       if (b) b.click();
     });
