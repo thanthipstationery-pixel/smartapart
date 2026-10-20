@@ -210,6 +210,10 @@
   height: 8px;
 }
 
+.summaryTableSpacer {
+  height: 56px; /* ระยะห่างประมาณ 3-4 บรรทัด เพื่อแยกส่วนตารางสรุปให้ชัดเจนและสวยงาม */
+}
+
 /* Table Styling */
 .reportTable {
   width: 100%;

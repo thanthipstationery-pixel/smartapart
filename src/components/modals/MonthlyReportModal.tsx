@@ -243,7 +243,7 @@ export default function MonthlyReportModal({
             <div className={styles.toolbarTitle}>
               <span>📄</span> ตัวอย่างก่อนพิมพ์ (A4)
             </div>
-            <span className={styles.toolbarBadge}>2 หน้า (เหมือน Excel)</span>
+            <span className={styles.toolbarBadge}>2 หน้า</span>
           </div>
 
           <div className={styles.toolbarRight}>
@@ -338,8 +338,8 @@ export default function MonthlyReportModal({
                 {/* Building 3: Pakdee */}
                 {renderBuildingTable(pakdee)}
 
-                {/* Spacing before summary table */}
-                <div className={styles.sectionSpacer} />
+                {/* Spacing before summary table: เพิ่มระยะห่าง 3-4 บรรทัด เพื่อแยกส่วนให้ชัดเจน */}
+                <div className={styles.summaryTableSpacer} />
 
                 {/* 3-Building Summary Table */}
                 <table className={`${styles.reportTable} ${styles.summaryTable}`}>
