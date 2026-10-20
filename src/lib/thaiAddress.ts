@@ -30,20 +30,63 @@ export function parseThaiAddress(addressStr?: string | null): ParsedThaiAddress 
   }
 
   const clean = addressStr.trim();
-  const mooMatch = clean.match(/(?:หมู่ที่|หมู่|ม\.)\s*([^\s,]+)/);
-  const roadMatch = clean.match(/(?:ถนน|ถ\.)\s*([^\s,]+)/);
-  const subMatch = clean.match(/(?:ตำบล|แขวง|ต\.)\s*([^\s,]+)/);
-  const distMatch = clean.match(/(?:อำเภอ|เขต|อ\.)\s*([^\s,]+)/);
-  const provMatch = clean.match(/(?:จังหวัด|จ\.)\s*([^\s,]+)/);
-  const phoneMatch = clean.match(/(?:โทรศัพท์|โทร\.?|เบอร์)\s*([0-9\u0E50-\u0E59-]+)/);
+
+  // Protect known acronyms with placeholders before parsing address tokens
+  // e.g. อบต. -> __OBT__, อบจ. -> __OBJ__, บจก. -> __BJK__, บมจ. -> __BMJ__, หจก. -> __HJK__, รพ.สต. -> __RPST__
+  const protectedClean = clean
+    .replace(/อบต\./g, '___OBT___')
+    .replace(/อบจ\./g, '___OBJ___')
+    .replace(/บจก\./g, '___BJK___')
+    .replace(/บมจ\./g, '___BMJ___')
+    .replace(/หจก\./g, '___HJK___')
+    .replace(/รพ\.สต\./g, '___RPST___');
+
+  const unprotect = (str?: string) =>
+    (str || '')
+      .replace(/___OBT___/g, 'อบต.')
+      .replace(/___OBJ___/g, 'อบจ.')
+      .replace(/___BJK___/g, 'บจก.')
+      .replace(/___BMJ___/g, 'บมจ.')
+      .replace(/___HJK___/g, 'หจก.')
+      .replace(/___RPST___/g, 'รพ.สต.')
+      .trim();
+
+  // Moo: Only matches if followed by numbers (digits or Thai digits)
+  const mooMatch = protectedClean.match(
+    /(?:หมู่ที่|หมู่)\s*([0-9\u0E50-\u0E59]+)|(?:\s|^)ม\.\s*([0-9\u0E50-\u0E59]+)/
+  );
+  const mooValue = mooMatch ? mooMatch[1] || mooMatch[2] || '' : '';
+
+  // Road: ถนน or ถ. preceded by whitespace or boundary
+  const roadMatch = protectedClean.match(/(?:ถนน|(?:\s|^)ถ\.)\s*([^\s,]+)/);
+  const roadValue = roadMatch ? roadMatch[1] : '';
+
+  // Subdistrict: ตำบล, แขวง, or ต. (preceded by whitespace/boundary, not inside acronym)
+  const subMatch = protectedClean.match(/(?:ตำบล|แขวง|(?:\s|^)ต\.)\s*([^\s,]+)/);
+  const subValue = subMatch ? subMatch[1] : '';
+
+  // District: อำเภอ, เขต, or อ. (preceded by whitespace/boundary, not inside acronym)
+  const distMatch = protectedClean.match(/(?:อำเภอ|เขต|(?:\s|^)อ\.)\s*([^\s,]+)/);
+  const distValue = distMatch ? distMatch[1] : '';
+
+  // Province: จังหวัด or จ. (preceded by whitespace/boundary, not inside acronym)
+  const provMatch = protectedClean.match(/(?:จังหวัด|(?:\s|^)จ\.)\s*([^\s,]+)/);
+  const provValue = provMatch ? provMatch[1] : '';
+
+  // Phone
+  const phoneMatch = protectedClean.match(
+    /(?:โทรศัพท์|โทร\.?|เบอร์)\s*([0-9\u0E50-\u0E59-]+)/
+  );
+  const phoneValue = phoneMatch ? phoneMatch[1] : '';
+
+  // Splitting address tokens to get the leading placeName / houseNo
+  const delimiterRegex =
+    /(?:หมู่ที่\s*[0-9\u0E50-\u0E59]+|หมู่\s*[0-9\u0E50-\u0E59]+|(?:\s|^)ม\.\s*[0-9\u0E50-\u0E59]+|ถนน|(?:\s|^)ถ\.|ตำบล|แขวง|(?:\s|^)ต\.|อำเภอ|เขต|(?:\s|^)อ\.|จังหวัด|(?:\s|^)จ\.|โทรศัพท์|โทร\.?|เบอร์)/;
 
   let placeName = '';
   let houseNo = '';
-  const firstPart = clean
-    .split(
-      /(?:หมู่ที่|หมู่|ม\.|ถนน|ถ\.|ตำบล|ต\.|แขวง|อำเภอ|อ\.|เขต|จังหวัด|จ\.|โทรศัพท์|โทร\.?|เบอร์)/
-    )[0]
-    ?.trim();
+
+  const firstPart = unprotect(protectedClean.split(delimiterRegex)[0]?.trim());
 
   if (firstPart) {
     const houseMatch = firstPart.match(
@@ -67,25 +110,26 @@ export function parseThaiAddress(addressStr?: string | null): ParsedThaiAddress 
     }
   }
 
+  // If there are no structured subfields found, placeName should simply be the entire raw string
+  const hasSubfields = Boolean(
+    houseNo ||
+      mooValue ||
+      roadValue ||
+      subValue ||
+      distValue ||
+      provValue ||
+      phoneValue
+  );
+
   return {
-    placeName:
-      placeName ||
-      (!houseNo &&
-      !mooMatch &&
-      !roadMatch &&
-      !subMatch &&
-      !distMatch &&
-      !provMatch &&
-      !phoneMatch
-        ? clean
-        : ''),
-    houseNo,
-    moo: mooMatch ? mooMatch[1] : '',
-    road: roadMatch ? roadMatch[1] : '',
-    subdistrict: subMatch ? subMatch[1] : '',
-    district: distMatch ? distMatch[1] : '',
-    province: provMatch ? provMatch[1] : '',
-    phone: phoneMatch ? phoneMatch[1] : '',
+    placeName: hasSubfields ? unprotect(placeName) : clean,
+    houseNo: unprotect(houseNo),
+    moo: unprotect(mooValue),
+    road: unprotect(roadValue),
+    subdistrict: unprotect(subValue),
+    district: unprotect(distValue),
+    province: unprotect(provValue),
+    phone: phoneValue,
     raw: clean,
   };
 }
