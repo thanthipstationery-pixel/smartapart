@@ -687,9 +687,10 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseNum}>{num(1)}.</div>
                     <div className={styles.clauseText}>
                       ผู้เช่าตกลงเช่าห้องพัก ตามเลขที่ห้องข้างต้น จากผู้ให้เช่า
-                      เพื่อใช้เป็นที่อยู่อาศัย ภายใต้กฎระเบียบและข้อบังคับ
-                      ที่แนบท้ายสัญญา ซึ่งผู้ให้เช่ากำหนดไว้
-                      โดยมีระยะเวลาการเช่าห้องพัก ไม่น้อยกว่า{' '}
+                      เพื่อใช้เป็นที่อยู่อาศัย ภายใต้
+                      <span style={{ whiteSpace: 'nowrap' }}>กฎระเบียบและข้อบังคับ</span>{' '}
+                      ที่แนบท้ายสัญญา ซึ่งผู้ให้เช่ากำหนดไว้ โดยมีระยะเวลาการเช่า
+                      <span style={{ whiteSpace: 'nowrap' }}>ห้องพัก ไม่น้อยกว่า</span>{' '}
                       <BlankFill value={num(contractDurationMonths)} dots={12} />{' '}
                       เดือน
                     </div>
@@ -756,8 +757,8 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseText}>
                       เมื่อสัญญาเช่าสิ้นสุดลง และผู้เช่าได้ปฏิบัติตามสัญญาถูกต้อง
                       โดยห้องพักและทรัพย์สินอื่นๆ ของผู้ให้เช่าไม่ได้เกิดความเสียหาย
-                      และผู้เช่ามิได้ติดค้างชำระค่าใช้จ่ายต่างๆ ผู้ให้เช่าจะคืน
-                      เงินประกัน ให้แก่ผู้เช่า
+                      และผู้เช่ามิได้ติดค้างชำระค่าใช้จ่ายต่างๆ ผู้ให้เช่าจะคืน{' '}
+                      <span style={{ whiteSpace: 'nowrap' }}>เงินประกันให้แก่ผู้เช่า</span>
                     </div>
                   </div>
 
@@ -765,8 +766,8 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseNum}>{num(7)}.</div>
                     <div className={styles.clauseText}>
                       กรณีที่ผู้เช่า พักไม่ครบระยะเวลาตามที่กำหนด ดังข้อที่{' '}
-                      {num(1)}. ผู้ให้เช่ามีสิทธิ์ไม่คืนเงินค่าประกัน
-                      หรือเงินมัดจำให้แก่ผู้เช่า
+                      {num(1)}. ผู้ให้เช่ามีสิทธิ์ไม่คืนเงินค่าประกัน{' '}
+                      <span style={{ whiteSpace: 'nowrap' }}>หรือเงินมัดจำให้แก่ผู้เช่า</span>
                     </div>
                   </div>
 
@@ -774,9 +775,12 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseNum}>{num(8)}.</div>
                     <div className={styles.clauseText}>
                       หากผู้เช่า กระทำการใดๆ เป็นเหตุให้ผู้ให้เช่าได้รับความเสียหาย
-                      ผู้เช่ายินยอมที่จะให้ผู้ให้เช่าหักเงินค่าประกัน
-                      ตามความเสียหายที่เกิดขึ้น ดังข้อตกลงที่ระบุไว้ในสัญญา
-                      หรือตามมูลค่าที่พิสูจน์ได้ ในกรณีที่ไม่ได้กำหนดราคาไว้ในสัญญา
+                      ผู้เช่ายินยอมที่จะให้ผู้ให้เช่า{' '}
+                      <span style={{ whiteSpace: 'nowrap' }}>หักเงินค่าประกัน</span>{' '}
+                      ตามความเสียหายที่เกิดขึ้น ดังข้อตกลงที่ระบุไว้ในสัญญา{' '}
+                      <span style={{ whiteSpace: 'nowrap' }}>หรือตามมูลค่าที่</span>
+                      <span style={{ whiteSpace: 'nowrap' }}>พิสูจน์ได้</span>{' '}
+                      ในกรณีที่ไม่ได้กำหนดราคาไว้ในสัญญา
                     </div>
                   </div>
 
@@ -803,8 +807,8 @@ export default function LeaseAgreementModal({
                     <div className={styles.clauseNum}>{num(11)}.</div>
                     <div className={styles.clauseText}>
                       ในกรณีที่ผู้เช่าไม่ได้ใช้น้ำประปา หรือไฟฟ้า
-                      ผู้เช่าต้องเสียค่ารักษามิเตอร์น้ำ และมิเตอร์ไฟฟ้า
-                      ขั้นต่ำอย่างละ {num(1)} หน่วย
+                      ผู้เช่าต้องเสียค่ารักษามิเตอร์น้ำ และมิเตอร์ไฟฟ้า{' '}
+                      <span style={{ whiteSpace: 'nowrap' }}>ขั้นต่ำอย่างละ {num(1)} หน่วย</span>
                     </div>
                   </div>
 
