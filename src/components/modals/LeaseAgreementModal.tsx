@@ -43,6 +43,31 @@ function formatCurrency(
   return useThai ? toThaiDigits(formatted) : toArabicDigits(formatted);
 }
 
+// Format phone numbers into spaced groups e.g. "089 123 1234" (mobile) or "02 123 4567" (landline)
+function formatPhoneDisplay(phone?: string | null): string {
+  if (!phone) return '';
+  const arabic = toArabicDigits(phone);
+  const clean = arabic.replace(/[^0-9]/g, '');
+  if (clean.length === 10) {
+    return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6)}`;
+  }
+  if (clean.length === 9) {
+    return `${clean.slice(0, 2)} ${clean.slice(2, 5)} ${clean.slice(5)}`;
+  }
+  return String(phone).trim();
+}
+
+// Format Thai National ID card number into standard spaced groups e.g. "3 1111 11111 44 4"
+function formatIdCardDisplay(id?: string | null): string {
+  if (!id) return '';
+  const arabic = toArabicDigits(id);
+  const clean = arabic.replace(/[^0-9]/g, '');
+  if (clean.length === 13) {
+    return `${clean[0]} ${clean.slice(1, 5)} ${clean.slice(5, 10)} ${clean.slice(10, 12)} ${clean[12]}`;
+  }
+  return String(id).trim();
+}
+
 // Parse Name into Prefix, First Name, Last Name
 function parseThaiName(fullName?: string | null) {
   if (!fullName || !fullName.trim()) {
@@ -93,6 +118,17 @@ export default function LeaseAgreementModal({
 
   const printableContainerRef = useRef<HTMLDivElement>(null);
 
+  // Number helper for current numeral setting
+  const num = (v: number | string | null | undefined): string => {
+    if (v === null || v === undefined || v === '') return '';
+    return useThaiNumerals ? toThaiDigits(v) : toArabicDigits(v);
+  };
+
+  const curr = (v: number | string | null | undefined): string => {
+    return formatCurrency(v, useThaiNumerals);
+  };
+
+
   if (!showModal) return null;
 
   // Normalized building & property data
@@ -129,9 +165,9 @@ export default function LeaseAgreementModal({
   const contractMonth = THAI_MONTHS[contractDate.getMonth()] || '';
   const contractYearBE = contractDate.getFullYear() + 543;
 
-  const contractNumber =
+  const displayContractNumber =
     tenant?.contractNumber ||
-    (roomNumber ? `${roomNumber}/${contractYearBE}` : '');
+    (roomNumber ? `${roomNumber}/${num(contractYearBE)}` : '');
 
   // Tenant 1 Information
   const t1Parsed = parseThaiName(tenant?.name);
@@ -160,15 +196,6 @@ export default function LeaseAgreementModal({
   const t2EmergencyRel = tenant?.secondTenantEmergencyRel || '';
   const t2EmergencyPhone = tenant?.secondTenantEmergencyPhone || '';
 
-  // Number helper for current numeral setting
-  const num = (v: number | string | null | undefined): string => {
-    if (v === null || v === undefined || v === '') return '';
-    return useThaiNumerals ? toThaiDigits(v) : toArabicDigits(v);
-  };
-
-  const curr = (v: number | string | null | undefined): string => {
-    return formatCurrency(v, useThaiNumerals);
-  };
 
   // Select all / Deselect all
   const allSelected = printLease && printAsset && printRules && printIdCard;
@@ -356,14 +383,20 @@ export default function LeaseAgreementModal({
     dots = 15,
     block = false,
     textClassName = '',
+    keepRaw = false,
   }: {
     value?: string | number | null;
     dots?: number;
     block?: boolean;
     textClassName?: string;
+    keepRaw?: boolean;
   }) => {
     const strVal =
-      value !== undefined && value !== null ? num(String(value).trim()) : '';
+      value !== undefined && value !== null
+        ? keepRaw
+          ? String(value).trim()
+          : num(String(value).trim())
+        : '';
 
     return (
       <span className={`${styles.blank} ${block ? styles.blankBlock : ''}`}>
@@ -399,7 +432,7 @@ export default function LeaseAgreementModal({
           สัญญาลงวันที่ <BlankFill value={num(contractDay)} dots={12} /> / <BlankFill value={contractMonth} dots={15} /> / <BlankFill value={num(contractYearBE)} dots={12} />
         </div>
         <div>
-          เลขที่ <BlankFill value={num(contractNumber)} dots={36} />
+          เลขที่ <BlankFill value={displayContractNumber} keepRaw dots={36} />
         </div>
       </div>
 
@@ -407,13 +440,13 @@ export default function LeaseAgreementModal({
 
       <div className={styles.locationGrid}>
         <div className={styles.locationLeft}>
-          ห้องพักเลขที่ <BlankFill value={num(roomNumber)} dots={15} />
+          ห้องพักเลขที่ <BlankFill value={roomNumber} keepRaw dots={15} />
         </div>
         <div className={styles.locationRight}>
           <div>สัญญานี้ทำขึ้นที่ <BlankFill value={buildingName} dots={44} /></div>
           <div><BlankFill block value={addrLineA} dots={71} /></div>
           <div><BlankFill block value={addrLineB} dots={71} /></div>
-          <div className={styles.locationTel}>โทร. <BlankFill value={num(buildingPhone)} dots={62} /></div>
+          <div className={styles.locationTel}>โทร. <BlankFill value={formatPhoneDisplay(buildingPhone)} dots={62} /></div>
         </div>
       </div>
     </>
@@ -443,26 +476,26 @@ export default function LeaseAgreementModal({
         <strong>ผู้เช่า {num(no)}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
       </div>
       <div className={styles.formRow}>
-        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={39} textClassName={styles.idCardBlankText} /> บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
+        อายุ <BlankFill value={d.age} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={formatIdCardDisplay(d.idCard)} dots={39} textClassName={styles.idCardBlankText} /> บ้านเลขที่ <BlankFill value={d.addr.houseNo} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
       </div>
       <div className={styles.formRow}>
-        หมู่ <BlankFill value={num(d.addr.moo)} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
+        หมู่ <BlankFill value={d.addr.moo} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
       </div>
       <div className={styles.formRow}>
-        โทรศัพท์มือถือ <BlankFill value={num(d.phone)} dots={35} /> บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ / เพื่อน
+        โทรศัพท์มือถือ <BlankFill value={formatPhoneDisplay(d.phone)} dots={35} /> บุคคลที่สามารถติดต่อได้สะดวก บิดา / มารดา / ญาติ / เพื่อน
       </div>
       <div className={styles.formRow}>
-        โปรดระบุ <BlankFill value={d.emName} dots={90} /> เบอร์ติดต่อ <BlankFill value={num(d.emPhone)} dots={35} />
+        โปรดระบุ <BlankFill value={d.emName} dots={90} /> เบอร์ติดต่อ <BlankFill value={formatPhoneDisplay(d.emPhone)} dots={35} />
       </div>
       <div className={styles.formGap} />
       <div className={styles.formRow}>
         ที่อยู่ปัจจุบัน / ที่ทำงาน / สถานศึกษา <BlankFill value={d.work.placeName} dots={101} />
       </div>
       <div className={styles.formRow}>
-        เลขที่ <BlankFill value={num(d.work.houseNo)} dots={16} /> ถนน <BlankFill value={d.work.road} dots={45} /> หมู่ <BlankFill value={num(d.work.moo)} dots={12} /> ตำบล/แขวง <BlankFill value={d.work.subdistrict} dots={42} />
+        เลขที่ <BlankFill value={d.work.houseNo} dots={16} /> ถนน <BlankFill value={d.work.road} dots={45} /> หมู่ <BlankFill value={d.work.moo} dots={12} /> ตำบล/แขวง <BlankFill value={d.work.subdistrict} dots={42} />
       </div>
       <div className={styles.formRow}>
-        อำเภอ/เขต <BlankFill value={d.work.district} dots={43} /> จังหวัด <BlankFill value={d.work.province} dots={36} /> โทรศัพท์ <BlankFill value={num(d.work.phone || d.phone)} dots={36} />
+        อำเภอ/เขต <BlankFill value={d.work.district} dots={43} /> จังหวัด <BlankFill value={d.work.province} dots={36} /> โทรศัพท์ <BlankFill value={formatPhoneDisplay(d.work.phone || d.phone)} dots={36} />
       </div>
     </div>
   );
@@ -482,9 +515,9 @@ export default function LeaseAgreementModal({
               📄 สัญญาเช่าห้องพักและเอกสารแนบท้าย (A4)
             </h2>
             <span className={styles.roomBadge}>ห้อง {roomNumber || '-'}</span>
-            {contractNumber && (
+            {displayContractNumber && (
               <span className={styles.contractBadge}>
-                เลขที่: {num(contractNumber)}
+                เลขที่: {displayContractNumber}
               </span>
             )}
           </div>
@@ -1268,10 +1301,10 @@ export default function LeaseAgreementModal({
                   {/* Primary Tenant ID Card */}
                   <div className={styles.idCardSection}>
                     <div className={styles.idCardTenantHeader}>
-                      ผู้เช่า {num(1)}:{' '}
+                      {hasSecondTenant ? `ผู้เช่า ${num(1)}:` : 'ผู้เช่า :'}{' '}
                       <BlankFill
                         value={t1Parsed.fullName}
-                        dots={30}
+                        dots={65}
                       />
                     </div>
                     <div className={styles.idCardFrame}>
@@ -1294,13 +1327,13 @@ export default function LeaseAgreementModal({
 
                     <div className={styles.certifyBlock}>
                       <div className={styles.certifySignLine}>
-                        (ลงชื่อ) ............................................................................ ผู้เช่า {num(1)}
+                        (ลงชื่อ) ............................................................................ {hasSecondTenant ? `ผู้เช่า ${num(1)}` : 'ผู้เช่า'}
                       </div>
                       <div style={{ marginBottom: '0.25rem' }}>
                         (&nbsp;
                         <BlankFill
                           value={t1Parsed.fullName}
-                          dots={28}
+                          dots={38}
                         />
                         &nbsp;)
                       </div>
@@ -1317,7 +1350,7 @@ export default function LeaseAgreementModal({
                         ผู้เช่า {num(2)}:{' '}
                         <BlankFill
                           value={t2Parsed.fullName}
-                          dots={30}
+                          dots={65}
                         />
                       </div>
                       <div className={styles.idCardFrame}>
@@ -1346,7 +1379,7 @@ export default function LeaseAgreementModal({
                           (&nbsp;
                           <BlankFill
                             value={t2Parsed.fullName}
-                            dots={28}
+                            dots={38}
                           />
                           &nbsp;)
                         </div>
