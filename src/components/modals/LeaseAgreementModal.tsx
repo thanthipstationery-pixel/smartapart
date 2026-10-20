@@ -443,7 +443,7 @@ export default function LeaseAgreementModal({
         <strong>ผู้เช่า {num(no)}.</strong> {prefixNode}<BlankFill value={d.first} dots={36} /> นามสกุล <BlankFill value={d.last} dots={36} /> ชื่อเล่น <BlankFill value={d.nick} dots={15} />
       </div>
       <div className={styles.formRow}>
-        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={35} textClassName={styles.idCardBlankText} /> อยู่บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
+        อายุ <BlankFill value={num(d.age)} dots={11} /> ปี บัตรประชาชนเลขที่ <BlankFill value={num(d.idCard)} dots={39} textClassName={styles.idCardBlankText} /> บ้านเลขที่ <BlankFill value={num(d.addr.houseNo)} dots={13} /> ถนน <BlankFill value={d.addr.road} dots={26} />
       </div>
       <div className={styles.formRow}>
         หมู่ <BlankFill value={num(d.addr.moo)} dots={8} /> ตำบล/แขวง <BlankFill value={d.addr.subdistrict} dots={31} /> อำเภอ/เขต <BlankFill value={d.addr.district} dots={31} /> จังหวัด <BlankFill value={d.addr.province} dots={32} />
