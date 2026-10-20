@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import styles from './ReportTab.module.css';
 import { formatThaiMonthOnly, getShortBuildingName } from '@/lib/thaiDate';
 import { getPayInAdvanceBillingPeriod } from '@/lib/billingRules';
+import MonthlyReportModal from '@/components/modals/MonthlyReportModal';
 
 interface ReportTabProps {
   buildings: any[];
@@ -16,6 +17,7 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
   const [reportYear, setReportYear] = useState(() => new Date().getFullYear().toString());
   const [reportBuildingId, setReportBuildingId] = useState<string>('ALL');
   const [yearlyData, setYearlyData] = useState<any[]>([]);
+  const [showMonthlyPrintModal, setShowMonthlyPrintModal] = useState<boolean>(false);
 
   // Overdue tab states
   const [overdueBuildingFilter, setOverdueBuildingFilter] = useState<string>('ALL');
@@ -95,6 +97,10 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
   };
 
   const handlePrint = () => {
+    if (activeSubTab === 'SUMMARY') {
+      setShowMonthlyPrintModal(true);
+      return;
+    }
     window.print();
   };
 
@@ -1835,6 +1841,14 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
           <span>✅</span> {toastMessage}
         </div>
       )}
+
+      <MonthlyReportModal
+        showModal={showMonthlyPrintModal}
+        setShowModal={setShowMonthlyPrintModal}
+        reportPeriod={reportPeriod}
+        reportData={reportData}
+        currentDateStr={currentDateStr}
+      />
     </div>
   );
 }
