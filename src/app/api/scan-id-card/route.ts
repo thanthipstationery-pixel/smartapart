@@ -43,8 +43,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call Google Gemini Vision API (try gemini-2.5-flash first, fallback to gemini-flash-latest)
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-flash-latest'];
+    // Call Google Gemini Vision API (try gemini-2.5-flash first, fallback to gemini-flash-latest / lite if high demand)
+    const modelsToTry = [
+      'gemini-2.5-flash',
+      'gemini-flash-latest',
+      'gemini-flash-lite-latest',
+    ];
     let response: Response | null = null;
     let lastError: any = null;
 
@@ -115,8 +119,8 @@ export async function POST(request: Request) {
           );
         }
 
-        // If 404 (model not found), continue to next model in loop
-        if (res.status === 404) {
+        // If 404 (model not found), 503 (high demand/overloaded), 429 (rate limit): try fallback models
+        if (res.status === 404 || res.status === 503 || res.status === 429) {
           continue;
         }
 
