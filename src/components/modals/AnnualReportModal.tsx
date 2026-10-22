@@ -434,7 +434,7 @@ export default function AnnualReportModal({
 
                           {/* Month Total Row (ยอดรวม) */}
                           <tr className={styles.monthTotalRow}>
-                            <td className={styles.textCenter}>ยอดรวม</td>
+                            <td className={`${styles.textRight} ${styles.monthTotalLabel}`}>ยอดรวม</td>
                             <td className={styles.textCenter}>
                               {m.total.occupiedRooms > 0 ? m.total.occupiedRooms : ''}
                             </td>
@@ -477,7 +477,7 @@ export default function AnnualReportModal({
 
                     {/* Annual Grand Total Row (ยอดรวมสุทธิ) */}
                     <tr className={styles.grandTotalRow}>
-                      <td className={styles.textCenter}>ยอดรวมสุทธิ</td>
+                      <td className={`${styles.textRight} ${styles.grandTotalLabel}`}>ยอดรวมสุทธิ</td>
                       <td className={styles.textCenter}>{formatTotalCell(grandTotal.occupiedRooms)}</td>
                       <td className={styles.textRight}>{formatTotalCell(grandTotal.waterCost)}</td>
                       <td className={styles.textRight}>{formatTotalCell(grandTotal.electricityCost)}</td>
@@ -496,11 +496,6 @@ export default function AnnualReportModal({
                     </tr>
                   </tbody>
                 </table>
-              </div>
-
-              {/* Sheet Footer */}
-              <div className={styles.sheetFooter}>
-                วันที่เอกสาร : {currentDateStr}
               </div>
             </div>
           </div>
