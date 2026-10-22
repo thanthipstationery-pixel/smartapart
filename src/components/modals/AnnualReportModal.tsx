@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from './AnnualReportModal.module.css';
 import { formatThaiMonthOnly, getShortBuildingName, THAI_MONTHS } from '@/lib/thaiDate';
 
@@ -24,7 +24,59 @@ export default function AnnualReportModal({
   currentDateStr,
 }: AnnualReportModalProps) {
   const [zoom, setZoom] = useState<number>(0.9);
+  const [isFit, setIsFit] = useState<boolean>(false);
+  const [fitScale, setFitScale] = useState<number>(0.5);
   const printableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-fit calculation for responsive preview (especially mobile)
+  useEffect(() => {
+    const calcFit = () => {
+      if (typeof window === 'undefined') return { isMobile: false, scale: 0.5 };
+      const isMobile = window.innerWidth < 820;
+      const padding = window.innerWidth < 480 ? 16 : 32;
+      const scale = Math.min(
+        1.0,
+        Math.max(0.3, +((window.innerWidth - padding) / 794).toFixed(3))
+      );
+      setFitScale(scale);
+      return { isMobile, scale };
+    };
+
+    if (showModal) {
+      const { isMobile, scale } = calcFit();
+      if (isMobile) {
+        setIsFit(true);
+        setZoom(scale);
+      } else {
+        setIsFit(false);
+        setZoom(0.9);
+      }
+
+      const handleResize = () => {
+        const { isMobile, scale } = calcFit();
+        setIsFit((prevFit) => {
+          if (prevFit || isMobile) {
+            setZoom(scale);
+            return true;
+          }
+          return prevFit;
+        });
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [showModal]);
+
+  const handleSetFit = () => {
+    setIsFit(true);
+    setZoom(fitScale);
+  };
+
+  const handleSetZoom = (val: number) => {
+    setIsFit(false);
+    setZoom(val);
+  };
 
   if (!showModal) return null;
 
@@ -258,25 +310,34 @@ export default function AnnualReportModal({
             <div className={styles.zoomGroup}>
               <button
                 className={`${styles.zoomBtn} ${
-                  zoom === 0.75 ? styles.zoomBtnActive : ''
+                  isFit ? styles.zoomBtnActive : ''
                 }`}
-                onClick={() => setZoom(0.75)}
+                onClick={handleSetFit}
+                title="ย่อให้พอดีกับความกว้างหน้าจอ"
+              >
+                พอดีจอ
+              </button>
+              <button
+                className={`${styles.zoomBtn} ${
+                  !isFit && zoom === 0.75 ? styles.zoomBtnActive : ''
+                }`}
+                onClick={() => handleSetZoom(0.75)}
               >
                 75%
               </button>
               <button
                 className={`${styles.zoomBtn} ${
-                  zoom === 0.9 ? styles.zoomBtnActive : ''
+                  !isFit && zoom === 0.9 ? styles.zoomBtnActive : ''
                 }`}
-                onClick={() => setZoom(0.9)}
+                onClick={() => handleSetZoom(0.9)}
               >
                 90%
               </button>
               <button
                 className={`${styles.zoomBtn} ${
-                  zoom === 1.0 ? styles.zoomBtnActive : ''
+                  !isFit && zoom === 1.0 ? styles.zoomBtnActive : ''
                 }`}
-                onClick={() => setZoom(1.0)}
+                onClick={() => handleSetZoom(1.0)}
               >
                 100%
               </button>
@@ -313,11 +374,21 @@ export default function AnnualReportModal({
         {/* Printable Sheet Preview */}
         <div className={styles.sheetsWrapper}>
           <div
-            ref={printableContainerRef}
-            className={styles.sheetsContainer}
-            style={{ transform: `scale(${zoom})` }}
+            className={styles.sheetsSizer}
+            style={{
+              width: `${Math.round(794 * zoom)}px`,
+              height: `${Math.round(1119 * zoom)}px`,
+            }}
           >
-            <div className={styles.a4Sheet}>
+            <div
+              ref={printableContainerRef}
+              className={styles.sheetsContainer}
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              <div className={styles.a4Sheet}>
               <div className={styles.sheetBody}>
                 <div className={styles.pageHeaderTitle}>{pageHeaderTitle}</div>
 
@@ -501,6 +572,7 @@ export default function AnnualReportModal({
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

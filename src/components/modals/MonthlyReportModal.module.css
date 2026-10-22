@@ -11,7 +11,14 @@
   align-items: flex-start;
   padding: 1.5rem 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+  }
 }
 
 .modalContainer {
@@ -44,12 +51,28 @@
   color: #f8fafc;
 }
 
+@media (max-width: 640px) {
+  .toolbar {
+    padding: 0.5rem 0.65rem;
+    margin-bottom: 0.75rem;
+    border-radius: 10px;
+    gap: 0.5rem;
+  }
+}
+
 .toolbarLeft {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .toolbarLeft {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .toolbarTitle {
@@ -74,6 +97,14 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 640px) {
+  .toolbarRight {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+}
+
 .zoomGroup {
   display: flex;
   align-items: center;
@@ -81,6 +112,13 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 2px;
+}
+
+@media (max-width: 640px) {
+  .zoomGroup {
+    flex: 1;
+    justify-content: space-between;
+  }
 }
 
 .zoomBtn {
@@ -93,6 +131,15 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+@media (max-width: 640px) {
+  .zoomBtn {
+    padding: 4px 5px;
+    font-size: 0.72rem;
+    flex: 1;
+    text-align: center;
+  }
 }
 
 .zoomBtn:hover {
@@ -121,6 +168,14 @@
   transition: all 0.2s ease;
 }
 
+@media (max-width: 640px) {
+  .printBtn {
+    padding: 5px 9px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+}
+
 .printBtn:hover {
   background: linear-gradient(135deg, #1d4ed8, #1e40af);
   transform: translateY(-1px);
@@ -138,6 +193,13 @@
   transition: all 0.15s ease;
 }
 
+@media (max-width: 640px) {
+  .closeBtn {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+  }
+}
+
 .closeBtn:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
@@ -145,19 +207,31 @@
 
 /* Sheets Container */
 .sheetsWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 4px 2rem 4px;
+}
+
+.sheetsSizer {
+  margin: 0 auto;
+  position: relative;
+  transition: width 0.15s ease, height 0.15s ease;
 }
 
 .sheetsContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 794px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  transform-origin: top center;
-  transition: transform 0.2s ease;
+  transform-origin: top left;
+  transition: transform 0.15s ease;
 }
 
 /* A4 Sheet (Standard 210mm x 297mm) */
