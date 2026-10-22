@@ -1,0 +1,356 @@
+/* AnnualReportModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Toolbar */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: 900px;
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.65rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: #f8fafc;
+}
+
+.toolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.toolbarTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbarBadge {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.zoomGroup {
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.zoomBtn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.zoomBtn:hover {
+  color: #f8fafc;
+}
+
+.zoomBtnActive {
+  background: #3b82f6;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.printBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+}
+
+.printBtn:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+}
+
+.closeBtn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Sheets Container */
+.sheetsWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.sheetsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+}
+
+/* A4 Sheet (Standard 210mm x 297mm) */
+.a4Sheet {
+  width: 210mm;
+  height: 296mm;
+  max-height: 296mm;
+  padding: 5mm 8mm 4mm 8mm;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: Arial, 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+  font-size: 10.5px;
+  line-height: 1.12;
+  overflow: hidden;
+}
+
+.sheetBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Titles */
+.pageHeaderTitle {
+  font-size: 13.5px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 3px;
+  color: #000000;
+}
+
+/* Table Styling */
+.annualTable {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 10.5px;
+}
+
+/* Headers */
+.annualTable th {
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: bold;
+  border: 1px solid #333333;
+  padding: 2.5px 1.5px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+/* Month Row (e.g. มกราคม) */
+.monthRow td {
+  background-color: #595959 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  border: 1px solid #555555;
+  padding: 1.5px 6px;
+  font-size: 10.5px;
+  text-align: left;
+}
+
+/* Data Cells (Building Rows) */
+.buildingRow td {
+  border: 1px solid #b0b0b0;
+  padding: 1px 3px;
+  vertical-align: middle;
+  font-size: 10px;
+  height: 15px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.buildingNameCell {
+  padding-left: 10px !important;
+}
+
+/* Month Total Row (ยอดรวม) */
+.monthTotalRow td {
+  background-color: #D9D9D9 !important;
+  color: #000000;
+  font-weight: bold;
+  border: 1px solid #999999;
+  padding: 1.2px 3px;
+  vertical-align: middle;
+  font-size: 10px;
+  height: 15.5px;
+  box-sizing: border-box;
+}
+
+/* Grand Total Row (ยอดรวมสุทธิ) */
+.grandTotalRow td {
+  background-color: #FFF2CC !important;
+  color: #000000;
+  font-weight: bold;
+  border-top: 1px solid #000000;
+  border-bottom: 2px double #000000;
+  border-left: 1px solid #999999;
+  border-right: 1px solid #999999;
+  padding: 2px 3px;
+  vertical-align: middle;
+  font-size: 10.5px;
+  height: 17px;
+  box-sizing: border-box;
+}
+
+/* Text alignment & helpers */
+.textCenter {
+  text-align: center;
+}
+
+.textLeft {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.textRight {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.negative {
+  color: #dc2626 !important;
+  font-weight: bold;
+}
+
+/* Footer */
+.sheetFooter {
+  text-align: right;
+  font-size: 9px;
+  color: #000000;
+  margin-top: 2px;
+  padding-top: 1px;
+}
+
+/* Print Rules */
+@media print {
+  .overlay {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .toolbar {
+    display: none !important;
+  }
+
+  .modalContainer {
+    max-width: none !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .sheetsContainer {
+    gap: 0 !important;
+    transform: none !important;
+    display: block !important;
+  }
+
+  .a4Sheet {
+    width: 210mm !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

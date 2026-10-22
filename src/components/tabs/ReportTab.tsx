@@ -3,6 +3,7 @@ import styles from './ReportTab.module.css';
 import { formatThaiMonthOnly, getShortBuildingName } from '@/lib/thaiDate';
 import { getPayInAdvanceBillingPeriod } from '@/lib/billingRules';
 import MonthlyReportModal from '@/components/modals/MonthlyReportModal';
+import AnnualReportModal from '@/components/modals/AnnualReportModal';
 
 interface ReportTabProps {
   buildings: any[];
@@ -18,6 +19,7 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
   const [reportBuildingId, setReportBuildingId] = useState<string>('ALL');
   const [yearlyData, setYearlyData] = useState<any[]>([]);
   const [showMonthlyPrintModal, setShowMonthlyPrintModal] = useState<boolean>(false);
+  const [showAnnualPrintModal, setShowAnnualPrintModal] = useState<boolean>(false);
 
   // Overdue tab states
   const [overdueBuildingFilter, setOverdueBuildingFilter] = useState<string>('ALL');
@@ -99,6 +101,10 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
   const handlePrint = () => {
     if (activeSubTab === 'SUMMARY') {
       setShowMonthlyPrintModal(true);
+      return;
+    }
+    if (activeSubTab === 'YEARLY') {
+      setShowAnnualPrintModal(true);
       return;
     }
     window.print();
@@ -1028,12 +1034,12 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
 <>
   <div className={styles.desktopYearlyTable}>
     <div className={styles.yearlyPrintHeader}>
-      <span>รายงานสรุปการเงินรายปี ประจำปี {parseInt(reportYear) + 543}</span>
+      <span>สรุปรายงานค่าเช่า ประจำปี {parseInt(reportYear) + 543}</span>
     </div>
     <div className={styles.yearlySummarySection}>
       <table className={styles.summaryTable}>
         <thead>
-          <tr style={{ backgroundColor: '#5b9bd5', color: 'white' }}>
+          <tr style={{ backgroundColor: '#000000', color: 'white' }}>
             <th style={{ width: '14%' }}>เดือน / อพาร์ทเมนท์</th>
             <th style={{ width: '8%' }}>ห้องที่เช่า<br/>(ห้อง)</th>
             <th style={{ width: '9%' }}>ค่าน้ำ<br/>(บาท)</th>
@@ -1054,7 +1060,7 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
           ) : (
             yearlyData.map((data) => (
               <React.Fragment key={data.period}>
-                <tr className={styles.yearlyMonthRow} style={{ backgroundColor: '#444', color: 'white', fontWeight: 'bold' }}>
+                <tr className={styles.yearlyMonthRow} style={{ backgroundColor: '#595959', color: 'white', fontWeight: 'bold' }}>
                   <td colSpan={10} className={styles.colLeft}>{formatThaiMonthOnly(data.period)}</td>
                 </tr>
                 {data.buildings.map((b: any, idx: number) => (
@@ -1073,7 +1079,7 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
                 ))}
                 {data.buildings.length > 1 && (
                   <tr className={styles.yearlyMonthTotalRow} style={{ backgroundColor: '#f2f2f2', fontWeight: 'bold' }}>
-                    <td className={styles.colLeft}>{formatThaiMonthOnly(data.period)} Total</td>
+                    <td className={styles.colLeft}>ยอดรวม</td>
                     <td className={styles.colCenter}>{data.total.occupiedRooms}</td>
                     <td className={styles.colRight}>{formatAmount(data.total.waterCost)}</td>
                     <td className={styles.colRight}>{formatAmount(data.total.electricityCost)}</td>
@@ -1089,8 +1095,8 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
             ))
           )}
           {yearlyData.length > 0 && (
-            <tr className={styles.summaryTotalRow} style={{ backgroundColor: '#ffeb9c', fontWeight: 'bold' }}>
-              <td style={{ textAlign: 'center' }}>Grand Total</td>
+            <tr className={styles.summaryTotalRow} style={{ backgroundColor: '#FFF2CC', fontWeight: 'bold' }}>
+              <td style={{ textAlign: 'center' }}>ยอดรวมสุทธิ</td>
               <td className={styles.colCenter}>{yearlyData.reduce((sum, d) => sum + d.total.occupiedRooms, 0)}</td>
               <td className={styles.colRight}>{formatAmount(yearlyData.reduce((sum, d) => sum + d.total.waterCost, 0))}</td>
               <td className={styles.colRight}>{formatAmount(yearlyData.reduce((sum, d) => sum + d.total.electricityCost, 0))}</td>
@@ -1847,6 +1853,16 @@ export default function ReportTab({ buildings, invoices, styles: globalStyles }:
         setShowModal={setShowMonthlyPrintModal}
         reportPeriod={reportPeriod}
         reportData={reportData}
+        currentDateStr={currentDateStr}
+      />
+
+      <AnnualReportModal
+        showModal={showAnnualPrintModal}
+        setShowModal={setShowAnnualPrintModal}
+        reportYear={reportYear}
+        reportBuildingId={reportBuildingId}
+        buildings={buildings}
+        yearlyData={yearlyData}
         currentDateStr={currentDateStr}
       />
     </div>
