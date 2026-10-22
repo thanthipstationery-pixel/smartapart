@@ -43,8 +43,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call Google Gemini Vision API (try gemini-2.0-flash first, fallback to gemini-1.5-flash)
-    const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    // Call Google Gemini Vision API (try gemini-2.5-flash first, fallback to gemini-flash-latest)
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-flash-latest'];
     let response: Response | null = null;
     let lastError: any = null;
 
@@ -84,6 +84,9 @@ export async function POST(request: Request) {
                   ],
                 },
               ],
+              generationConfig: {
+                responseMimeType: 'application/json',
+              },
             }),
           }
         );
@@ -136,8 +139,13 @@ export async function POST(request: Request) {
     }
 
     const result = (await response.json()) as any;
+    const parts = result.candidates?.[0]?.content?.parts || [];
+    // Extract non-thought text parts (Gemini 2.5 uses thought: true for reasoning blocks)
+    const textParts = parts
+      .filter((p: any) => p.text && !p.thought)
+      .map((p: any) => p.text);
     const candidateText =
-      result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      textParts.join('\n') || parts.map((p: any) => p.text || '').join('\n');
 
     // Extract JSON block from response text
     const jsonMatch = candidateText.match(/\{[\s\S]*\}/);
