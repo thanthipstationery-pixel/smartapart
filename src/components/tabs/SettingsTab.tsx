@@ -21,6 +21,7 @@ interface SettingsTabProps {
   setPropGeminiApiKey: (val: string) => void;
   showGeminiKey: boolean;
   setShowGeminiKey: (val: boolean) => void;
+  hasGeminiApiKey?: boolean;
   refreshPropertyData: () => void;
   refreshDashboardData: () => void;
   settingsBuildingId: string;
@@ -62,6 +63,7 @@ export default function SettingsTab({
   setPropGeminiApiKey,
   showGeminiKey,
   setShowGeminiKey,
+  hasGeminiApiKey = false,
   refreshPropertyData,
   refreshDashboardData,
   settingsBuildingId,
@@ -998,6 +1000,35 @@ export default function SettingsTab({
               boxShadow: 'var(--shadow-inset)',
             }}
           >
+            {/* API Key Connection Status Banner */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '20px',
+                backgroundColor: hasGeminiApiKey ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.12)',
+                border: `1px solid ${hasGeminiApiKey ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                marginBottom: '0.85rem',
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: hasGeminiApiKey ? '#22c55e' : '#f59e0b',
+                }}
+              />
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: hasGeminiApiKey ? '#16a34a' : '#d97706' }}>
+                {hasGeminiApiKey
+                  ? 'เชื่อมต่อ Google Gemini AI เรียบร้อยแล้ว (พร้อมใช้งาน AI สแกนบัตรประชาชนอัตโนมัติ)'
+                  : 'ยังไม่ได้เชื่อมต่อ API Key (กรุณากรอก API Key เพื่อเปิดใช้งานระบบสแกนบัตรประชาชนอัตโนมัติ)'}
+              </span>
+            </div>
+
             <div
               style={{
                 display: 'flex',

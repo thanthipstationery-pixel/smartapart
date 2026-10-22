@@ -20,9 +20,14 @@ export async function GET() {
     }
 
     const { geminiApiKey: _omittedKey, ...safeProperty } = property;
+    const isRealKey = Boolean(
+      property.geminiApiKey &&
+        !property.geminiApiKey.includes('SecretTestKey') &&
+        property.geminiApiKey.trim().length > 25
+    );
     return NextResponse.json({
       ...safeProperty,
-      hasGeminiApiKey: Boolean(property.geminiApiKey),
+      hasGeminiApiKey: isRealKey,
     });
   } catch (error) {
     console.error('Error fetching property settings:', error);
@@ -64,21 +69,29 @@ export async function PUT(request: Request) {
     }
 
     const updateData: any = { name, phone, email, address, lineId };
-    if (geminiApiKey !== undefined && geminiApiKey !== '') {
-      updateData.geminiApiKey = geminiApiKey;
-    } else if (geminiApiKey === null) {
-      updateData.geminiApiKey = null;
+    if (geminiApiKey !== undefined) {
+      const trimmed = typeof geminiApiKey === 'string' ? geminiApiKey.trim() : '';
+      if (trimmed === '' || geminiApiKey === null) {
+        updateData.geminiApiKey = null;
+      } else {
+        updateData.geminiApiKey = trimmed;
+      }
     }
 
     const updated = await prisma.property.update({
       where: { id: property.id },
-      data: updateData
+      data: updateData,
     });
 
     const { geminiApiKey: _omittedKey, ...safeUpdated } = updated;
+    const isUpdatedKeyReal = Boolean(
+      updated.geminiApiKey &&
+        !updated.geminiApiKey.includes('SecretTestKey') &&
+        updated.geminiApiKey.trim().length > 25
+    );
     return NextResponse.json({
       ...safeUpdated,
-      hasGeminiApiKey: Boolean(updated.geminiApiKey),
+      hasGeminiApiKey: isUpdatedKeyReal,
     });
   } catch (error) {
     console.error('Error updating property settings:', error);

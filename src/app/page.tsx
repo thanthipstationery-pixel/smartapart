@@ -1671,10 +1671,12 @@ table { border-collapse: collapse; }
     setIsScanningIdCard(true);
 
     try {
-      // 1. Watermark & compress the ID card photo for PDPA security
+      // 1. Watermark & compress the ID card photo client-side for PDPA security and fast upload
       const apartmentName = property?.name || 'SmartApart';
+      let processedImageDataUrl = '';
       try {
         const watermarkedDataUrl = await compressAndWatermarkIdCard(file, apartmentName);
+        processedImageDataUrl = watermarkedDataUrl;
         if (target === 'CHECK_IN') {
           setCheckInIdCardImage(watermarkedDataUrl);
         } else if (target === 'SECOND_TENANT') {
@@ -1688,57 +1690,58 @@ table { border-collapse: collapse; }
         console.warn('Watermark generation notice:', wmErr);
       }
 
-      // 2. Read image for AI OCR
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64Image = reader.result as string;
+      // 2. Prepare lightweight compressed base64 image for AI OCR (avoids mobile 10-20MB upload cutoff)
+      let base64ImageToSend = processedImageDataUrl;
+      if (!base64ImageToSend) {
+        base64ImageToSend = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์รูปภาพได้'));
+          reader.readAsDataURL(file);
+        });
+      }
 
-          const res = await fetch('/api/scan-id-card', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64Image }),
-          });
+      const res = await fetch('/api/scan-id-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64ImageToSend }),
+      });
 
-          const data = (await res.json()) as any;
-          setIsScanningIdCard(false);
+      const data = (await res.json()) as any;
+      setIsScanningIdCard(false);
 
-          if (res.ok && data.success && data.data) {
-            if (target === 'CHECK_IN') {
-              if (data.data.name) setCheckInName(data.data.name);
-              if (data.data.idCard) setCheckInIdCard(data.data.idCard);
-              if (data.data.address) setCheckInAddress(data.data.address);
-            } else if (target === 'SECOND_TENANT') {
-              if (data.data.name) setCheckInSecondTenantName(data.data.name);
-              if (data.data.idCard) setCheckInSecondTenantIdCard(data.data.idCard);
-              if (data.data.address) setCheckInSecondTenantAddress(data.data.address);
-            } else if (target === 'EDIT_TENANT') {
-              if (data.data.name) setEditTenantName(data.data.name);
-              if (data.data.idCard) setEditTenantIdCard(data.data.idCard);
-              if (data.data.address) setEditTenantAddress(data.data.address);
-            } else if (target === 'EDIT_SECOND_TENANT') {
-              if (data.data.name) setEditTenantSecondTenantName(data.data.name);
-              if (data.data.idCard) setEditTenantSecondTenantIdCard(data.data.idCard);
-              if (data.data.address) setEditTenantSecondTenantAddress(data.data.address);
-            } else if (target === 'BOOKING') {
-              if (data.data.name) setBookingName(data.data.name);
-              if (data.data.idCard) setBookingIdCard(data.data.idCard);
-            }
-            alert('✨ สแกนบัตรประชาชนสำเร็จ! ระบบได้กรอกข้อมูลและฝังลายน้ำความปลอดภัยเรียบร้อยแล้ว');
-          } else {
-            alert(data.error || 'ไม่สามารถอ่านข้อมูลจากภาพบัตรประชาชนได้ กรุณาถ่ายใหม่');
-          }
-        } catch (ocrErr) {
-          console.error(ocrErr);
-          setIsScanningIdCard(false);
-          alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบสแกนบัตร');
+      if (res.ok && data.success && data.data) {
+        if (target === 'CHECK_IN') {
+          if (data.data.name) setCheckInName(data.data.name);
+          if (data.data.idCard) setCheckInIdCard(data.data.idCard);
+          if (data.data.address) setCheckInAddress(data.data.address);
+        } else if (target === 'SECOND_TENANT') {
+          if (data.data.name) setCheckInSecondTenantName(data.data.name);
+          if (data.data.idCard) setCheckInSecondTenantIdCard(data.data.idCard);
+          if (data.data.address) setCheckInSecondTenantAddress(data.data.address);
+        } else if (target === 'EDIT_TENANT') {
+          if (data.data.name) setEditTenantName(data.data.name);
+          if (data.data.idCard) setEditTenantIdCard(data.data.idCard);
+          if (data.data.address) setEditTenantAddress(data.data.address);
+        } else if (target === 'EDIT_SECOND_TENANT') {
+          if (data.data.name) setEditTenantSecondTenantName(data.data.name);
+          if (data.data.idCard) setEditTenantSecondTenantIdCard(data.data.idCard);
+          if (data.data.address) setEditTenantSecondTenantAddress(data.data.address);
+        } else if (target === 'BOOKING') {
+          if (data.data.name) setBookingName(data.data.name);
+          if (data.data.idCard) setBookingIdCard(data.data.idCard);
         }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
+        alert('✨ สแกนบัตรประชาชนสำเร็จ! ระบบได้กรอกข้อมูลและบันทึกรูปภาพเรียบร้อยแล้ว');
+      } else {
+        alert(
+          data.error ||
+            'ไม่สามารถอ่านข้อมูลจากภาพบัตรประชาชนได้ กรุณาถ่ายภาพให้ชัดเจนและลองใหม่อีกครั้ง'
+        );
+      }
+    } catch (err: any) {
       console.error(err);
       setIsScanningIdCard(false);
-      alert('เกิดข้อผิดพลาดในการอ่านไฟล์ภาพ');
+      alert(err?.message || 'เกิดข้อผิดพลาดในการประมวลผลรูปภาพ');
     }
   };
 
@@ -2732,6 +2735,7 @@ table { border-collapse: collapse; }
           <SettingsTab
             isViewer={isViewer}
             currentUser={adminUser}
+            hasGeminiApiKey={Boolean(property?.hasGeminiApiKey)}
             propName={propName}
             setPropName={setPropName}
             propPhone={propPhone}
